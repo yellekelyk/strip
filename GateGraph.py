@@ -1,5 +1,6 @@
 from pygraph.classes.digraph import digraph
 from pygraph.algorithms.searching import depth_first_search
+from pygraph.algorithms.searching import breadth_first_search
 import gv
 from pygraph.readwrite.dot import write
 import copy
@@ -13,10 +14,6 @@ class GateGraph(digraph):
 
         self.__pins = dict()
 
-        # make graph
-        gr = digraph()
-        self.__gr = gr
-        
         self.add_node("__INPUTS__")
         self.add_node_attribute("__INPUTS__", ("dummy", True))
         self.add_node("__OUTPUTS__")
@@ -94,10 +91,15 @@ class GateGraph(digraph):
                     raise Exception("Bad port direction " + pin.port.direction)
 
 
+
     def order(self, root='__INPUTS__'):
         st, pre, post = depth_first_search(self, root=root)
         post.reverse()
         return post
+
+    def bfs(self, root='__INPUTS__'):
+        st, nodes = breadth_first_search(self, root=root)
+        return nodes
 
     def png(self, fileName):
         dot = write(self)
@@ -121,7 +123,9 @@ class GateGraph(digraph):
     def isport(self, node):
         return ('port', True) in self.node_attributes(node)
 
-    #gr = property(lambda self: self.__gr)
+    def del_edge(self, edge):
+        self.__pins.pop(edge)
+        digraph.del_edge(self, edge)
 
     def __addEdge__(self, cellFrom, cellTo, wireName, pinFrom=None, pinTo=None):
         edge = ((cellFrom, cellTo))
