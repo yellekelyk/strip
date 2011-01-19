@@ -14,6 +14,7 @@ class DAGCircuit(digraph):
         self.__outputs = set()
         self.__cells   = set()
         self.__pins    = dict()
+        self.__flopsIn = dict()
 
         # create input, output nodes
         digraph.add_node(self, "__INPUTS__")
@@ -115,7 +116,9 @@ class DAGCircuit(digraph):
 
                 # now create extra dummy input port
                 portIn = str(node+"."+port)
+                self.__flopsIn[portIn] = node
                 self.addPortIn(portIn)
+                self.add_node_attribute(portIn, ('flop',True))
                 for child in children:
                     if self.isCell(child):
                         wire = self.edge_label((node, child))
@@ -195,6 +198,8 @@ class DAGCircuit(digraph):
             self.__outputs.remove(node)
         if node in self.__cells:
             self.__cells.remove(node)
+        if node in self.__flopsIn:
+            self.__flopsIn.pop(node)
         #        if node in self.__ports:
         #            self.__ports.remove(node)
         digraph.del_node(self, node)
@@ -257,3 +262,4 @@ class DAGCircuit(digraph):
     cells   = property(lambda self: self.__cells)
     inputs  = property(lambda self: self.__inputs)
     outputs = property(lambda self: self.__outputs)
+    flopsIn = property(lambda self: self.__flopsIn)

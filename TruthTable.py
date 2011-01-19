@@ -45,7 +45,7 @@ class TruthTable:
         string += self.tblFooter()
         return string
 
-    def tblBody(self):
+    def eval(self):
         for combo in self.combinations():
             inputs = dict(zip(self.__inputs,combo))
             inputs.update(self.__const)
@@ -58,8 +58,27 @@ class TruthTable:
                 for arg in output[0]:
                     argList.append(inputs[arg])
                 outputs.append(output[1](*argList))
-            line = self.toLine(combo, outputs)
+            yield (combo, outputs)
+
+    def tblBody(self):
+        for result in self.eval():
+            line = self.toLine(result[0], result[1])
             yield str(line + "\n")
+
+#        for combo in self.combinations():
+#            inputs = dict(zip(self.__inputs,combo))
+#            inputs.update(self.__const)
+#            outputs = []
+#            # evaluate outputs
+#            for output in self.__outputs:
+#                # construct arguments in order
+#                argList = []
+#                #pdb.set_trace()
+#                for arg in output[0]:
+#                    argList.append(inputs[arg])
+#                outputs.append(output[1](*argList))
+#            line = self.toLine(combo, outputs)
+#            yield str(line + "\n")
 
 
     def tblHeader(self):

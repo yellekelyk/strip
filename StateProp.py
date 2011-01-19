@@ -13,7 +13,7 @@ import pdb
 
 class StateProp:
     "Processes a Gate-level netlist, propagating states through flops"
-    def __init__(self, nl, init=None):
+    def __init__(self, nl, init=None, fixFlopInput=True):
 
         self.__nl  = nl
         self.__lib = SimLib.SimLib(nl.yaml)
@@ -41,7 +41,11 @@ class StateProp:
             self.__sim[node]   = node
 
         # state object
-        self.__state  = State.State([])
+        st = State.State([])
+        if fixFlopInput:
+            st = State.State(self.__dag.flopsIn.keys())
+        st.addState(int(0))
+        self.__state = st
 
 
     def __findStages__(self):
@@ -236,8 +240,7 @@ class StateProp:
         f.close()
 
 
-    def toTTFile(self, fileName, flops = [], debug=False):
-        f = open(fileName, 'w')
+    def buildTT(self, flops = []):
         if len(flops) == 0:
             flops = self.__flops.keys()
             flops.sort()
@@ -250,7 +253,6 @@ class StateProp:
             #inps = list(self.__deps[flop].difference(self.__state.nodes()))
 
             ## ** MUST make clean lambda function input names!!!!
-
             evalStr = "lambda "
             for i in range(0, len(inps)-1):
                 evalStr += inps[i] + ","
@@ -265,10 +267,14 @@ class StateProp:
             outputs.append((inps, func))
 
         # create TT object
-        tt = TruthTable.TruthTable(outputs)
+        return TruthTable.TruthTable(outputs)        
 
-        # to work with fixed states, need to look at propState() func above
+    def toTTFile(self, fileName, flops = [], debug=False):
+        tt = self.buildTT(flops)
+
+        # to work with fixed states, need to look at propStates() func above
         # and implement similar behavior for TT generation
+        f = open(fileName, 'w')
         f.write(tt.tblHeader())
         if len(self.__state.states) > 0:
             for state in self.__state.states:
@@ -287,6 +293,27 @@ class StateProp:
         f.write(tt.tblFooter())
         f.close()
 
+
+    def getStateSet(self, flops = []):
+        tt = self.buildTT(flops)
+        states = set()
+        if len(self.__state.states) > 0:
+            for state in self.__state.states:
+                for node in self.__state.nodes():
+                    val = self.__state.getState(state, node)
+                    tt.setInput(node, val)
+                for combo,outputs in tt.eval():
+                    num = int(reduce(lambda x,y:str(str(x)+str(y)), 
+                                     map(int,outputs)),2)
+                    states.add(num)
+
+        else:
+            for combo,outputs in tt.eval(): 
+                num = int(reduce(lambda x,y:str(str(x)+str(y)), 
+                                map(int,outputs)),2)
+                states.add(num)       
+
+        return states
 
     flops = property(lambda self: self.__flops)
     deps  = property(lambda self: self.__deps)

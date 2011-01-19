@@ -11,12 +11,12 @@ class State:
             cnt = cnt + 1
 
     def addState(self, state):
-        if type(state) == type(0):
+        if type(state) == type(0) or type(state) == type(0l):
             self.__addNumState__(state)
         elif type(state) == type(""):
             self.__addStrState__(state)
         else:
-            raise TypeError("Bad type received: " + type(state))
+            raise TypeError("Bad type received: " + str(type(state)))
 
 
     def getState(self, state, node):
