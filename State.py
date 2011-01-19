@@ -26,6 +26,10 @@ class State:
         
 
     states = property(lambda self: self.__states)
+    def nodes(self):
+        return self.__nodes.keys()
+    #nodes  = property(lambda self: self.__nodes.keys())
+
 
     def __addNumState__(self, state):
         if state >= 2**len(self.__nodes):
@@ -35,5 +39,5 @@ class State:
 
     def __addStrState__(self, state):
         num = int(state, 2)
-        self.__addNumState(num)
+        self.__addNumState__(num)
 

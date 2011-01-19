@@ -13,7 +13,6 @@ class DAGCircuit(digraph):
         self.__inputs  = set()
         self.__outputs = set()
         self.__cells   = set()
-        self.__ports   = set()
         self.__pins    = dict()
 
         # create input, output nodes
@@ -120,7 +119,7 @@ class DAGCircuit(digraph):
                 for child in children:
                     if self.isCell(child):
                         wire = self.edge_label((node, child))
-                        pins = self.__pins[(node,child)]
+                        pins = self.pins((node,child))
                         for pin in pins[1]:
                             self.connect(portIn, child, wire, pins[0], pin)
 
@@ -135,32 +134,24 @@ class DAGCircuit(digraph):
         cycle = find_cycle(self)
         if len(cycle) > 0:
             raise Exception("Cycle found!: " + str(cycle))
-
-        
-    def addInput(self, wire):
-        self.__inputs.add(wire)
-        self.add_node(wire)
-        self.connect("__INPUTS__", wire, "__dummy__")
-        
-    def addOutput(self, wire):
-        self.__outputs.add(wire)
-        self.add_node(wire)
-        self.connect(wire, "__OUTPUTS__", "__dummy__")
+   
 
     def addCell(self, cell):
         self.__cells.add(cell)
         digraph.add_node(self,cell)
 
     def addPortIn(self, port):
+        self.__inputs.add(port)
         self.__addPort__(port)
         self.connect("__INPUTS__", port, "__dummy__")
 
     def addPortOut(self, port):
+        self.__outputs.add(port)
         self.__addPort__(port)
         self.connect(port, "__OUTPUTS__", "__dummy__")
 
     def __addPort__(self, port):
-        self.__ports.add(port)
+        #self.__ports.add(port)
         digraph.add_node(self,port)
 
 
@@ -178,11 +169,16 @@ class DAGCircuit(digraph):
             nodes[node] = 0
 
         for node in self.order():
-            nodes[node] = 1
+            nodes[node] += 1
+
+        for node in self.reverseBFS():
+            nodes[node] += 1
 
         for node in nodes:
-            if nodes[node] < 1:
+            if nodes[node] < 2:
                 self.del_node(node)
+            elif nodes[node] > 2:
+                raise Exception("Touched node " + node + " too many times!")
             
 
     def del_edge(self, edge):
@@ -199,8 +195,8 @@ class DAGCircuit(digraph):
             self.__outputs.remove(node)
         if node in self.__cells:
             self.__cells.remove(node)
-        if node in self.__ports:
-            self.__ports.remove(node)
+        #        if node in self.__ports:
+        #            self.__ports.remove(node)
         digraph.del_node(self, node)
 
 
@@ -222,16 +218,42 @@ class DAGCircuit(digraph):
     def isCell(self, node):
         return node in self.nodes() and node in self.__cells
 
-    def isPort(self, port):
-        return port in self.nodes() and port in self.__ports
+#    def isPort(self, port):
+#        return port in self.nodes() and port in self.__ports
+
+    def isInput(self, port):
+        return port in self.nodes() and port in self.__inputs
+
+    def isOutput(self, port):
+        return port in self.nodes() and port in self.__outputs
 
     def order(self, root='__INPUTS__'):
         st, pre, post = depth_first_search(self, root=root)
         post.reverse()
         return post
 
+    def reverseBFS(self, root='__OUTPUTS__'):
+        nodes = [root]
+        touched = set()
+        while (len(nodes) > 0):
+            node = nodes[0]
+            nodes = nodes[1:]
+            for prev in self.node_incidence[node]:
+                if prev not in touched:
+                    nodes.append(prev)
+                    touched.add(prev)
+            yield node
+
+    def pins(self, edge):
+        return self.__pins[edge]
+
     def png(self, fileName):
         dot = write(self)
         gvv = gv.readstring(dot)
         gv.layout(gvv,'dot')
         gv.render(gvv,'png',fileName)
+
+
+    cells   = property(lambda self: self.__cells)
+    inputs  = property(lambda self: self.__inputs)
+    outputs = property(lambda self: self.__outputs)

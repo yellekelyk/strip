@@ -1,9 +1,13 @@
-import GateGraph
 import DAGCircuit
 from odict import OrderedDict
 import utils
 import SimLib
 import string
+import State
+import copy
+import re
+import TruthTable
+
 
 import pdb
 
@@ -11,90 +15,56 @@ class StateProp:
     "Processes a Gate-level netlist, propagating states through flops"
     def __init__(self, nl, init=None):
 
-        self.__nl = nl
+        self.__nl  = nl
+        self.__lib = SimLib.SimLib(nl.yaml)
 
-        # create graph from netlist
-        self.__gg = GateGraph.GateGraph(nl, remove=['clk'])
+        # create DAG from netlist
+        self.__dag = DAGCircuit.DAGCircuit()
+        self.__dag.fromNetlist(nl, remove=['clk'])
+        self.__dag.breakFlops()
 
         #label all nodes with a clock stage number (set self.__stages)
         (self.__stages, self.__flops) = self.__findStages__()
 
 
         # find primary-input dependencies of all nodes
-        self.__deps = self.__findDeps__()
+        #(self.__deps, self.__deltas) = self.__findDeps__()
+        self.__calcDeps__()
 
 
-        self.__orders = self.__findOrders__()
+        # initialize all states to nodes themselves
+        # (this is needed for primary inputs as well as feedback paths)
+        self.__logic = dict()
+        self.__sim   = dict()
+        for node in self.__dag.nodes():
+            self.__logic[node] = node
+            self.__sim[node]   = node
 
-
-        # need to do:
-        # identify potential output buses (outputs of all flops on same level)
-        # enumerate states of those buses; logically reduce; repeat
-
-        self.__logic = self.findLogic()
-
-    def __findDAGS__(self):
-        "Traverse the entire graph, break into DAGS at flop boundaries"
-        dags = dict()
-        levels = dict()
- 
-        mod = self.__nl.mods[self.__nl.topMod]
-
-        #nodes = self.__gg.bfs()
-        #for node in nodes:
-        #    if self.__gg.isport(node):
-        #        if mod.ports[node].direction == "in":
-        #            dags[i].addInput(node)
-        #        elif mod.ports[node].direction == "out":
-        #            dags[i].addOutput(node)
-        #        else:
-        #            raise Exception("Weird State")
-        #    elif self.__gg.iscell(node):
-        #        pass
-            
-        dags[0] = DAGCircuit.DAGCircuit()
-
-
-
-        for inp in inputs:
-            i=0
-            dags[i].addInput(inp)
-            for child in self.__gg.node_neighbors[inp]:
-                if self.__gg.iscell(child):
-                    mod = self.__nl.mods[self.__nl.topMod].cells[child].submodname                    
-                    # check if this node is a FF
-                    if "clocks" in self.__nl.yaml[mod]:
-                        pass
-
-                    else:
-                        dags[i].addInput(child)
-                        #dags[i].connect(inp)
-        
-
-
+        # state object
+        self.__state  = State.State([])
 
 
     def __findStages__(self):
 
         stages = dict()
         flops  = dict()
-        for node in self.__gg.nodes():
+        for node in self.__dag.nodes():
             stages[node] = 0
 
-        nodes = self.__gg.bfs()
-        #nodes = self.__gg.order()
+        #nodes = self.__dag.bfs()
+        nodes = self.__dag.order()
 
         for node in nodes:
-            if len(self.__gg.node_incidence[node]) > 0:
+            if len(self.__dag.node_incidence[node]) > 0:
                 # find max of prev nodes
                 prevMax = 0
-                for prev in self.__gg.node_incidence[node]:
+                for prev in self.__dag.node_incidence[node]:
                     if stages[prev] > prevMax:
                         prevMax = stages[prev]
                 stages[node] = prevMax
 
             # increment if node is flop
-            if self.__gg.iscell(node):
+            if self.__dag.isCell(node):
                 mod = self.__nl.mods[self.__nl.topMod].cells[node].submodname
                 if "clocks" in self.__nl.yaml[mod]:
                     stages[node] = stages[node] + 1
@@ -104,82 +74,157 @@ class StateProp:
         return (stages, flops)
 
 
-    def __findDeps__(self):
+    def __calcDeps__(self, root='__INPUTS__'):
         deps = dict()
+        deltas = dict()
 
         # initialize all node attributes
-        for node in self.__gg.nodes():
+        for node in self.__dag.nodes():
             deps[node]  = set()
+            deltas[node] = 0
+            
 
         # propagate dependencies
-        for node in self.__gg.order():
-            if self.__gg.isport(node) and self.__nl.mods[self.__nl.topMod].ports[node].direction == "in":
+        ports = self.__nl.mods[self.__nl.topMod].ports
+        for node in self.__dag.order(root):
+            if self.__dag.isInput(node):
                 deps[node].add(node)
+                deltas[node] = 1
             else:
                 # build up arguments from predecessors
-                for prev in self.__gg.node_incidence[node]:
+                maxin = 0
+                for prev in self.__dag.node_incidence[node]:
+                    if len(deps[prev]) > maxin:
+                        maxin = len(deps[prev])
                     for dep in deps[prev]:
-                        if dep not in deps[node]:
-                            deps[node].add(dep)
-        return deps
+                        deps[node].add(dep)
 
-    def __findOrders__(self):
-
-        orders = dict()
-
-        #invert the stage dict
-        stage_inv = utils.invert(self.__stages)
-
-        # find and cache all levels of the circuit
-        for level in stage_inv.keys():
-            orders[level] = self.__gg.subgraph(stage_inv[level]).order(root=None)
-
-        return orders
+                deltas[node] = len(deps[node]) - maxin
+        self.__deps = deps
+        self.__deltas = deltas
                         
 
-    def findLogic(self):
+    def annotateState(self, state):
+        "Annotate a group of inputs with a set of defined states"
+        # do some checking of the inputs to make sure legal
+        for node in state.nodes():
+            if node not in self.__dag.inputs:
+                raise Exception("Node " + node + " is not an input!")
+            if node in self.__state.nodes():
+                raise Exception("Node " + node + " cannot be added to multiple states")
+
+        # aggregate into larger state of cross-products
+        # len(self.__states) * len(newState)
+        nodes = self.__state.nodes()
+        nodes.extend(state.nodes())
+        stateObj = State.State(nodes)
+        if len(self.__state.states) > 0:
+            for oldState in self.__state.states:
+                for newState in state.states:
+                    stateObj.addState(oldState * 2**(len(state.states)) + newState)
+        else:
+            stateObj = state
+        
+        self.__state = stateObj
+
+
+    def propStates(self, fileName, flops=[]):
+        "set all input states, run prop logic"
+        for state in self.__state.states:
+            for node in self.__state.nodes():
+                val = self.__state.getState(state, node)
+                self.__logic[node] = int(val)
+                self.__sim[node]   = val
+
+            self.propEquations()
+
+            self.toEquationFile(str(fileName + "." + str(state)), flops)
+
+
+    def propEquations(self):
+        "build logic equations in->out"
+        self.__propGeneric__(self.__logic, self.__lib.logic)
+
+    def propSims(self):
+        "simulate in->out"
+        self.__propGeneric__(self.__sim, self.__lib.python)
+    
+    def __propGeneric__(self, results, libfuncs):
+        "a generic function for build logic equations/simulating in->out"
         nl = self.__nl
-        #parse yaml file, create library of logic/simulation functions
-        lib = SimLib.SimLib(nl.yaml)
+        lib = self.__lib
+
+        for node in self.__dag.order():
+            if self.__dag.isCell(node):
+                # go through all predecessors, construct dict of inputs
+                inps = dict()
+                for prev in self.__dag.node_incidence[node]:
+                    for pin in self.__dag.pins((prev,node))[1]:
+                        inps[pin] = str(results[prev])
+                name = nl.mods[nl.topMod].cells[node].submodname
+                if len(inps) != len(lib.inputs[name]):
+                    raise Exception("Not enough inputs on " + node)
+
+                # construct arguments in order
+                argList = []
+                for arg in lib.inputs[name]:
+                    argList.append(inps[arg])
+                results[node] = libfuncs[name](*argList)
 
 
-        logic = dict()
-        # initialize all states to nodes themselves
-        # (this is needed for primary inputs as well as feedback paths)
-        for node in self.__gg.nodes():
-            logic[node] = node
+    def pruneNodes(self, flops, maxIn = 15):
+        for flop in flops:
+            if len(self.__deps[flop]) > maxIn:
+                print "Input set for " + flop + " is too large"
+                deltas = dict()
+                for node in self.__dag.reverseBFS(flop):
+                    deltas[node] = self.__deltas[node]
+                remove = max(deltas, key=deltas.get)
+                print "Removing node " + remove
+                # add new (fake) input in place of node
+                portIn = remove + ".__dummy"
+                self.__dag.addPortIn(portIn)
+                # initialize entries for new node
+                self.__logic[portIn] = portIn
+                self.__sim[portIn]   = portIn
 
-        for i in range(0,1):
-            for level in sorted(self.__orders.keys()):
-                for node in self.__orders[level]:
-                    if self.__gg.iscell(node):
-                        # go through all predecessors, construct dict of inputs
-                        inps = dict()
-                        for prev in self.__gg.node_incidence[node]:
-                            for pin in self.__gg.pins((prev,node))[1]:
-                                inps[pin] = logic[prev]
-                        name = nl.mods[nl.topMod].cells[node].submodname
-                        if len(inps) != len(lib.inputs[name]):
-                            gg = self.__gg
-                            pdb.set_trace()
-                            raise Exception("Not enough inputs on " + node)
+                # connect all children
+                for child in self.__dag.node_neighbors[remove]:
+                    if self.__dag.isCell(child):
+                        edge = (remove, child)
+                        wire = self.__dag.edge_label(edge)
+                        pins = self.__dag.pins(edge)
+                        for pin in pins[1]:
+                            self.__dag.connect(portIn, child, wire, pins[0], pin)
 
-                        # construct arguments in order
-                        argList = []
-                        for arg in lib.inputs[name]:
-                            argList.append(inps[arg])
-                        logic[node] = lib.logic[name](*argList)
+                # remove the original node
+                self.__dag.del_node(remove)
 
-        return logic
+                # clean graph to remove dangling nodes
+                self.__dag.clean()
+
+                # recalculate deltas, deps
+                self.__calcDeps__()
 
 
-    def toLogicFile(self, fileName, flops = []):
+
+    def toEquationFile(self, fileName, flops = []):
         f = open(fileName, 'w')
         inputs = set()
         if len(flops) == 0:
-            flops = utils.invert(self.__flops)[1]
+            #flops = utils.invert(self.__flops)[1]
+            flops = self.__flops.keys()
+            flops.sort()
+            flops.reverse()
         for flop in flops:
             inputs = set.union(inputs, self.__deps[flop])
+
+        # remove any state-annotated inputs
+        inputs = list(set.difference(inputs, self.__state.nodes()))
+        
+        # sort inputs for niceness
+        inputs.sort()
+        inputs.reverse()
 
         f.write("NAME = " + "TEST" + ";\n")
         f.write("INORDER = "  + string.join(inputs) + ";\n")
@@ -188,6 +233,59 @@ class StateProp:
         for flop in flops:
             f.write(flop + " = " + self.__logic[flop] + ";\n")
 
+        f.close()
+
+
+    def toTTFile(self, fileName, flops = [], debug=False):
+        f = open(fileName, 'w')
+        if len(flops) == 0:
+            flops = self.__flops.keys()
+            flops.sort()
+            flops.reverse()
+
+        # create anonymous functions for simulating
+        outputs = []
+        for flop in flops:
+            inps = list(self.__deps[flop])
+            #inps = list(self.__deps[flop].difference(self.__state.nodes()))
+
+            ## ** MUST make clean lambda function input names!!!!
+
+            evalStr = "lambda "
+            for i in range(0, len(inps)-1):
+                evalStr += inps[i] + ","
+            evalStr += inps[len(inps)-1] + ": " + self.__sim[flop]
+            # before evaluating, do regex replacing of input names
+            for i in range(0, len(inps)):
+                inp = re.sub("\[", "\\[", inps[i])
+                inp = re.sub("\]", "\\]", inp)
+                inp = re.sub("\.", "\\.", inp)
+                evalStr = re.sub(inp, str("in"+str(i)), evalStr)
+            func = eval(evalStr)
+            outputs.append((inps, func))
+
+        # create TT object
+        tt = TruthTable.TruthTable(outputs)
+
+        # to work with fixed states, need to look at propState() func above
+        # and implement similar behavior for TT generation
+        f.write(tt.tblHeader())
+        if len(self.__state.states) > 0:
+            for state in self.__state.states:
+                for node in self.__state.nodes():
+                    val = self.__state.getState(state, node)
+                    tt.setInput(node, val)
+                for line in tt.tblBody():
+                    f.write(line)
+                    if debug:
+                        print line
+        else:
+            for line in tt.tblBody():
+                f.write(line)
+                if debug:
+                    print line
+        f.write(tt.tblFooter())
+        f.close()
 
 
     flops = property(lambda self: self.__flops)
@@ -195,3 +293,5 @@ class StateProp:
     stages= property(lambda self: self.__stages)
     orders= property(lambda self: self.__orders)
     logic = property(lambda self: self.__logic)
+
+
