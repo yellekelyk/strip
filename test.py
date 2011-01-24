@@ -2,6 +2,39 @@ import Netlist
 import StateProp
 import State
 import utils
+import re
+import difflib
+import copy
+
+def flopSet(flopsIn):
+    flops = copy.copy(flopsIn)
+    flopGroup = set()
+    while len(flops) > 0:
+        flop = flops.pop()
+        m = re.match("(\S+_)\d", flop)
+        flopRoot = False
+        if m:
+            flopRoot = m.group(1)
+
+        if flopRoot:
+            newflops = []
+            for f in flops:
+                if re.match(flopRoot, f):
+                    newflops.append(f)
+
+            for f in newflops:
+                flops.remove(f)
+            
+            newflops.append(flop)
+            newflops.sort()
+            newflops.reverse()
+            flopGroup.add(tuple(newflops))
+        else:
+            print "Warning: Ignoring " + flop + " because it's not a bus"
+
+    return flopGroup
+
+
 
 a = Netlist.Netlist()
 a.readYAML("designs/gates.yml")

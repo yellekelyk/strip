@@ -19,10 +19,12 @@ class TruthTable:
 
     def setInput(self, inputName, value):
         if inputName not in self.__inputs and inputName not in self.__const:
-            raise Exception("Bad input: " + inputName)
-        self.__const[inputName] = value
-        if inputName in self.__inputs:
-            self.__inputs.remove(inputName)
+            print "Warning: Input " + inputName + " isn't used"
+            #raise Exception("Bad input: " + inputName)
+        else:
+            self.__const[inputName] = value
+            if inputName in self.__inputs:
+                self.__inputs.remove(inputName)
 
 
     def combinations(self):

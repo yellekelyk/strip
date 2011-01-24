@@ -7,7 +7,7 @@ import State
 import copy
 import re
 import TruthTable
-
+from pygraph.classes.digraph import digraph
 
 import pdb
 
@@ -78,6 +78,85 @@ class StateProp:
         return (stages, flops)
 
 
+
+    def flopReport(self):
+        flopSet = self.__findFlopSets__(self.__flops.keys())
+
+        flopDict = dict()
+        flopSetLookup = dict()
+
+        # print out info about all state vectors 
+
+        print "There were " + str(len(flopSet)) + " state vectors found"
+        cnt = 0
+        for flops in flopSet:
+            flopDict[cnt] = flops
+            print "Vector " + str(cnt) + ":"
+            for flop in flops:
+                # build inverse lookup for going from flop->flopSet
+                flopSetLookup[flop] = cnt
+                print flop
+            cnt += 1
+
+
+        # use graph package to keep track of any deps
+        gr = digraph()
+        for state in flopDict:
+            gr.add_node(state)
+
+        # determine dependencies among state vectors
+        for state in flopDict:
+            # find whole input set
+            inputs = set()
+            for node in flopDict[state]:
+                inputs = set.union(inputs, self.__deps[node])
+
+            # check if any of these inputs corresponds to an output from a
+            # different state 
+            for node in inputs:
+                if node in self.__dag.flopsIn:
+                    flop = self.__dag.flopsIn[node]
+                    edge = (flopSetLookup[flop], state)
+                    if not gr.has_edge(edge):
+                        gr.add_edge(edge)
+
+        print "The dependency graph for states is"
+        print gr
+
+
+    def __findFlopSets__(self, flopsIn):
+        flops = copy.copy(flopsIn)
+        flopGroup = set()
+        while len(flops) > 0:
+            flop = flops.pop()
+            m = re.match("(\S+_)\d", flop)
+            flopRoot = False
+            if m:
+                flopRoot = m.group(1)
+
+            if flopRoot:
+                newflops = []
+                for f in flops:
+                    if re.match(flopRoot, f):
+                        newflops.append(f)
+
+                for f in newflops:
+                    flops.remove(f)
+            
+                newflops.append(flop)
+                newflops.sort()
+                newflops.reverse()
+                flopGroup.add(tuple(newflops))
+            else:
+                print "Warning: Ignoring " + flop + " because it's not a bus"
+                
+        return flopGroup
+
+
+
+
+
+
     def __calcDeps__(self, root='__INPUTS__'):
         deps = dict()
         deltas = dict()
@@ -122,12 +201,9 @@ class StateProp:
         nodes = self.__state.nodes()
         nodes.extend(state.nodes())
         stateObj = State.State(nodes)
-        if len(self.__state.states) > 0:
-            for oldState in self.__state.states:
-                for newState in state.states:
-                    stateObj.addState(oldState * 2**(len(state.states)) + newState)
-        else:
-            stateObj = state
+        for oldState in self.__state.states:
+            for newState in state.states:
+                stateObj.addState(oldState * 2**(len(state.states)) + newState)
         
         self.__state = stateObj
 
@@ -179,12 +255,13 @@ class StateProp:
     def pruneNodes(self, flops, maxIn = 15):
         for flop in flops:
             if len(self.__deps[flop]) > maxIn:
-                print "Input set for " + flop + " is too large"
+                print "Input set for " + flop + " is " + str(len(self.__deps[flop]))
                 deltas = dict()
                 for node in self.__dag.reverseBFS(flop):
                     deltas[node] = self.__deltas[node]
                 remove = max(deltas, key=deltas.get)
-                print "Removing node " + remove
+                print ("Removing node " + remove + " with " + 
+                       str(deltas[remove]) + " inputs")
                 # add new (fake) input in place of node
                 portIn = remove + ".__dummy"
                 self.__dag.addPortIn(portIn)
@@ -276,20 +353,15 @@ class StateProp:
         # and implement similar behavior for TT generation
         f = open(fileName, 'w')
         f.write(tt.tblHeader())
-        if len(self.__state.states) > 0:
-            for state in self.__state.states:
-                for node in self.__state.nodes():
-                    val = self.__state.getState(state, node)
-                    tt.setInput(node, val)
-                for line in tt.tblBody():
-                    f.write(line)
-                    if debug:
-                        print line
-        else:
+        for state in self.__state.states:
+            for node in self.__state.nodes():
+                val = self.__state.getState(state, node)
+                tt.setInput(node, val)
             for line in tt.tblBody():
                 f.write(line)
                 if debug:
                     print line
+
         f.write(tt.tblFooter())
         f.close()
 
@@ -297,21 +369,14 @@ class StateProp:
     def getStateSet(self, flops = []):
         tt = self.buildTT(flops)
         states = set()
-        if len(self.__state.states) > 0:
-            for state in self.__state.states:
-                for node in self.__state.nodes():
-                    val = self.__state.getState(state, node)
-                    tt.setInput(node, val)
-                for combo,outputs in tt.eval():
-                    num = int(reduce(lambda x,y:str(str(x)+str(y)), 
-                                     map(int,outputs)),2)
-                    states.add(num)
-
-        else:
-            for combo,outputs in tt.eval(): 
+        for state in self.__state.states:
+            for node in self.__state.nodes():
+                val = self.__state.getState(state, node)
+                tt.setInput(node, val)
+            for combo,outputs in tt.eval():
                 num = int(reduce(lambda x,y:str(str(x)+str(y)), 
-                                map(int,outputs)),2)
-                states.add(num)       
+                                 map(int,outputs)),2)
+                states.add(num)
 
         return states
 
