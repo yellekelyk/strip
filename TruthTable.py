@@ -11,6 +11,8 @@ class TruthTable:
         for output in outputs:
             self.addOutput(output)
 
+        #pdb.set_trace()
+
     def addOutput(self, output):
         "output is a tuple: (inputs, function)"
         self.__outputs.append(output)
@@ -31,7 +33,10 @@ class TruthTable:
         return self.__combinations__(len(self.__inputs))
 
     def __combinations__(self, num):
-        if num is 1:
+        #print "combinations: " + str(num)
+        if num is 0:
+            yield []
+        elif num is 1:
             yield [True]
             yield [False]
         else:

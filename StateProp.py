@@ -1,6 +1,5 @@
 import DAGCircuit
 from odict import OrderedDict
-import utils
 import SimLib
 import string
 import State
@@ -8,12 +7,14 @@ import copy
 import re
 import TruthTable
 from pygraph.classes.digraph import digraph
+import CNF
+import subprocess
 
 import pdb
 
 class StateProp:
     "Processes a Gate-level netlist, propagating states through flops"
-    def __init__(self, nl, init=None, fixFlopInput=True):
+    def __init__(self, nl, reset=None):
 
         self.__nl  = nl
         self.__lib = SimLib.SimLib(nl.yaml)
@@ -22,10 +23,6 @@ class StateProp:
         self.__dag = DAGCircuit.DAGCircuit()
         self.__dag.fromNetlist(nl, remove=['clk'])
         self.__dag.breakFlops()
-
-        #label all nodes with a clock stage number (set self.__stages)
-        (self.__stages, self.__flops) = self.__findStages__()
-
 
         # find primary-input dependencies of all nodes
         #(self.__deps, self.__deltas) = self.__findDeps__()
@@ -42,45 +39,40 @@ class StateProp:
 
         # state object
         st = State.State([])
-        if fixFlopInput:
+        if reset:
             st = State.State(self.__dag.flopsIn.keys())
-        st.addState(int(0))
+
+            inputs = list(self.__dag.inputs)
+            inputs.remove(reset)
+            inputs.append(reset)
+            tmp = State.State(inputs)
+            tmp.addState(int(1))
+            self.__state = tmp
+
+            # propagate simulation equations in->out!
+            self.propSims()
+
+            #pdb.set_trace()
+
+
+            states = self.getStateSet(self.__dag.flopsIn.values())
+            if len(states) > 1:
+                raise Exception("More than 1 reset state found")
+            state = states.pop()
+
+            print str("Found reset state for flops: " + 
+                      str(self.__dag.flopsIn.values()) + " " +
+                      bin(state)[2:].rjust(len(st.nodes()), '0'))
+
+            st.addState(int(state))
+        else:
+            st.addState(int(0))
+
         self.__state = st
 
 
-    def __findStages__(self):
-
-        stages = dict()
-        flops  = dict()
-        for node in self.__dag.nodes():
-            stages[node] = 0
-
-        #nodes = self.__dag.bfs()
-        nodes = self.__dag.order()
-
-        for node in nodes:
-            if len(self.__dag.node_incidence[node]) > 0:
-                # find max of prev nodes
-                prevMax = 0
-                for prev in self.__dag.node_incidence[node]:
-                    if stages[prev] > prevMax:
-                        prevMax = stages[prev]
-                stages[node] = prevMax
-
-            # increment if node is flop
-            if self.__dag.isCell(node):
-                mod = self.__nl.mods[self.__nl.topMod].cells[node].submodname
-                if "clocks" in self.__nl.yaml[mod]:
-                    stages[node] = stages[node] + 1
-                    flops[node] = stages[node]
-
-            #print("setting stage for " + node + " to " + str(stages[node]))
-        return (stages, flops)
-
-
-
     def flopReport(self):
-        flopSet = self.__findFlopSets__(self.__flops.keys())
+        flopSet = self.__findFlopSets__(self.__dag.flops)
 
         flopDict = dict()
         flopSetLookup = dict()
@@ -151,8 +143,6 @@ class StateProp:
                 print "Warning: Ignoring " + flop + " because it's not a bus"
                 
         return flopGroup
-
-
 
 
 
@@ -293,8 +283,7 @@ class StateProp:
         f = open(fileName, 'w')
         inputs = set()
         if len(flops) == 0:
-            #flops = utils.invert(self.__flops)[1]
-            flops = self.__flops.keys()
+            flops = list(self.__dag.flops)
             flops.sort()
             flops.reverse()
         for flop in flops:
@@ -316,10 +305,152 @@ class StateProp:
 
         f.close()
 
+    def sweepSAT(self, flops):
+        states = set()
+        for i in range(0, 2**len(flops)):
+            if self.runSAT(i, flops):
+                states.add(i)
+
+        return states
+
+
+    def runSAT(self, state, flops):
+
+        fname = "/tmp/SAT."+str(state)+".logic"
+        self.toLogicFile(fname, state, flops)
+        l2cnf = "/home/kkelley/Downloads/logic2cnf-0.7.2/logic2cnf"
+        sat   = "/home/kkelley/Downloads/minisat/core/minisat_static"
+        p1 = subprocess.Popen([l2cnf, "-c", fname], stdout=subprocess.PIPE)
+        p2 = subprocess.Popen([sat], 
+                              stdin=p1.stdout, 
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
+        out = string.split(p2.communicate()[0], "\n")
+        result = out[len(out)-2]
+        return result != "UNSATISFIABLE"
+        
+    def toLogicFile(self, fileName, state, flops = []):
+        f = open(fileName, 'w')
+        inputs = set()
+        if len(flops) == 0:
+            flops = list(self.__dag.flops)
+            flops.sort()
+            flops.reverse()
+        for flop in flops:
+            inputs = set.union(inputs, self.__deps[flop])
+
+        # remove any state-annotated inputs
+        inputs = list(inputs)
+
+        # sort inputs for niceness
+        inputs.sort()
+        inputs.reverse()
+
+        inputs = string.join(inputs)
+        inputs = re.sub("\[", "_", inputs)
+        inputs = re.sub("\]", "_", inputs)
+        inputs = re.sub("\.", "_", inputs)
+
+        f.write("def "  + inputs + ";\n")
+        output = self.__vecToLogic__(flops, state)
+        
+        states = self.__stateLogic__()
+        if states:
+            output = "(" + output + ")" + "&" + "(" + states + ")"
+
+        output = re.sub("\[", "_", output)
+        output = re.sub("\]", "_", output)
+        output = re.sub("\.", "_", output)
+
+        output = re.sub("&",  ".", output)
+        output = re.sub("\|", "+", output)
+        output = re.sub("!",  "~", output)
+        
+        f.write(output + ";\n")
+        f.close()
+
+
+    def __vecToLogic__(self, flops, state):
+        "Produces a logic equation that represents vector == state"
+        
+        if state >= 2**len(flops):
+            raise Exception("Invalid state " + str(state))
+
+        stateStr = bin(state)[2:].rjust(len(flops), '0')
+        output = ""
+        for i in range(0, len(flops)-1):
+            inv = ""
+            if stateStr[i] == "0":
+                inv = "!"
+            output += "(" + inv + "(" + self.__logic[flops[i]] + "))& "
+        inv = ""
+        if stateStr[len(flops)-1] == "0":
+            inv = "!"
+        output += "(" + inv + "(" + self.__logic[flops[len(flops)-1]] + "))"
+        return output
+
+    def __stateLogic__(self):
+        states = []
+        for state in self.__state.states:
+            invLogic = []
+            for node in self.__state.nodes():
+                val = self.__state.getState(state, node)
+                inv = ""
+                if not val:
+                    inv = "!"
+                invLogic.append(inv)
+            stateStr = reduce(lambda x,y: str(x+"&"+y), 
+                              map(lambda x,y: str("("+x+y+")"), 
+                                  invLogic, 
+                                  self.__state.nodes()))
+            states.append("(" + stateStr + ")")
+
+        if len(states) > 0:
+            states = reduce(lambda x,y: str(x+"|"+y), states)
+        else:
+            states = None
+        return states
+
+    def toCNFFile(self, fileName, flops = [], verbose=0):
+        f = open(fileName, 'w')
+        inputs = set()
+        if len(flops) == 0:
+            flops = list(self.__dag.flops)
+            flops.sort()
+            flops.reverse()
+        for flop in flops:
+            inputs = set.union(inputs, self.__deps[flop])
+
+        # TODO remove any state-annotated inputs, deal with them!
+        #inputs = list(inputs)
+        inputs = list(set.difference(inputs, self.__state.nodes()))
+        
+        # sort inputs for niceness
+        inputs.sort()
+        inputs.reverse()
+
+        # build output logic
+        # todo: put loop here to iterate over all possible outputs
+        # for now it's at 'b1111
+        #output = ""
+        #for i in range(0, len(flops)-1):
+        #    output += "(" + self.__logic[flops[i]] + ") & "
+        #    if verbose > 0:
+        #        print flops[i] + ": " + self.__logic[flops[i]]
+        #output += "(" + self.__logic[flops[len(flops)-1]] + ")"
+        output = self.__vecToLogic__(flops, 2**(len(flops))-1)
+
+        cnf = CNF.CNF(output, inputs, self.__state, verbose=verbose)
+
+        for line in cnf.toCNF():
+            f.write(line + "\n")
+
+        f.close()
+
 
     def buildTT(self, flops = []):
         if len(flops) == 0:
-            flops = self.__flops.keys()
+            flops = list(self.__dag.flops)
             flops.sort()
             flops.reverse()
 
@@ -380,10 +511,9 @@ class StateProp:
 
         return states
 
-    flops = property(lambda self: self.__flops)
     deps  = property(lambda self: self.__deps)
     stages= property(lambda self: self.__stages)
     orders= property(lambda self: self.__orders)
     logic = property(lambda self: self.__logic)
-
+    dag   = property(lambda self: self.__dag)
 

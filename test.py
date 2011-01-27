@@ -1,7 +1,6 @@
 import Netlist
 import StateProp
 import State
-import utils
 import re
 import difflib
 import copy
@@ -44,19 +43,19 @@ a.readYAML("designs/gates.yml")
 a.readYAML("designs/PktDestDecoder.yml")
 a.link("PktDestDecoder")
 
-s = StateProp.StateProp(a)
+s = StateProp.StateProp(a, reset='reset')
 
 # choose flops for output here
-flops      = s.flops.keys()
+flops = list(s.dag.flops)
 flops.sort()
 flops.reverse()
+
 
 # pull this info out for later use
 flopsIn = dict()
 
 for k in s._StateProp__dag.flopsIn:
     flopsIn[s._StateProp__dag.flopsIn[k]] = k
-
 
 # do first pass
 s.propSims()
@@ -79,7 +78,7 @@ while len(prevStates) != len(states):
         st.addState(state)
 
     # remake object (this is inefficient, meh)
-    s = StateProp.StateProp(a, fixFlopInput=False)
+    s = StateProp.StateProp(a)
     s.annotateState(st)
     s.propSims()
     prevStates = states

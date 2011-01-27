@@ -11,3 +11,4 @@ def invert(dictionary):
         inv[v] = inv.get(v, [])
         inv[v].append(k)
     return inv
+

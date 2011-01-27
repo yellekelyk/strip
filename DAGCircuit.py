@@ -13,6 +13,7 @@ class DAGCircuit(digraph):
         self.__inputs  = set()
         self.__outputs = set()
         self.__cells   = set()
+        self.__flops   = set()
         self.__pins    = dict()
         self.__flopsIn = dict()
 
@@ -140,7 +141,12 @@ class DAGCircuit(digraph):
    
 
     def addCell(self, cell):
+        mod = self.__nl.mods[self.__nl.topMod]
+        yaml = self.__nl.yaml
         self.__cells.add(cell)
+        if "clocks" in yaml[mod.cells[cell].submodname]:
+            self.__flops.add(cell)
+
         digraph.add_node(self,cell)
 
     def addPortIn(self, port):
@@ -198,10 +204,10 @@ class DAGCircuit(digraph):
             self.__outputs.remove(node)
         if node in self.__cells:
             self.__cells.remove(node)
+        if node in self.__flops:
+            self.__flops.remove(node)
         if node in self.__flopsIn:
             self.__flopsIn.pop(node)
-        #        if node in self.__ports:
-        #            self.__ports.remove(node)
         digraph.del_node(self, node)
 
 
@@ -222,9 +228,6 @@ class DAGCircuit(digraph):
 
     def isCell(self, node):
         return node in self.nodes() and node in self.__cells
-
-#    def isPort(self, port):
-#        return port in self.nodes() and port in self.__ports
 
     def isInput(self, port):
         return port in self.nodes() and port in self.__inputs
@@ -263,3 +266,4 @@ class DAGCircuit(digraph):
     inputs  = property(lambda self: self.__inputs)
     outputs = property(lambda self: self.__outputs)
     flopsIn = property(lambda self: self.__flopsIn)
+    flops   = property(lambda self: self.__flops)
