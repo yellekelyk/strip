@@ -1,17 +1,34 @@
+import re
 import pdb
 
 class TruthTable:
     "Defines a class for generating truth tables"
-    def __init__(self, outputs=[]):
-        "outputs should be list of tuples: (inputs, function)"
+    def __init__(self, stateProp, flops=[]):
         self.__inputs = set()
         self.__const  = dict()
         self.__outputs = []
+        self.__stateProp = stateProp
 
-        for output in outputs:
-            self.addOutput(output)
+        if len(flops) == 0:
+            flops = stateProp.defaultFlops()
 
-        #pdb.set_trace()
+        # create anonymous functions for simulating
+        for flop in flops:
+            inps = list(stateProp.deps[flop])
+            #inps = list(stateProp.deps[flop].difference(stateProp.state.nodes()))
+            ## ** MUST make clean lambda function input names!!!!
+            evalStr = "lambda "
+            evalStr += reduce(lambda x,y: x + ',' + y, inps)
+            evalStr += ": " + stateProp.sim[flop]
+            # before evaluating, do regex replacing of input names
+            for i in range(0, len(inps)):
+                inp = re.sub("\[", "\\[", inps[i])
+                inp = re.sub("\]", "\\]", inp)
+                inp = re.sub("\.", "\\.", inp)
+                evalStr = re.sub(inp, str("in"+str(i)), evalStr)
+            func = eval(evalStr)
+            self.addOutput((inps, func))
+
 
     def addOutput(self, output):
         "output is a tuple: (inputs, function)"
@@ -72,22 +89,6 @@ class TruthTable:
             line = self.toLine(result[0], result[1])
             yield str(line + "\n")
 
-#        for combo in self.combinations():
-#            inputs = dict(zip(self.__inputs,combo))
-#            inputs.update(self.__const)
-#            outputs = []
-#            # evaluate outputs
-#            for output in self.__outputs:
-#                # construct arguments in order
-#                argList = []
-#                #pdb.set_trace()
-#                for arg in output[0]:
-#                    argList.append(inputs[arg])
-#                outputs.append(output[1](*argList))
-#            line = self.toLine(combo, outputs)
-#            yield str(line + "\n")
-
-
     def tblHeader(self):
         string  = ".i " + str(len(self.__inputs)) + "\n"
         string += ".o " + str(len(self.__outputs)) + "\n"
@@ -110,3 +111,31 @@ class TruthTable:
             string = string + str(int(val))
         return string
         
+
+    def toFile(self, fileName):
+        state = self.__stateProp.state
+        f = open(fileName, 'w')
+        f.write(self.tblHeader())
+        for state in state.states:
+            for node in state.nodes():
+                val = state.getState(state, node)
+                self.setInput(node, val)
+            for line in self.tblBody():
+                f.write(line)
+
+        f.write(tt.tblFooter())
+        f.close()
+
+
+    def sweepStates(self):
+        states = set()
+        state = self.__stateProp.state
+        for st in state.states:
+            for node in state.nodes():
+                val = state.getState(st, node)
+                self.setInput(node, val)
+            for combo,outputs in self.eval():
+                num = int(reduce(lambda x,y:str(str(x)+str(y)), 
+                                 map(int,outputs)),2)
+                states.add(num)
+        return states

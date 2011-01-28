@@ -1,5 +1,5 @@
 import DAGCircuit
-from odict import OrderedDict
+#from odict import OrderedDict
 import SimLib
 import string
 import State
@@ -53,9 +53,10 @@ class StateProp:
             self.propSims()
 
             #pdb.set_trace()
+            tt = TruthTable.TruthTable(self, self.__dag.flopsIn.values())
 
-
-            states = self.getStateSet(self.__dag.flopsIn.values())
+            #states = self.getStateSet(self.__dag.flopsIn.values())
+            states = tt.sweepStates()
             if len(states) > 1:
                 raise Exception("More than 1 reset state found")
             state = states.pop()
@@ -70,9 +71,13 @@ class StateProp:
 
         self.__state = st
 
+        # propagate node info
+        self.propEquations()
+        self.propSims()
+
 
     def flopReport(self):
-        flopSet = self.__findFlopSets__(self.__dag.flops)
+        flopSet = self.flopSets()
 
         flopDict = dict()
         flopSetLookup = dict()
@@ -115,6 +120,9 @@ class StateProp:
         print "The dependency graph for states is"
         print gr
 
+
+    def flopSets(self):
+        return self.__findFlopSets__(self.__dag.flops)
 
     def __findFlopSets__(self, flopsIn):
         flops = copy.copy(flopsIn)
@@ -198,17 +206,17 @@ class StateProp:
         self.__state = stateObj
 
 
-    def propStates(self, fileName, flops=[]):
-        "set all input states, run prop logic"
-        for state in self.__state.states:
-            for node in self.__state.nodes():
-                val = self.__state.getState(state, node)
-                self.__logic[node] = int(val)
-                self.__sim[node]   = val
-
-            self.propEquations()
-
-            self.toEquationFile(str(fileName + "." + str(state)), flops)
+#    def propStates(self, fileName, flops=[]):
+#        "set all input states, run prop logic"
+#        for state in self.__state.states:
+#            for node in self.__state.nodes():
+#                val = self.__state.getState(state, node)
+#                self.__logic[node] = int(val)
+#                self.__sim[node]   = val
+#
+#            self.propEquations()
+#
+#            self.toEquationFile(str(fileName + "." + str(state)), flops)
 
 
     def propEquations(self):
@@ -278,32 +286,35 @@ class StateProp:
                 self.__calcDeps__()
 
 
+        self.propSims()
+        self.propEquations()
 
-    def toEquationFile(self, fileName, flops = []):
-        f = open(fileName, 'w')
-        inputs = set()
-        if len(flops) == 0:
-            flops = list(self.__dag.flops)
-            flops.sort()
-            flops.reverse()
-        for flop in flops:
-            inputs = set.union(inputs, self.__deps[flop])
 
-        # remove any state-annotated inputs
-        inputs = list(set.difference(inputs, self.__state.nodes()))
-        
-        # sort inputs for niceness
-        inputs.sort()
-        inputs.reverse()
-
-        f.write("NAME = " + "TEST" + ";\n")
-        f.write("INORDER = "  + string.join(inputs) + ";\n")
-        f.write("OUTORDER = " + string.join(flops)  + ";\n")
-
-        for flop in flops:
-            f.write(flop + " = " + self.__logic[flop] + ";\n")
-
-        f.close()
+    #def toEquationFile(self, fileName, flops = []):
+    #    f = open(fileName, 'w')
+    #    inputs = set()
+    #    if len(flops) == 0:
+    #        flops = list(self.__dag.flops)
+    #        flops.sort()
+    #        flops.reverse()
+    #    for flop in flops:
+    #        inputs = set.union(inputs, self.__deps[flop])
+    #
+    #    # remove any state-annotated inputs
+    #    inputs = list(set.difference(inputs, self.__state.nodes()))
+    #    
+    #    # sort inputs for niceness
+    #    inputs.sort()
+    #    inputs.reverse()
+    #
+    #    f.write("NAME = " + "TEST" + ";\n")
+    #    f.write("INORDER = "  + string.join(inputs) + ";\n")
+    #    f.write("OUTORDER = " + string.join(flops)  + ";\n")
+    #
+    #    for flop in flops:
+    #        f.write(flop + " = " + self.__logic[flop] + ";\n")
+    #
+    #    f.close()
 
     def sweepSAT(self, flops):
         states = set()
@@ -329,191 +340,198 @@ class StateProp:
         result = out[len(out)-2]
         return result != "UNSATISFIABLE"
         
-    def toLogicFile(self, fileName, state, flops = []):
-        f = open(fileName, 'w')
-        inputs = set()
-        if len(flops) == 0:
-            flops = list(self.__dag.flops)
-            flops.sort()
-            flops.reverse()
-        for flop in flops:
-            inputs = set.union(inputs, self.__deps[flop])
-
-        # remove any state-annotated inputs
-        inputs = list(inputs)
-
-        # sort inputs for niceness
-        inputs.sort()
-        inputs.reverse()
-
-        inputs = string.join(inputs)
-        inputs = re.sub("\[", "_", inputs)
-        inputs = re.sub("\]", "_", inputs)
-        inputs = re.sub("\.", "_", inputs)
-
-        f.write("def "  + inputs + ";\n")
-        output = self.__vecToLogic__(flops, state)
-        
-        states = self.__stateLogic__()
-        if states:
-            output = "(" + output + ")" + "&" + "(" + states + ")"
-
-        output = re.sub("\[", "_", output)
-        output = re.sub("\]", "_", output)
-        output = re.sub("\.", "_", output)
-
-        output = re.sub("&",  ".", output)
-        output = re.sub("\|", "+", output)
-        output = re.sub("!",  "~", output)
-        
-        f.write(output + ";\n")
-        f.close()
-
-
-    def __vecToLogic__(self, flops, state):
-        "Produces a logic equation that represents vector == state"
-        
-        if state >= 2**len(flops):
-            raise Exception("Invalid state " + str(state))
-
-        stateStr = bin(state)[2:].rjust(len(flops), '0')
-        output = ""
-        for i in range(0, len(flops)-1):
-            inv = ""
-            if stateStr[i] == "0":
-                inv = "!"
-            output += "(" + inv + "(" + self.__logic[flops[i]] + "))& "
-        inv = ""
-        if stateStr[len(flops)-1] == "0":
-            inv = "!"
-        output += "(" + inv + "(" + self.__logic[flops[len(flops)-1]] + "))"
-        return output
-
-    def __stateLogic__(self):
-        states = []
-        for state in self.__state.states:
-            invLogic = []
-            for node in self.__state.nodes():
-                val = self.__state.getState(state, node)
-                inv = ""
-                if not val:
-                    inv = "!"
-                invLogic.append(inv)
-            stateStr = reduce(lambda x,y: str(x+"&"+y), 
-                              map(lambda x,y: str("("+x+y+")"), 
-                                  invLogic, 
-                                  self.__state.nodes()))
-            states.append("(" + stateStr + ")")
-
-        if len(states) > 0:
-            states = reduce(lambda x,y: str(x+"|"+y), states)
-        else:
-            states = None
-        return states
-
-    def toCNFFile(self, fileName, flops = [], verbose=0):
-        f = open(fileName, 'w')
-        inputs = set()
-        if len(flops) == 0:
-            flops = list(self.__dag.flops)
-            flops.sort()
-            flops.reverse()
-        for flop in flops:
-            inputs = set.union(inputs, self.__deps[flop])
-
-        # TODO remove any state-annotated inputs, deal with them!
-        #inputs = list(inputs)
-        inputs = list(set.difference(inputs, self.__state.nodes()))
-        
-        # sort inputs for niceness
-        inputs.sort()
-        inputs.reverse()
-
-        # build output logic
-        # todo: put loop here to iterate over all possible outputs
-        # for now it's at 'b1111
-        #output = ""
-        #for i in range(0, len(flops)-1):
-        #    output += "(" + self.__logic[flops[i]] + ") & "
-        #    if verbose > 0:
-        #        print flops[i] + ": " + self.__logic[flops[i]]
-        #output += "(" + self.__logic[flops[len(flops)-1]] + ")"
-        output = self.__vecToLogic__(flops, 2**(len(flops))-1)
-
-        cnf = CNF.CNF(output, inputs, self.__state, verbose=verbose)
-
-        for line in cnf.toCNF():
-            f.write(line + "\n")
-
-        f.close()
+    #def toLogicFile(self, fileName, state, flops = []):
+    #    f = open(fileName, 'w')
+    #    inputs = set()
+    #    if len(flops) == 0:
+    #        flops = list(self.__dag.flops)
+    #        flops.sort()
+    #        flops.reverse()
+    #    for flop in flops:
+    #        inputs = set.union(inputs, self.__deps[flop])
+    #
+    #    # remove any state-annotated inputs
+    #    inputs = list(inputs)
+    #
+    #    # sort inputs for niceness
+    #    inputs.sort()
+    #    inputs.reverse()
+    #
+    #    inputs = string.join(inputs)
+    #    inputs = re.sub("\[", "_", inputs)
+    #    inputs = re.sub("\]", "_", inputs)
+    #    inputs = re.sub("\.", "_", inputs)
+    #
+    #    f.write("def "  + inputs + ";\n")
+    #    output = self.__vecToLogic__(flops, state)
+    #    
+    #    states = self.__stateLogic__()
+    #    if states:
+    #        output = "(" + output + ")" + "&" + "(" + states + ")"
+    #
+    #    output = re.sub("\[", "_", output)
+    #    output = re.sub("\]", "_", output)
+    #    output = re.sub("\.", "_", output)
+    #
+    #    output = re.sub("&",  ".", output)
+    #    output = re.sub("\|", "+", output)
+    #    output = re.sub("!",  "~", output)
+    #    
+    #    f.write(output + ";\n")
+    #    f.close()
 
 
-    def buildTT(self, flops = []):
-        if len(flops) == 0:
-            flops = list(self.__dag.flops)
-            flops.sort()
-            flops.reverse()
+    #def __vecToLogic__(self, flops, state):
+    #    "Produces a logic equation that represents vector == state"
+    #    
+    #    if state >= 2**len(flops):
+    #        raise Exception("Invalid state " + str(state))
+    #
+    #    stateStr = bin(state)[2:].rjust(len(flops), '0')
+    #    output = ""
+    #    for i in range(0, len(flops)-1):
+    #        inv = ""
+    #        if stateStr[i] == "0":
+    #            inv = "!"
+    #        output += "(" + inv + "(" + self.__logic[flops[i]] + "))& "
+    #    inv = ""
+    #    if stateStr[len(flops)-1] == "0":
+    #        inv = "!"
+    #    output += "(" + inv + "(" + self.__logic[flops[len(flops)-1]] + "))"
+    #    return output
 
-        # create anonymous functions for simulating
-        outputs = []
-        for flop in flops:
-            inps = list(self.__deps[flop])
-            #inps = list(self.__deps[flop].difference(self.__state.nodes()))
+    #def __stateLogic__(self):
+    #    states = []
+    #    for state in self.__state.states:
+    #        invLogic = []
+    #        for node in self.__state.nodes():
+    #            val = self.__state.getState(state, node)
+    #            inv = ""
+    #            if not val:
+    #                inv = "!"
+    #            invLogic.append(inv)
+    #        stateStr = reduce(lambda x,y: str(x+"&"+y), 
+    #                          map(lambda x,y: str("("+x+y+")"), 
+    #                              invLogic, 
+    #                              self.__state.nodes()))
+    #        states.append("(" + stateStr + ")")
+    #
+    #    if len(states) > 0:
+    #        states = reduce(lambda x,y: str(x+"|"+y), states)
+    #    else:
+    #        states = None
+    #    return states
 
-            ## ** MUST make clean lambda function input names!!!!
-            evalStr = "lambda "
-            for i in range(0, len(inps)-1):
-                evalStr += inps[i] + ","
-            evalStr += inps[len(inps)-1] + ": " + self.__sim[flop]
-            # before evaluating, do regex replacing of input names
-            for i in range(0, len(inps)):
-                inp = re.sub("\[", "\\[", inps[i])
-                inp = re.sub("\]", "\\]", inp)
-                inp = re.sub("\.", "\\.", inp)
-                evalStr = re.sub(inp, str("in"+str(i)), evalStr)
-            func = eval(evalStr)
-            outputs.append((inps, func))
+    #def toCNFFile(self, fileName, flops = [], verbose=0):
+    #    f = open(fileName, 'w')
+    #    inputs = set()
+    #    if len(flops) == 0:
+    #        flops = list(self.__dag.flops)
+    #        flops.sort()
+    #        flops.reverse()
+    #    for flop in flops:
+    #        inputs = set.union(inputs, self.__deps[flop])
+    #
+    #    # TODO remove any state-annotated inputs, deal with them!
+    #    #inputs = list(inputs)
+    #    inputs = list(set.difference(inputs, self.__state.nodes()))
+    #    
+    #    # sort inputs for niceness
+    #    inputs.sort()
+    #    inputs.reverse()
+    #
+    #    # build output logic
+    #    # todo: put loop here to iterate over all possible outputs
+    #    # for now it's at 'b1111
+    #    #output = ""
+    #    #for i in range(0, len(flops)-1):
+    #    #    output += "(" + self.__logic[flops[i]] + ") & "
+    #    #    if verbose > 0:
+    #    #        print flops[i] + ": " + self.__logic[flops[i]]
+    #    #output += "(" + self.__logic[flops[len(flops)-1]] + ")"
+    #    output = self.__vecToLogic__(flops, 2**(len(flops))-1)
+    #
+    #    cnf = CNF.CNF(output, inputs, self.__state, verbose=verbose)
+    #
+    #    for line in cnf.toCNF():
+    #        f.write(line + "\n")
+    #
+    #    f.close()
 
-        # create TT object
-        return TruthTable.TruthTable(outputs)        
-
-    def toTTFile(self, fileName, flops = [], debug=False):
-        tt = self.buildTT(flops)
-
-        # to work with fixed states, need to look at propStates() func above
-        # and implement similar behavior for TT generation
-        f = open(fileName, 'w')
-        f.write(tt.tblHeader())
-        for state in self.__state.states:
-            for node in self.__state.nodes():
-                val = self.__state.getState(state, node)
-                tt.setInput(node, val)
-            for line in tt.tblBody():
-                f.write(line)
-                if debug:
-                    print line
-
-        f.write(tt.tblFooter())
-        f.close()
+    def defaultFlops(self):
+        flops = list(self.__dag.flops)
+        flops.sort()
+        flops.reverse()
+        return flops
 
 
-    def getStateSet(self, flops = []):
-        tt = self.buildTT(flops)
-        states = set()
-        for state in self.__state.states:
-            for node in self.__state.nodes():
-                val = self.__state.getState(state, node)
-                tt.setInput(node, val)
-            for combo,outputs in tt.eval():
-                num = int(reduce(lambda x,y:str(str(x)+str(y)), 
-                                 map(int,outputs)),2)
-                states.add(num)
+    #def buildTT(self, flops = []):
+    #if len(flops) == 0:
+    #    flops = list(self.__dag.flops)
+    #    flops.sort()
+    #    flops.reverse()
+    #
+    ## create anonymous functions for simulating
+    #outputs = []
+    #for flop in flops:
+    #    inps = list(self.__deps[flop])
+    #    #inps = list(self.__deps[flop].difference(self.__state.nodes()))
+    #
+    #    ## ** MUST make clean lambda function input names!!!!
+    #    evalStr = "lambda "
+    #    for i in range(0, len(inps)-1):
+    #        evalStr += inps[i] + ","
+    #    evalStr += inps[len(inps)-1] + ": " + self.__sim[flop]
+    #    # before evaluating, do regex replacing of input names
+    #    for i in range(0, len(inps)):
+    #        inp = re.sub("\[", "\\[", inps[i])
+    #        inp = re.sub("\]", "\\]", inp)
+    #        inp = re.sub("\.", "\\.", inp)
+    #        evalStr = re.sub(inp, str("in"+str(i)), evalStr)
+    #    func = eval(evalStr)
+    #    outputs.append((inps, func))
 
-        return states
+    # create TT object
+    #return TruthTable.TruthTable(self, flops)        
+
+    #def toTTFile(self, fileName, flops = [], debug=False):
+    #    tt = self.buildTT(flops)
+    #
+    #    # to work with fixed states, need to look at propStates() func above
+    #    # and implement similar behavior for TT generation
+    #    f = open(fileName, 'w')
+    #    f.write(tt.tblHeader())
+    #    for state in self.__state.states:
+    #        for node in self.__state.nodes():
+    #            val = self.__state.getState(state, node)
+    #            tt.setInput(node, val)
+    #        for line in tt.tblBody():
+    #            f.write(line)
+    #            if debug:
+    #                print line
+    #
+    #    f.write(tt.tblFooter())
+    #    f.close()
+
+
+    #def getStateSet(self, flops = []):
+    #    tt = self.buildTT(flops)
+    #    states = set()
+    #    for state in self.__state.states:
+    #        for node in self.__state.nodes():
+    #            val = self.__state.getState(state, node)
+    #            tt.setInput(node, val)
+    #        for combo,outputs in tt.eval():
+    #            num = int(reduce(lambda x,y:str(str(x)+str(y)), 
+    #                             map(int,outputs)),2)
+    #            states.add(num)
+    #
+    #    return states
 
     deps  = property(lambda self: self.__deps)
     stages= property(lambda self: self.__stages)
     orders= property(lambda self: self.__orders)
     logic = property(lambda self: self.__logic)
+    sim   = property(lambda self: self.__sim)
     dag   = property(lambda self: self.__dag)
-
+    state = property(lambda self: self.__state)

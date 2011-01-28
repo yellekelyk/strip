@@ -1,5 +1,7 @@
 import Netlist
 import StateProp
+import Logic2CNF
+
 import State
 import re
 import difflib
@@ -37,13 +39,23 @@ def flopSet(flopsIn):
 
 a = Netlist.Netlist()
 a.readYAML("designs/gates.yml")
-#a.readYAML("designs/test7.yml")
-#a.link("test7")
+a.readYAML("designs/test7.yml")
+a.link("test7")
 
 a.readYAML("designs/PktDestDecoder.yml")
 a.link("PktDestDecoder")
 
+a.readYAML("designs/DestinationDecoder.yml")
+a.link("DestinationDecoder")
+
 s = StateProp.StateProp(a, reset='reset')
+flops = list(s.flopSets())[2]
+
+l2cnf = Logic2CNF.Logic2CNF(s, flops)
+params = [{'logic':l2cnf, 'state':0}, {'logic':l2cnf, 'state':255}]
+from multiprocessing import Pool
+pool = Pool(2)
+pool.map(SAT.runOneMP, params)
 
 # choose flops for output here
 flops = list(s.dag.flops)

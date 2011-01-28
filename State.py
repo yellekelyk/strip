@@ -1,13 +1,14 @@
-from odict import OrderedDict
+#from odict import OrderedDict
 
 class State:
     "Generic state information for a group of nodes"
     def __init__(self, nodes):
         self.__states = set()
-        self.__nodes = OrderedDict()
+        self.__nodes = nodes
+        self.__nodeDict = dict()
         cnt = 0
         for node in nodes:
-            self.__nodes[node] = cnt
+            self.__nodeDict[node] = cnt
             cnt = cnt + 1
 
     def addState(self, state):
@@ -22,14 +23,18 @@ class State:
     def getState(self, state, node):
         if state not in self.__states:
             raise Exception("state " + str(state) + " not in set of states")
-        return bool(int(bin(state)[2:].rjust(len(self.__nodes), '0')[self.__nodes[node]]))
+        return bool(int(bin(state)[2:].rjust(len(self.__nodes), '0')[self.__nodeDict[node]]))
+
+    def getStateStr(self, state):
+        if state not in self.__states:
+            raise Exception(str(state) + " has not been added!")
+        return bin(state)[2:].rjust(len(self.__nodes), '0')
         
 
     states = property(lambda self: self.__states)
-    def nodes(self):
-        return self.__nodes.keys()
-    #nodes  = property(lambda self: self.__nodes.keys())
 
+    def nodes(self):
+        return self.__nodes
 
     def __addNumState__(self, state):
         if state >= 2**len(self.__nodes):
