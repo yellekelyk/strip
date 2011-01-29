@@ -1,4 +1,5 @@
-#from odict import OrderedDict
+import myutils
+import copy
 
 class State:
     "Generic state information for a group of nodes"
@@ -10,6 +11,13 @@ class State:
         for node in nodes:
             self.__nodeDict[node] = cnt
             cnt = cnt + 1
+
+    def __eq__(self, state):
+        ret = False
+        if set(state.nodes()) == set(self.__nodes):
+            tmp = subset(state, self.__nodes)
+            ret = self.__states == tmp.states
+        return ret
 
     def addState(self, state):
         if type(state) == type(0) or type(state) == type(0l):
@@ -29,6 +37,10 @@ class State:
         if state not in self.__states:
             raise Exception(str(state) + " has not been added!")
         return bin(state)[2:].rjust(len(self.__nodes), '0')
+
+    #def update(self, state):
+    #    "updates self by adding all states in state"
+    #    pass
         
 
     states = property(lambda self: self.__states)
@@ -46,3 +58,44 @@ class State:
         num = int(state, 2)
         self.__addNumState__(num)
 
+
+def merge(state1, state2):
+    "merge 2 state instances"
+    for node in state2.nodes():
+        if node in state1.nodes():
+            raise Exception("Node " + node + 
+                            " cannot be added to multiple states")
+    for node in state1.nodes():
+        if node in state2.nodes():
+            raise Exception("Node " + node + 
+                            " cannot be added to multiple states")
+        
+
+    
+    if len(state1.states) == 0 and len(state2.states) == 0:
+        stateObj = State([])
+    elif len(state1.states) == 0:
+        stateObj = state2
+    elif len(state2.states) == 0:
+        stateObj = state1
+    else:
+        nodes = copy.copy(state1.nodes()).extend(state2.nodes())
+        stateObj = State(nodes)
+        for oldState in state1.states:
+            for newState in state2.states:
+                stateObj.addState(oldState* 2**(len(state2.nodes()))+newState)
+    return stateObj
+
+
+def subset(state, nodes):
+    "extract a subset of node states"
+    for node in nodes:
+        if node not in state.nodes():
+            raise Exception("node not in state: " + node)
+
+    stateObj = State(nodes)
+    for st in state.states:
+        newst = myutils.bool2int(map(state.getState, [st]*len(nodes), nodes))
+        stateObj.addState(newst)
+    return stateObj
+    

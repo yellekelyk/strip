@@ -1,3 +1,4 @@
+import myutils
 import re
 import pdb
 
@@ -135,7 +136,5 @@ class TruthTable:
                 val = state.getState(st, node)
                 self.setInput(node, val)
             for combo,outputs in self.eval():
-                num = int(reduce(lambda x,y:str(str(x)+str(y)), 
-                                 map(int,outputs)),2)
-                states.add(num)
+                states.add(myutils.bool2int(outputs))
         return states

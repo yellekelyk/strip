@@ -1,5 +1,4 @@
 import DAGCircuit
-#from odict import OrderedDict
 import SimLib
 import string
 import State
@@ -55,7 +54,6 @@ class StateProp:
             #pdb.set_trace()
             tt = TruthTable.TruthTable(self, self.__dag.flopsIn.values())
 
-            #states = self.getStateSet(self.__dag.flopsIn.values())
             states = tt.sweepStates()
             if len(states) > 1:
                 raise Exception("More than 1 reset state found")
@@ -65,8 +63,10 @@ class StateProp:
                       str(self.__dag.flopsIn.values()) + " " +
                       bin(state)[2:].rjust(len(st.nodes()), '0'))
 
+            self.__reset = state
             st.addState(int(state))
         else:
+            print "Warning: no reset signal given, assuming reset = 0"
             st.addState(int(0))
 
         self.__state = st
@@ -108,6 +108,8 @@ class StateProp:
             for node in flopDict[state]:
                 inputs = set.union(inputs, self.__deps[node])
 
+            gr.add_node_attribute(state, inputs)
+
             # check if any of these inputs corresponds to an output from a
             # different state 
             for node in inputs:
@@ -119,6 +121,7 @@ class StateProp:
 
         print "The dependency graph for states is"
         print gr
+        return (gr, list(flopSet))
 
 
     def flopSets(self):
@@ -184,26 +187,33 @@ class StateProp:
         self.__deps = deps
         self.__deltas = deltas
                         
-
-    def annotateState(self, state):
-        "Annotate a group of inputs with a set of defined states"
+    def setInputState(self, state):
         # do some checking of the inputs to make sure legal
         for node in state.nodes():
             if node not in self.__dag.inputs:
                 raise Exception("Node " + node + " is not an input!")
-            if node in self.__state.nodes():
-                raise Exception("Node " + node + " cannot be added to multiple states")
+        self.__state = state
 
-        # aggregate into larger state of cross-products
-        # len(self.__states) * len(newState)
-        nodes = self.__state.nodes()
-        nodes.extend(state.nodes())
-        stateObj = State.State(nodes)
-        for oldState in self.__state.states:
-            for newState in state.states:
-                stateObj.addState(oldState * 2**(len(state.states)) + newState)
-        
-        self.__state = stateObj
+    #def annotateState(self, state):
+    #    "Annotate a group of inputs with a set of defined states"
+    #    # do some checking of the inputs to make sure legal
+    #    for node in state.nodes():
+    #        if node not in self.__dag.inputs:
+    #            raise Exception("Node " + node + " is not an input!")
+    #        #if node in self.__state.nodes():
+    #        #    raise Exception("Node " + node + " cannot be added to multiple states")
+    #    self.__state = State.merge(self.__state, state)
+
+        ## aggregate into larger state of cross-products
+        ## len(self.__states) * len(newState)
+        #nodes = self.__state.nodes()
+        #nodes.extend(state.nodes())
+        #stateObj = State.State(nodes)
+        #for oldState in self.__state.states:
+        #    for newState in state.states:
+        #        stateObj.addState(oldState * 2**(len(state.states)) + newState)
+        #
+        #self.__state = stateObj
 
 
 #    def propStates(self, fileName, flops=[]):
@@ -316,29 +326,29 @@ class StateProp:
     #
     #    f.close()
 
-    def sweepSAT(self, flops):
-        states = set()
-        for i in range(0, 2**len(flops)):
-            if self.runSAT(i, flops):
-                states.add(i)
-
-        return states
-
-
-    def runSAT(self, state, flops):
-
-        fname = "/tmp/SAT."+str(state)+".logic"
-        self.toLogicFile(fname, state, flops)
-        l2cnf = "/home/kkelley/Downloads/logic2cnf-0.7.2/logic2cnf"
-        sat   = "/home/kkelley/Downloads/minisat/core/minisat_static"
-        p1 = subprocess.Popen([l2cnf, "-c", fname], stdout=subprocess.PIPE)
-        p2 = subprocess.Popen([sat], 
-                              stdin=p1.stdout, 
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
-        out = string.split(p2.communicate()[0], "\n")
-        result = out[len(out)-2]
-        return result != "UNSATISFIABLE"
+    #def sweepSAT(self, flops):
+    #    states = set()
+    #    for i in range(0, 2**len(flops)):
+    #        if self.runSAT(i, flops):
+    #            states.add(i)
+    #
+    #    return states
+    #
+    #
+    #def runSAT(self, state, flops):
+    #
+    #    fname = "/tmp/SAT."+str(state)+".logic"
+    #    self.toLogicFile(fname, state, flops)
+    #    l2cnf = "/home/kkelley/Downloads/logic2cnf-0.7.2/logic2cnf"
+    #    sat   = "/home/kkelley/Downloads/minisat/core/minisat_static"
+    #    p1 = subprocess.Popen([l2cnf, "-c", fname], stdout=subprocess.PIPE)
+    #    p2 = subprocess.Popen([sat], 
+    #                          stdin=p1.stdout, 
+    #                          stdout=subprocess.PIPE,
+    #                          stderr=subprocess.PIPE)
+    #    out = string.split(p2.communicate()[0], "\n")
+    #    result = out[len(out)-2]
+    #    return result != "UNSATISFIABLE"
         
     #def toLogicFile(self, fileName, state, flops = []):
     #    f = open(fileName, 'w')
@@ -535,3 +545,4 @@ class StateProp:
     sim   = property(lambda self: self.__sim)
     dag   = property(lambda self: self.__dag)
     state = property(lambda self: self.__state)
+    reset = property(lambda self: self.__reset)

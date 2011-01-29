@@ -4,6 +4,7 @@ from multiprocessing import Pool
 import sys
 import time
 
+
 SATexe = "/home/kkelley/Downloads/minisat/core/minisat_static"
 
 def runAll(logic, processes=4):
@@ -28,12 +29,19 @@ def runAll(logic, processes=4):
         results = map(run, cnfs)
     dur = time.time() - start
     print "SAT runs took " + str(dur) + " seconds"
-    return results
-
+    
+    # convert binary array to set
+    outSet = set()
+    for idx in range(len(results)):
+        if results[idx]:
+            outSet.add(idx)
+    return outSet
 
 def SymbolicLogic_cnf(ar, **kwar):
     cls = ar[0]
-    return cls.cnf(ar[1])
+    cnf = cls.cnf(ar[1])
+    #print "CNF created for " + str(ar[1])
+    return cnf
 
     
 def run(cnf):

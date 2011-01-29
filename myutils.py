@@ -1,3 +1,6 @@
+def bool2int(boolvec):
+    return int(str(reduce(lambda x,y:str(x)+str(y), map(int,boolvec))),2)
+
 def cleanget(dictionary, key):
     val = dict()
     if key in dictionary:
@@ -5,11 +8,14 @@ def cleanget(dictionary, key):
     return val
 
 
-def invert(dictionary):
+def invert(dictionary, unique=False):
     inv = dict()
     for k,v in dictionary.iteritems():
-        inv[v] = inv.get(v, [])
-        inv[v].append(k)
+        if unique:
+            inv[v] = k
+        else:
+            inv[v] = inv.get(v, [])
+            inv[v].append(k)
     return inv
 
         
