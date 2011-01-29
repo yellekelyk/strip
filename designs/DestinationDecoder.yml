@@ -1,0 +1,391 @@
+DestinationDecoder: 
+  clocks: 
+    clk: 1
+  inputs: 
+    flitData: 72
+    valid_in: 1
+    reset: 1
+    grantValid: 1
+    flitType: 3
+    grant: 8
+  outputs: 
+    newFlit: 1
+    flitDestMask: 8
+    pktDest: 8
+  cells: 
+    U182: ND3D1
+    U236: CKND2D1
+    U311: INR2D1
+    U268: AOI22D1
+    U259: OAI21D1
+    U186: INVD1
+    pktDecoder_pktDestFlop_q_reg_6_: DFKCNQD1
+    pktDecoder_pktDestFlop_q_reg_5_: DFKCNQD1
+    U184: ND2D1
+    U280: AN2D1
+    U188: INR2D1
+    U296: AOI21D1
+    U158: ND2D1
+    U205: OAI211D1
+    U264: OAI21D1
+    U226: NR2D1
+    U252: OAI21D1
+    U179: ND2D1
+    pktDecoder_pktDestFlop_q_reg_4_: DFKCNQD1
+    U209: NR2D1
+    U167: ND2D1
+    U297: OAI221D1
+    U224: INVD1
+    U243: MAOI22D1
+    U157: ND2D1
+    U309: AOI22D1
+    U235: CKND2D1
+    U249: INVD1
+    pktDecoder_pktDestFlop_q_reg_7_: DFKCNQD1
+    U161: NR2D1
+    U174: INVD1
+    state_reg_0_: DFKCNQD1
+    U254: AOI22D1
+    U180: ND2D1
+    U203: AOI21D1
+    U233: AN2XD1
+    U217: IOA21D1
+    U256: INVD1
+    U241: CKND2D1
+    U276: INVD1
+    U250: OAI21D1
+    U172: MAOI22D1
+    U294: OAI211D1
+    U286: OAI211D1
+    pktDecoder_pktDestFlop_q_reg_1_: DFKCNQD1
+    pktDecoder_pktDestFlop_q_reg_0_: DFKCNQD1
+    U269: AOI21D1
+    U201: IOA21D1
+    U154: INVD1
+    U202: INVD1
+    U275: OAI31D1
+    U204: NR2D1
+    U156: INVD1
+    U176: INVD1
+    U222: AN3D1
+    U159: NR2D1
+    U165: OR3D1
+    U220: IND3D1
+    U260: INVD1
+    U212: AOI211D1
+    U273: OAI21D1
+    flitDestFlop_q_reg_1_: DFKCNQD1
+    U173: MAOI22D1
+    U265: OAI21D1
+    U253: INVD1
+    flitDestFlop_q_reg_6_: DFKCNQD1
+    U306: INVD1
+    U277: INVD1
+    U210: AOI22D1
+    flitDestFlop_q_reg_0_: DFKCNQD1
+    U287: NR2D1
+    U290: ND3D1
+    U198: OAI211D1
+    U238: CKND2D1
+    U301: INVD1
+    U284: INVD1
+    U307: ND4D1
+    U196: AOI21D1
+    U171: OA21D1
+    U262: AOI21D1
+    U191: AOI31D1
+    U298: INVD1
+    U292: NR2D1
+    U248: ND2D1
+    U229: AOI21D1
+    U194: OAI21D1
+    U162: NR2D1
+    U207: AOI21D1
+    U279: INVD1
+    U282: AOI21D1
+    U230: IOA21D1
+    U271: OAI22D1
+    U219: AOI21D1
+    U200: AOI21D1
+    U168: INVD1
+    U304: OAI21D1
+    U227: OAI211D1
+    U255: OAI31D1
+    U263: OAI22D1
+    U242: AN2XD1
+    U234: AN2XD1
+    U185: ND2D1
+    U223: INVD1
+    U183: ND2D1
+    U291: OAI21D1
+    U178: ND2D1
+    U261: AOI21D1
+    U189: AOI211D1
+    U166: ND2D1
+    U258: INVD1
+    U293: AOI222D1
+    U195: INVD1
+    U283: AOI21D1
+    U216: AOI21D1
+    U232: AN2XD1
+    U244: MAOI22D1
+    U267: OAI31D1
+    flitDestFlop_q_reg_3_: DFKCNQD1
+    U285: ND3D1
+    U237: CKND2D1
+    U160: INVD1
+    U308: ND4D1
+    U213: NR2D1
+    flitDestFlop_q_reg_2_: DFKCNQD1
+    U246: OR2XD1
+    U193: AOI22D1
+    U175: INVD1
+    U181: ND2D1
+    U225: AOI21D1
+    flitDestFlop_q_reg_5_: DFKCNQD1
+    U218: INVD1
+    U221: INVD1
+    U214: OAI211D1
+    U295: AOI21D1
+    U289: OAI22D1
+    U206: AOI21D1
+    U257: OAI21D1
+    U278: AOI31D1
+    flitDestFlop_q_reg_4_: DFKCNQD1
+    U208: IOA21D1
+    U170: INVD1
+    U245: ND2D1
+    U240: CKND2D1
+    U302: AOI211D1
+    U272: IOA21D1
+    U305: INVD1
+    U164: NR2D1
+    U155: INVD1
+    U281: INVD1
+    flitDestFlop_q_reg_7_: DFKCNQD1
+    U288: AOI21D1
+    U299: AOI21D1
+    U211: OAI22D1
+    U190: INVD1
+    U197: NR2D1
+    U270: AOI21D1
+    U310: AOI22D1
+    U247: ND2D1
+    U303: AOI21D1
+    U266: AOI22D1
+    U274: INVD1
+    U199: AOI21D1
+    pktDecoder_pktDestFlop_q_reg_3_: DFKCNQD1
+    U228: AOI21D1
+    U239: CKND2D1
+    U251: INVD1
+    U300: OAI21D1
+    U312: AOI21D1
+    U169: NR2D1
+    U231: OR4D1
+    pktDecoder_pktDestFlop_q_reg_2_: DFKCNQD1
+    U177: INVD1
+    U192: AOI21D1
+    U163: INVD1
+    U215: AOI21D1
+    U187: AOI211D1
+  connections: 
+    flitData[68]: U159.A1 U165.A1 U183.A1 U184.A1 U209.A1 U221.I U278.B
+    n2: U191.ZN pktDecoder_pktDestFlop_q_reg_0_.CN pktDecoder_pktDestFlop_q_reg_1_.CN pktDecoder_pktDestFlop_q_reg_2_.CN pktDecoder_pktDestFlop_q_reg_3_.CN pktDecoder_pktDestFlop_q_reg_4_.CN pktDecoder_pktDestFlop_q_reg_5_.CN pktDecoder_pktDestFlop_q_reg_6_.CN pktDecoder_pktDestFlop_q_reg_7_.CN
+    valid_in: U167.A2 U170.I U198.C U205.C U214.C U227.C U297.A1
+    n123: U203.ZN U231.A2 flitDestFlop_q_reg_4_.D
+    flitDestReg[3]: U244.B2 U263.A1 U267.A1 flitDestFlop_q_reg_3_.Q
+    n172: U266.ZN U267.B
+    n133: U199.ZN U200.B
+    n188: U164.ZN U255.A2 U279.I
+    n178: U272.ZN U273.B
+    n120: U219.ZN U231.A4 flitDestFlop_q_reg_7_.D
+    grant[4]: U203.A2
+    flitType[1]: U191.A3
+    flitDestReg[0]: U176.I U241.A1 U261.A1 flitDestFlop_q_reg_0_.Q
+    pktDest[6]: U217.ZN U251.I pktDecoder_pktDestFlop_q_reg_6_.D
+    n213: U173.B1 U274.ZN U294.A1
+    n220: U275.ZN U297.A2
+    n239: U256.ZN U257.A2 U308.A3
+    pktDecoder_pktDestReg[5]: U208.A2 pktDecoder_pktDestFlop_q_reg_5_.Q
+    n136: U204.ZN U206.A2 U207.A1
+    state_0_: U163.I U237.A2 U238.A2 U239.A2 U240.A2 U250.A1 U252.A1 U257.A1 U259.A1 U268.B1 U309.A1 U310.A1 state_reg_0_.Q
+    n149: U222.A1 U223.ZN
+    n208: U288.ZN U291.A1 U292.A1
+    n231: U287.ZN U293.A1 U293.B1 U302.B
+    n162: U158.A2 U174.ZN U245.A2
+    pktDest[7]: U230.ZN U249.I pktDecoder_pktDestFlop_q_reg_7_.D
+    n254: U210.A2 U242.Z U262.A1 U270.A1 U280.A2 U311.B1
+    n184: U165.Z U188.B1 U212.A1 U253.I
+    pktDecoder_pktDestReg[4]: U201.A2 pktDecoder_pktDestFlop_q_reg_4_.Q
+    n146: U216.ZN U217.B
+    n1: U190.ZN flitDestFlop_q_reg_0_.CN flitDestFlop_q_reg_1_.CN flitDestFlop_q_reg_2_.CN flitDestFlop_q_reg_3_.CN flitDestFlop_q_reg_4_.CN flitDestFlop_q_reg_5_.CN flitDestFlop_q_reg_6_.CN flitDestFlop_q_reg_7_.CN state_reg_0_.CN
+    n128: U192.ZN U193.B2
+    n160: U254.ZN U255.B
+    n245: U187.A2 U297.ZN
+    n226: U172.A1 U189.A2 U211.B1 U276.ZN
+    n210: U291.ZN U293.A2 U293.C1
+    n150: U224.ZN U225.B
+    flitDestReg[1]: U177.I U261.B U265.A1 flitDestFlop_q_reg_1_.Q
+    n142: U211.ZN U212.A2
+    n176: U271.ZN U272.B
+    flitDestMask[5]: U195.I U257.ZN
+    n180: U173.A1 U248.ZN U270.A2
+    n243: U162.A1 U307.ZN
+    n141: U210.ZN U211.B2
+    n153: U228.ZN U229.B
+    flitData[64]: U165.A2 U168.I U181.A1 U197.A1 U213.A1 U220.B2
+    n124: U232.Z flitDestFlop_q_reg_3_.D
+    flitData[60]: U174.I U182.A2 U185.A2 U222.A3
+    n216: U295.ZN U296.B
+    n246: U187.A1 U268.ZN
+    pktDecoder_pktDestReg[1]: U269.B U272.A2 U273.A1 U303.A1 pktDecoder_pktDestFlop_q_reg_1_.Q
+    n223: U192.A1 U284.ZN U285.A1
+    n157: U184.ZN U213.A2 U226.A2
+    n196: U285.ZN U286.C
+    grant[0]: U156.I U180.A1 U268.A1 U288.B
+    n155: U169.A1 U246.Z
+    n197: U283.ZN U286.B
+    n249: U305.ZN U307.A3 U310.B1
+    flitDestReg[5]: U239.A1 flitDestFlop_q_reg_5_.Q
+    n251: U243.A1 U301.ZN U307.A2
+    flitData[63]: U160.I U185.A1 U245.A1
+    n202: U171.B U236.ZN U282.A2
+    n143: U213.ZN U215.A2 U216.A1
+    n190: U158.A1 U160.ZN U182.A3 U222.A2
+    n131: U197.ZN U199.A2 U200.A1
+    flitDestMask[0]: U234.A1 U309.ZN
+    n240: U258.ZN U259.A2 U308.A2
+    flitDestReg[4]: U240.A1 flitDestFlop_q_reg_4_.Q
+    n244: U187.C U231.Z
+    n151: U226.ZN U228.A2 U229.A1
+    pktDest[5]: U208.ZN U256.I pktDecoder_pktDestFlop_q_reg_5_.D
+    n205: U290.ZN U291.B
+    n191: U157.A2 U210.B1 U236.A1 U260.ZN
+    n234: U169.A2 U170.ZN U193.A1 U201.A1 U208.A1 U217.A1 U230.A1 U254.B2 U297.B1 U299.A2 U303.A2
+    n206: U171.Z U291.A2
+    n145: U215.ZN U216.B
+    n177: U155.ZN U161.A2 U272.A1
+    n126: U311.ZN flitDestFlop_q_reg_1_.D
+    n147: U218.ZN U219.B
+    n232: U235.A2 U281.ZN U302.A2
+    pktDecoder_pktDestReg[7]: U230.A2 pktDecoder_pktDestFlop_q_reg_7_.Q
+    n122: U196.ZN U231.A3 flitDestFlop_q_reg_5_.D
+    n256: U178.ZN U232.A2 U260.I U263.B2 U271.B2 U289.A1
+    flitData[69]: U188.A1 U189.A1 U192.A2 U199.A1 U206.A1 U215.A1 U228.A1 U288.A2 U290.A1 U295.A1 U302.A1
+    nextState_0_: U312.ZN state_reg_0_.D
+    n159: U238.ZN U252.B
+    n173: U262.ZN U267.A3
+    n228: U299.ZN U300.B
+    n139: U207.ZN U208.B
+    n129: U193.ZN U194.B
+    n193: U282.ZN U283.B
+    n130: U195.ZN U196.B
+    n127: U234.Z flitDestFlop_q_reg_0_.D
+    grantValid: U178.A1 U179.A2 U180.A2 U196.A1 U203.A1 U219.A1 U225.A1 U242.A1
+    newFlit: U187.ZN U191.A1 U312.B
+    n219: U296.ZN U297.B2
+    n137: U205.ZN U206.B
+    n179: U173.A2 U273.ZN
+    n227: U189.ZN U299.B
+    pktDecoder_pktDestReg[3]: U193.A2 U271.A1 U275.A1 pktDecoder_pktDestFlop_q_reg_3_.Q
+    pktDecoder_pktDestReg[6]: U217.A2 pktDecoder_pktDestFlop_q_reg_6_.Q
+    n238: U249.ZN U250.A2 U308.A4
+    n161: U188.ZN U255.A1
+    n201: U253.ZN U254.A1 U283.A1 U288.A1
+    n169: U264.ZN U265.B
+    n237: U210.B2 U220.ZN U281.I U304.A1
+    grant[3]: U178.A2
+    n189: U156.ZN U241.A2 U247.A1 U248.A2
+    flitData[59]: U164.A1 U182.A1 U186.I U198.A1 U214.A1 U223.I
+    grant[5]: U196.A2
+    n171: U241.ZN U262.A2 U266.B1
+    flitData[65]: U165.A3 U175.I U184.A2 U220.A1
+    n134: U200.ZN U201.B
+    n242: U162.A2 U308.ZN
+    n221: U154.I U169.ZN U200.A2 U207.A2 U216.A2 U229.A2 U254.A2
+    n230: U167.ZN U189.C U192.B U255.A3 U302.C
+    n175: U269.ZN U270.B
+    n212: U247.A2 U279.ZN U294.A2
+    grant[6]: U225.A2
+    n140: U209.ZN U211.A2
+    n167: U261.ZN U262.B
+    pktDest[3]: U194.ZN U298.I pktDecoder_pktDestFlop_q_reg_3_.D
+    n166: U240.ZN U259.B
+    flitDestMask[1]: U310.ZN U311.A1
+    flitDestMask[2]: U233.A1 U243.ZN
+    n135: U202.ZN U203.B
+    n154: U229.ZN U230.B
+    n258: U162.ZN U187.B U312.A1
+    n164: U183.ZN U197.A2 U204.A2
+    grant[2]: U157.A1 U179.A1
+    flitDestMask[7]: U218.I U250.ZN
+    n132: U198.ZN U199.B
+    n222: U171.A2 U182.ZN U193.B1 U286.A2
+    n185: U159.A2 U175.ZN U183.A2 U278.A3
+    n203: U235.A1 U247.ZN U280.A1 U290.A3
+    flitDestReg[2]: U243.B2 U263.B1 U267.A2 flitDestFlop_q_reg_2_.Q
+    n152: U227.ZN U228.B
+    clk: flitDestFlop_q_reg_0_.CP flitDestFlop_q_reg_1_.CP flitDestFlop_q_reg_2_.CP flitDestFlop_q_reg_3_.CP flitDestFlop_q_reg_4_.CP flitDestFlop_q_reg_5_.CP flitDestFlop_q_reg_6_.CP flitDestFlop_q_reg_7_.CP pktDecoder_pktDestFlop_q_reg_0_.CP pktDecoder_pktDestFlop_q_reg_1_.CP pktDecoder_pktDestFlop_q_reg_2_.CP pktDecoder_pktDestFlop_q_reg_3_.CP pktDecoder_pktDestFlop_q_reg_4_.CP pktDecoder_pktDestFlop_q_reg_5_.CP pktDecoder_pktDestFlop_q_reg_6_.CP pktDecoder_pktDestFlop_q_reg_7_.CP state_reg_0_.CP
+    n247: U306.ZN U307.A4 U309.B1
+    n170: U265.ZN U266.B2
+    flitData[71]: U167.A1 U212.B U246.A1 U294.B
+    n199: U158.ZN U164.A2 U287.A2
+    n214: U294.ZN U295.B
+    n187: U277.ZN U278.A1
+    n181: U173.ZN U275.B
+    n211: U293.ZN U294.C
+    grant[7]: U219.A2
+    n253: U180.ZN U234.A2 U261.A2 U269.A2 U277.I
+    n207: U157.ZN U161.A1 U265.A2 U273.A2 U282.A1 U292.A2
+    n217: U278.ZN U296.A2
+    n168: U263.ZN U264.B
+    n209: U292.ZN U293.B2
+    n195: U172.A2 U280.Z U285.A3
+    n163: U239.ZN U257.B
+    n198: U172.ZN U286.A1
+    n183: U159.ZN U166.A1 U181.A2
+    flitData[70]: U198.B U205.B U212.C U214.B U227.B U246.A2
+    flitDestMask[6]: U224.I U252.ZN
+    n215: U286.ZN U295.A2
+    n182: U270.ZN U275.A3
+    flitDestReg[6]: U238.A1 flitDestFlop_q_reg_6_.Q
+    n218: U212.ZN U296.A1
+    n257: U163.ZN U243.A2 U243.B1 U244.A2 U244.B1 U297.C U309.B2 U310.B2 U312.A2
+    flitDestReg[7]: U237.A1 flitDestFlop_q_reg_7_.Q
+    n165: U198.A2 U205.A2 U245.ZN
+    n158: U185.ZN U214.A2 U227.A2
+    n252: U244.A1 U298.ZN U307.A1
+    flitDestMask[3]: U232.A1 U244.ZN
+    n121: U225.ZN U231.A1 flitDestFlop_q_reg_6_.D
+    n144: U214.ZN U215.B
+    pktDecoder_pktDestReg[2]: U271.B1 U275.A2 U299.A1 pktDecoder_pktDestFlop_q_reg_2_.Q
+    n229: U166.ZN U276.I U289.A2 U300.A1
+    pktDest[1]: U304.ZN U305.I pktDecoder_pktDestFlop_q_reg_1_.D
+    n138: U206.ZN U207.B
+    n192: U172.B2 U235.ZN U282.B
+    n194: U161.ZN U266.A1 U268.A2 U274.I U283.A2
+    n148: U220.B1 U221.ZN
+    n186: U166.A2 U168.ZN U204.A1 U209.A2 U226.A1 U278.A2
+    n248: U176.ZN U266.A2 U309.A2
+    reset: U190.I U191.B
+    pktDest[4]: U201.ZN U258.I pktDecoder_pktDestFlop_q_reg_4_.D
+    n125: U233.Z flitDestFlop_q_reg_2_.D
+    n235: U303.ZN U304.B
+    n204: U289.ZN U290.A2
+    pktDest[2]: U300.ZN U301.I pktDecoder_pktDestFlop_q_reg_2_.D
+    n224: U181.ZN U194.A1 U210.A1 U284.I U289.B2
+    n250: U177.ZN U264.A2 U310.A2
+    flitType[2]: U191.A2
+    n233: U302.ZN U303.B
+    n156: U237.ZN U250.B
+    n174: U267.ZN U268.B2
+    n225: U189.B U222.Z U236.A2 U285.A2
+    n241: U251.ZN U252.A2 U308.A1
+    grant[1]: U155.I U242.A2 U264.A1 U293.C2
+    n255: U171.A1 U172.B1 U179.ZN U211.A1 U233.A2 U263.A2 U271.A2 U289.B1
+    n236: U154.ZN U194.A2 U300.A2 U304.A2
+    pktDecoder_pktDestReg[0]: U173.B2 U248.A1 U254.B1 U269.A1 pktDecoder_pktDestFlop_q_reg_0_.Q
+    n200: U186.ZN U205.A1 U227.A1 U287.A1
+    pktDest[0]: U255.ZN U306.I pktDecoder_pktDestFlop_q_reg_0_.D
+    flitDestMask[4]: U202.I U259.ZN

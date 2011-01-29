@@ -1,0 +1,40 @@
+test7:
+  clocks:
+    clk: 1
+
+  inputs:
+    in: 1
+    reset: 1
+
+  outputs:
+    out: 4
+
+  cells:
+    tmp_d_reg_0_: DFQD1
+    tmp_d_reg_1_: DFQD1
+    tmp_d_reg_2_: DFQD1
+    tmp_d_reg_3_: DFQD1
+    I1: INVD1
+    I2: INVD1
+    O1: OR3D1
+    A1: AN2D1
+    A2: AN3D1
+    A3: AN2D1
+    A4: AN2D1
+
+  connections:
+    n1: I1.ZN A1.A1
+    n2: A1.Z O1.A2
+    n3: I2.ZN A2.A3 A3.A2 A4.A2
+    n4: O1.Z tmp_d_reg_0_.D
+    n5: A2.Z tmp_d_reg_1_.D
+    n6: A3.Z tmp_d_reg_2_.D
+    n7: A4.Z tmp_d_reg_3_.D
+    clk: tmp_d_reg_0_.CP tmp_d_reg_1_.CP tmp_d_reg_2_.CP tmp_d_reg_3_.CP
+    in: I1.I A2.A2
+    reset: I2.I O1.A1
+    out[0]: tmp_d_reg_0_.Q A1.A2 A2.A1
+    out[1]: tmp_d_reg_1_.Q A3.A1
+    out[2]: tmp_d_reg_2_.Q A4.A1
+    out[3]: tmp_d_reg_3_.Q O1.A3
+

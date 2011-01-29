@@ -1,0 +1,25 @@
+test4:
+  clocks:
+    clk: 1
+
+  inputs:
+    reset: 1
+    in: 1
+
+  outputs:
+    out: 2
+
+  cells:
+    tmp_d_reg_0_: DFQD1
+    tmp_d_reg_1_: DFKCNQD1
+    U5: NR2D1
+    U6: INVD1
+
+  connections:
+    n1: U6.ZN tmp_d_reg_1_.CN
+    n2: U5.ZN tmp_d_reg_0_.D
+    clk: tmp_d_reg_0_.CP tmp_d_reg_1_.CP
+    reset: U5.A1 U6.I
+    in: U5.A2 tmp_d_reg_1_.D
+    out[0]: tmp_d_reg_0_.Q
+    out[1]: tmp_d_reg_1_.Q 

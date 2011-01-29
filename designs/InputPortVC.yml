@@ -1,0 +1,1656 @@
+InputPortVC: 
+  clocks: 
+    clk: 1
+  inputs: 
+    flitTypeIn: 3
+    grantVC: 1
+    reset: 1
+    grantValid: 1
+    enqueue: 1
+    flitDataIn: 72
+    grant: 8
+  outputs: 
+    request: 8
+    multiFlit: 8
+    requestNew: 8
+    multiCast: 1
+    requestMask: 8
+    dequeue: 1
+    flitDataOut: 72
+    flitTypeOut: 3
+    requestValid: 1
+    empty: 1
+  cells: 
+    U958: IND2D1
+    U877: INR2D1
+    U789: ND2D1
+    U809: AN2D1
+    U1000: AOI21D1
+    U615: AN2D1
+    U905: INR2D1
+    U635: INVD1
+    U1032: IND3D1
+    U988: ND2D1
+    U951: NR2D1
+    U537: ND2D1
+    U801: ND2D1
+    U418: ND2D1
+    U800: ND2D1
+    U470: ND3D1
+    U1027: INR2D1
+    U671: OAI21D1
+    U516: CKND2D1
+    U582: ND2D1
+    U713: AN2XD1
+    U978: NR2D1
+    U843: ND2D1
+    U944: INVD1
+    U403: AOI21D1
+    U1017: INR2D1
+    U553: BUFFD1
+    U646: IIND4D1
+    U492: OAI211D1
+    q_entry_reg_0__14_: EDFQD1
+    U996: OAI21D1
+    U569: INVD1
+    U793: NR2XD1
+    U654: INVD1
+    U592: ND2D1
+    q_entry_reg_0__4_: EDFQD1
+    U725: INVD1
+    U610: NR2XD1
+    U881: INR2D1
+    U469: ND3D1
+    U762: OAI21D1
+    U675: NR2D1
+    U393: NR2D1
+    U845: IOA21D1
+    U416: CKNXD1
+    U794: INVD1
+    q_entry_reg_0__52_: EDFQD1
+    U428: NR2D1
+    U977: ND2D1
+    U941: ND3D1
+    q_entry_reg_0__53_: EDFQD1
+    U586: IAO22D1
+    U937: NR2D1
+    q_entry_reg_0__62_: EDFQD1
+    q_entry_reg_0__45_: EDFQD1
+    U690: ND2D1
+    U570: OAI211D1
+    U764: BUFFD1
+    q_entry_reg_0__65_: EDFQD1
+    U548: AN2D1
+    U927: INVD1
+    U911: NR2D1
+    U452: ND2D1
+    U861: INR2D1
+    U774: NR2XD1
+    U717: AN2XD1
+    U370: CKND2D1
+    fsm_state_reg_0_: DFKCNQD1
+    U621: OA211D1
+    U499: BUFFD1
+    U384: CKND2D1
+    U666: INVD1
+    U959: ND2D1
+    U620: BUFFD1
+    U502: IND2D1
+    U577: INVD1
+    U724: CKND2D1
+    U837: INVD1
+    U818: INVD1
+    U366: ND2D1
+    U888: INR2D1
+    U858: INR2D1
+    U453: NR2XD1
+    U887: INR2D1
+    q_entry_reg_0__19_: EDFQD1
+    U681: ND3D1
+    U404: ND2D1
+    U712: AN2XD1
+    U555: ND2D1
+    U906: INR2D1
+    U982: NR2D1
+    U755: BUFFD1
+    q_entry_reg_0__33_: EDFQD1
+    destDecode_pktDecoder_pktDestFlop_q_reg_4_: DFKCNQD1
+    U660: IAO21D1
+    destDecode_flitDestFlop_q_reg_0_: DFKCNQD1
+    U493: ND2D1
+    U952: NR2D1
+    U820: IND2D1
+    U711: MUX2D1
+    U702: NR2D1
+    U552: INVD1
+    U458: INVD1
+    U766: ND2D1
+    U1001: ND3D1
+    U530: INVD1
+    U564: ND3D1
+    U521: AOI21D1
+    U880: INR2D1
+    U876: INR2D1
+    U802: BUFFD1
+    U670: ND4D1
+    U415: INVD1
+    U1024: INR2D1
+    U632: NR2D1
+    U602: BUFFD1
+    U1031: ND3D1
+    U609: NR2XD1
+    U939: ND2D1
+    U792: ND2D1
+    U676: AN2D1
+    U371: ND2D1
+    U543: NR2D1
+    U529: INVD1
+    U886: INR2D1
+    U653: IND2D1
+    U486: INVD1
+    U695: ND3D1
+    U687: ND2D1
+    U776: AN2D1
+    U417: NR2XD1
+    U970: NR2D1
+    U844: NR2XD1
+    U579: ND2D1
+    U1033: OAI21D1
+    U947: NR2D1
+    U598: INVD1
+    U540: ND2D1
+    destDecode_pktDecoder_pktDestFlop_q_reg_0_: DFKCNQD1
+    U491: ND2D1
+    U926: ND4D1
+    U468: ND3D1
+    U859: INR2D1
+    U629: ND2D1
+    U383: ND2D1
+    U526: BUFFD1
+    U433: INVD1
+    U965: INVD1
+    U479: ND3D1
+    U838: INVD1
+    U460: AN2XD1
+    U932: ND2D1
+    U425: NR2XD1
+    U515: INVD1
+    q_entry_reg_0__35_: EDFQD1
+    U622: OR2XD1
+    U767: ND2D1
+    U773: IND2D1
+    U567: INVD1
+    U365: BUFFD1
+    U808: ND2D1
+    U942: INVD1
+    U915: MUX2D1
+    U893: INR2D1
+    U451: IND2D1
+    q_entry_reg_0__18_: EDFQD1
+    U1014: INR2D1
+    U860: INR2D1
+    U936: INVD1
+    U669: AOI21D1
+    q_entry_reg_0__50_: EDFQD1
+    U976: OAI21D1
+    U379: ND3D1
+    U817: IOA21D1
+    U427: NR2D1
+    U571: OAI21D1
+    U420: ND2D1
+    U448: AOI31D1
+    U924: ND2D1
+    U445: INVD1
+    U691: INVD1
+    q_entry_reg_0__38_: EDFQD1
+    destDecode_pktDecoder_pktDestFlop_q_reg_6_: DFKCNQD1
+    U616: INVD1
+    U854: INR2D1
+    U934: ND2D1
+    U664: INVD1
+    U1025: INR2D1
+    U447: BUFFD1
+    U949: ND2D1
+    U869: INVD1
+    U652: CKND2D1
+    q_entry_reg_0__74_: EDFQD1
+    destDecode_pktDecoder_pktDestFlop_q_reg_5_: DFKCNQD1
+    U590: INVD1
+    U459: ND2D1
+    U707: INVD1
+    U856: INR2D1
+    U608: OAI211D1
+    U513: IND2D1
+    U1012: INR2D1
+    U501: NR2D1
+    U752: ND2D1
+    U1002: NR2D1
+    U787: IND2D1
+    U946: NR2D1
+    U401: AN2D1
+    U913: NR2D1
+    U531: ND2D1
+    U1030: ND4D1
+    q_entry_reg_0__70_: EDFQD1
+    U719: OAI21D1
+    U907: NR2D1
+    U1019: INR2D1
+    U490: ND3D1
+    U550: NR2XD1
+    U885: INR2D1
+    U584: CKND2D1
+    U494: ND2D1
+    U828: ND3D1
+    U826: INVD1
+    U617: INVD1
+    U547: ND2D1
+    U957: ND2D1
+    U870: NR2D1
+    U619: BUFFD1
+    U528: ND2D1
+    U578: NR2D1
+    U1015: INR2D1
+    U374: INVD1
+    U701: NR2XD1
+    U833: AN2D1
+    U563: OAI21D1
+    U839: INVD1
+    U628: NR2D1
+    U688: OAI21D1
+    U559: INVD1
+    U903: INR2D1
+    U831: NR2D1
+    U791: AOI22D1
+    U692: ND2D1
+    U421: INVD1
+    U545: BUFFD1
+    q_entry_reg_0__37_: EDFQD1
+    U485: AN2D1
+    U472: INVD1
+    U422: NR2XD1
+    q_entry_reg_0__44_: EDFQD1
+    U634: INVD1
+    q_entry_reg_0__11_: EDFQD1
+    U822: ND2D1
+    U363: CKNXD1
+    U709: AN2XD1
+    U727: ND2D1
+    q_entry_reg_0__41_: EDFQD1
+    U816: CKNXD1
+    U434: ND3D1
+    U514: ND3D1
+    U985: AN3D1
+    U758: AOI21D1
+    U925: NR2D1
+    U832: ND2D1
+    U964: ND2D1
+    U659: OAI211D1
+    U411: NR2D1
+    U894: INR2D1
+    U993: INVD1
+    U730: ND2D1
+    U572: ND2D1
+    q_entry_reg_0__73_: EDFQD1
+    U760: INVD1
+    U643: ND4D1
+    U708: INVD1
+    U867: INVD1
+    U807: ND2D1
+    U746: NR2XD1
+    U391: ND2D1
+    U465: INVD1
+    U784: NR2XD1
+    U743: IND2D1
+    q_entry_reg_0__10_: EDFQD1
+    q_entry_reg_0__58_: EDFQD1
+    q_entry_reg_0__39_: EDFQD1
+    U972: ND2D1
+    U879: INR2D1
+    U796: ND3D1
+    U395: INVD1
+    U611: ND2D1
+    U399: IND2D1
+    U446: OAI211D1
+    U998: INVD1
+    q_entry_reg_0__25_: EDFQD1
+    U419: INVD1
+    U512: INVD1
+    U466: INVD1
+    U1003: AOI21D1
+    U1029: OAI21D1
+    U539: BUFFD1
+    q_entry_reg_0__63_: EDFQD1
+    U744: ND3D1
+    destDecode_flitDestFlop_q_reg_4_: DFKCNQD1
+    U672: INVD1
+    U450: ND2D1
+    q_entry_reg_0__64_: EDFQD1
+    U995: AOI21D1
+    U922: INVD1
+    U1004: NR2D1
+    q_entry_reg_0__56_: EDFQD1
+    U591: AOI21D1
+    U1013: INR2D1
+    U402: BUFFD1
+    U636: ND2D1
+    q_entry_reg_0__0_: EDFQD1
+    U745: NR2D1
+    U532: INVD1
+    U715: MUX2D1
+    U667: AOI21D1
+    U912: NR2D1
+    U674: INVD1
+    U878: INR2D1
+    U500: INVD1
+    U753: INVD1
+    U871: NR2D1
+    U857: INR2D1
+    U527: NR2XD1
+    U980: ND3D1
+    U788: OAI211D1
+    U480: OAI211D1
+    q_entry_reg_0__27_: EDFQD1
+    U368: ND2D1
+    U495: INVD1
+    U948: ND2D1
+    U651: OAI21D1
+    U1036: IAO21D1
+    q_entry_reg_0__57_: EDFQD1
+    U618: ND2D1
+    U467: ND4D1
+    q_capacity_reg_2_: DFKCNQD1
+    U600: ND2D1
+    q_entry_reg_0__43_: EDFQD1
+    U439: BUFFD1
+    U896: INR2D1
+    U612: INVD1
+    U963: IND2D1
+    U803: NR2D1
+    U769: ND2D1
+    U790: AN2D1
+    U477: ND2D1
+    U895: INR2D1
+    U471: ND2D1
+    U986: IND3D1
+    U524: INVD1
+    U488: AOI211XD1
+    U775: ND2D1
+    U940: ND2D1
+    U680: OAI21D1
+    U815: ND3D1
+    U868: INVD1
+    U597: INVD1
+    U714: MUX2D1
+    U562: INVD1
+    U785: OAI22D1
+    U761: IND2D1
+    U644: OAI21D1
+    U607: OAI211D1
+    U364: ND2D1
+    U866: INR2D1
+    U507: ND2D1
+    destDecode_flitDestFlop_q_reg_6_: DFKCNQD1
+    U633: ND2D1
+    U429: BUFFD1
+    U823: NR2D1
+    U1022: INR2D1
+    U814: CKNXD1
+    U431: NR2D1
+    q_entry_reg_0__12_: EDFQD1
+    U704: CKND2D1
+    U381: BUFFD1
+    U565: OAI21D1
+    U542: BUFFD1
+    U979: ND2D1
+    U587: CKND1
+    U829: NR2D1
+    U693: AN2D1
+    U971: ND2D1
+    U689: AOI21D1
+    U731: ND2D1
+    U549: IND2D1
+    q_entry_reg_0__67_: EDFQD1
+    U718: NR2XD1
+    U410: CKND2D1
+    U747: BUFFD1
+    U923: INVD1
+    destDecode_flitDestFlop_q_reg_3_: DFKCNQD1
+    U757: BUFFD1
+    q_entry_reg_0__24_: EDFQD1
+    q_entry_reg_0__20_: EDFQD1
+    U533: NR2D1
+    destDecode_flitDestFlop_q_reg_7_: DFKCNQD1
+    U1008: NR2D1
+    q_entry_reg_0__49_: EDFQD1
+    U750: IND2D1
+    U614: INVD1
+    U960: ND4D1
+    U573: IOA21D1
+    U440: AN3D1
+    U556: BUFFD1
+    destDecode_pktDecoder_pktDestFlop_q_reg_3_: DFKCNQD1
+    U1028: ND2D1
+    U606: NR2XD1
+    U392: NR2D1
+    U962: AOI211D1
+    U1035: AOI21D1
+    U511: INVD1
+    q_entry_reg_0__7_: EDFQD1
+    q_entry_reg_0__3_: EDFQD1
+    U367: CKNXD1
+    U729: ND2D1
+    U779: INVD1
+    U824: NR3D1
+    q_entry_reg_0__69_: EDFQD1
+    U1010: IOA21D1
+    U538: ND2D1
+    U685: ND2D1
+    U798: NR2XD1
+    U496: ND3D1
+    U663: INR2D1
+    U697: NR2D1
+    destDecode_pktDecoder_pktDestFlop_q_reg_1_: DFKCNQD1
+    U487: INVD1
+    U992: ND2D1
+    U388: INVD1
+    U637: ND2D1
+    U884: INR2D1
+    U849: NR2D1
+    U741: NR2D1
+    q_capacity_reg_1_: DFKCNQD1
+    U642: ND3D1
+    q_entry_reg_0__23_: EDFQD1
+    U696: INR2XD1
+    U873: INVD1
+    U481: OAI211D1
+    U771: INVD1
+    q_entry_reg_0__68_: EDFQD1
+    U853: INR2D1
+    U376: ND3D1
+    q_entry_reg_0__28_: EDFQD1
+    U522: OAI211D1
+    U984: AN3D1
+    q_entry_reg_0__30_: EDFQD1
+    q_entry_reg_0__22_: EDFQD1
+    U909: NR2D1
+    U683: INVD1
+    U956: INVD1
+    U373: CKND2D1
+    U901: INR2D1
+    U699: AN4D1
+    U604: AOI22D1
+    U768: BUFFD1
+    U813: AOI22D1
+    U432: IND2D1
+    U437: ND3D1
+    U626: INVD1
+    U865: INR2D1
+    U575: NR2XD1
+    U1005: ND2D1
+    U561: NR2XD1
+    U732: AN2XD1
+    q_entry_reg_0__71_: EDFQD1
+    U897: INR2D1
+    U409: INVD1
+    U819: NR2XD1
+    U596: ND2D1
+    U804: ND2D1
+    U382: INVD1
+    U397: ND3D1
+    U474: ND2D1
+    U931: NR2D1
+    U855: INR2D1
+    U780: ND3D1
+    U703: AN3XD1
+    U657: IAO21D1
+    U595: ND2D1
+    U475: ND2D1
+    U389: CKND2D1
+    U525: INVD1
+    U1006: AOI31D1
+    U679: ND3D1
+    U825: AOI21D1
+    q_entry_reg_0__46_: EDFQD1
+    U864: INR2D1
+    U763: ND2D1
+    U840: ND2D1
+    U728: INVD1
+    U463: INVD1
+    U566: NR2D1
+    U585: OAI21D1
+    q_entry_reg_0__40_: EDFQD1
+    U605: NR2D1
+    q_entry_reg_0__36_: EDFQD1
+    U665: AOI21D1
+    q_entry_reg_0__15_: EDFQD1
+    U534: INVD1
+    q_entry_reg_0__34_: EDFQD1
+    U1023: INR2D1
+    U929: ND2D1
+    U756: ND2D1
+    q_entry_reg_0__54_: EDFQD1
+    U560: NR2XD1
+    U449: ND2D1
+    U456: INVD1
+    U506: NR2D1
+    q_entry_reg_0__13_: EDFQD1
+    U852: INR2D1
+    destDecode_state_reg_0_: DFKCNQD1
+    U478: NR2XD1
+    U786: NR2XD1
+    U827: ND2D1
+    U375: NR2D1
+    U1009: INVD1
+    U1034: AN3D1
+    U812: ND2D1
+    U441: BUFFD1
+    U398: NR2XD1
+    U510: INVD1
+    q_entry_reg_0__32_: EDFQD1
+    U639: AN2D1
+    U935: NR2D1
+    U557: OAI21D1
+    q_entry_reg_0__17_: EDFQD1
+    q_entry_reg_0__72_: EDFQD1
+    U424: NR2XD1
+    U400: INVD1
+    U430: NR2XD1
+    U682: ND3D1
+    U848: ND2D1
+    U673: INVD1
+    U630: NR2D1
+    q_entry_reg_0__51_: EDFQD1
+    U482: NR2D1
+    U638: NR2D1
+    U627: NR2D1
+    U686: ND4D1
+    U641: MOAI22D1
+    U783: NR2XD1
+    U872: INVD1
+    U603: INVD1
+    U742: AOI21D1
+    destDecode_flitDestFlop_q_reg_2_: DFKCNQD1
+    U983: INVD1
+    destDecode_flitDestFlop_q_reg_5_: DFKCNQD1
+    U497: INVD1
+    U588: BUFFD1
+    U989: ND3D1
+    q_entry_reg_0__1_: EDFQD1
+    U733: NR2XD1
+    U991: IND3D1
+    U908: NR2D1
+    U830: INVD1
+    U390: NR2XD1
+    U902: INR2D1
+    U387: OAI21D1
+    U369: BUFFD1
+    U721: AOI211XD1
+    U973: ND2D1
+    fsm_state_reg_1_: DFKCNQD1
+    U920: ND2D1
+    U438: ND3D1
+    U544: AOI21D1
+    U759: INVD1
+    U914: NR2D1
+    U835: AOI21D1
+    U726: NR2D1
+    U997: NR2D1
+    U412: INVD1
+    U950: NR2D1
+    U898: INR2D1
+    U551: INVD1
+    U797: INVD1
+    U649: ND3D1
+    U751: ND2D1
+    U658: AOI21D1
+    q_entry_reg_0__55_: EDFQD1
+    U574: IND2D1
+    U698: INVD1
+    U558: AOI21D1
+    U372: IAO22D1
+    U969: ND2D1
+    U473: CKNXD1
+    U461: INVD1
+    U631: INVD1
+    U442: INR2XD1
+    U981: INVD1
+    U836: INVD1
+    U377: ND4D1
+    U739: NR2D1
+    U770: BUFFD1
+    U821: ND2D1
+    U1020: INR2D1
+    U754: ND2D1
+    U386: INVD1
+    U928: INVD1
+    U734: BUFFD1
+    U407: NR2D1
+    U722: ND2D1
+    U890: INR2D1
+    U943: INVD1
+    U810: ND4D1
+    U967: ND2D1
+    U1007: NR2D1
+    U464: NR2D1
+    U900: INR2D1
+    U777: ND2D1
+    U990: INVD1
+    q_entry_reg_0__47_: EDFQD1
+    U623: AN2D1
+    q_entry_reg_0__26_: EDFQD1
+    U405: ND2D1
+    U455: INVD1
+    U736: NR2D1
+    U476: INVD1
+    U535: NR2XD1
+    U811: INVD1
+    U994: AOI21D1
+    q_entry_reg_0__5_: EDFQD1
+    U841: IAO22D1
+    q_entry_reg_0__42_: EDFQD1
+    U655: AN3D1
+    U594: INVD1
+    U505: BUFFD1
+    U805: INVD1
+    U953: INVD1
+    q_entry_reg_0__59_: EDFQD1
+    U414: NR3D1
+    U863: INR2D1
+    U508: BUFFD1
+    U426: NR2XD1
+    U509: ND2D1
+    q_entry_reg_0__61_: EDFQD1
+    U580: INVD1
+    U520: ND4D1
+    U694: CKND2D1
+    U938: ND2D1
+    U772: INVD1
+    U954: NR2D1
+    q_entry_reg_0__2_: EDFQD1
+    U847: IND2D1
+    q_entry_reg_0__66_: EDFQD1
+    U406: INVD1
+    q_entry_reg_0__16_: EDFQD1
+    U961: ND2D1
+    U916: INVD1
+    U435: INVD1
+    U910: NR2D1
+    U899: INR2D1
+    U875: INR2D1
+    U918: INVD1
+    U850: INR2D1
+    U661: MAOI22D1
+    U921: INVD1
+    U648: AOI21D1
+    U554: ND2D1
+    U677: AOI31D1
+    U668: INVD1
+    destDecode_pktDecoder_pktDestFlop_q_reg_7_: DFKCNQD1
+    U1011: INR2D1
+    U444: IND2D1
+    U975: AOI21D1
+    U483: NR2D1
+    U933: INVD1
+    q_entry_reg_0__6_: EDFQD1
+    q_entry_reg_0__31_: EDFQD1
+    U883: INR2D1
+    U650: IND3D1
+    U568: CKNXD1
+    U484: OR2XD1
+    U536: IOA21D1
+    U987: INVD1
+    U891: INR2D1
+    q_entry_reg_0__60_: EDFQD1
+    U647: CKND2D1
+    U778: ND2D1
+    U546: CKAN2D1
+    U504: NR2XD1
+    U735: INVD1
+    U378: ND4D1
+    U394: INVD1
+    U968: ND3D1
+    U462: NR2D1
+    U640: ND3D1
+    U892: INR2D1
+    U624: INVD1
+    U720: ND2D1
+    destDecode_pktDecoder_pktDestFlop_q_reg_2_: DFKCNQD1
+    U519: ND3D1
+    U706: CKND2D1
+    U846: ND2D1
+    U834: ND2D1
+    U523: ND3D1
+    U1018: INR2D1
+    U738: ND2D1
+    U656: ND3D1
+    U583: OAI211D1
+    U589: AN2D1
+    q_entry_reg_0__8_: EDFQD1
+    U517: ND2D1
+    U1016: INR2D1
+    U593: BUFFD1
+    U874: MUX2D1
+    U882: INR2D1
+    U765: NR2XD1
+    U806: INVD1
+    q_entry_reg_0__21_: EDFQD1
+    U842: AN2D1
+    U748: AN2D1
+    U645: OAI211D1
+    U782: ND2D1
+    U684: NR2D1
+    U503: ND2D1
+    U1021: INR2D1
+    U781: INVD1
+    U904: INR2D1
+    U498: BUFFD1
+    U380: INR2D1
+    U723: NR2D1
+    U613: NR2XD1
+    U966: ND2D1
+    U700: OAI22D1
+    U1026: INR2D1
+    U541: IND2D1
+    U799: BUFFD1
+    U974: ND4D1
+    U851: INR2D1
+    U737: BUFFD1
+    U396: BUFFD1
+    U601: INVD1
+    q_entry_reg_0__29_: EDFQD1
+    U408: INVD1
+    U945: INVD1
+    U889: INR2D1
+    U955: ND3D1
+    U385: NR2D1
+    U930: NR2D1
+    U436: ND2D1
+    U795: NR2XD1
+    U576: INVD1
+    U599: NR2XD1
+    U716: INVD1
+    U413: ND2D1
+    U423: BUFFD1
+    U443: ND2D1
+    U518: ND2D1
+    U705: XNR2D1
+    U489: ND2D1
+    U625: NR2D1
+    U710: MUX2D1
+    q_capacity_reg_0_: DFKCNQD1
+    U917: INVD1
+    q_entry_reg_0__9_: EDFQD1
+    destDecode_flitDestFlop_q_reg_1_: DFKCNQD1
+    U678: ND2D1
+    U862: INR2D1
+    U919: INVD1
+    U457: ND2D1
+    U662: INR2D1
+    U581: ND2D1
+    fsm_state_reg_2_: DFKCNQD1
+    U749: NR2XD1
+    q_entry_reg_0__48_: EDFQD1
+    U999: AOI22D1
+    U454: ND3D1
+    U740: INVD1
+  connections: 
+    n408: U521.A2 U686.ZN
+    n677: U1032.B1 U632.ZN U647.A2 U655.A3 U703.A2 U984.A2 U985.A2 U986.B1 U991.B1
+    q_entry[48]: U858.A1 q_entry_reg_0__48_.Q
+    n2: U780.ZN q_capacity_reg_0_.D
+    q_entry[64]: U1007.A2 U511.I U606.A1 U804.A2 q_entry_reg_0__64_.Q
+    flitDataOut[30]: U864.ZN
+    n319: U545.Z U684.A2 U723.A1
+    n522: U433.ZN U639.A1 U656.A3 U672.I U955.A2 U966.A2 U989.A2
+    flitDataIn[65]: q_entry_reg_0__65_.D
+    n556: U843.A2 U959.ZN
+    n543: U411.A2 U431.A2 U673.ZN U804.A1
+    q_entry[35]: U865.A1 q_entry_reg_0__35_.Q
+    n354: U585.ZN destDecode_pktDecoder_pktDestFlop_q_reg_0_.CN destDecode_pktDecoder_pktDestFlop_q_reg_2_.CN destDecode_pktDecoder_pktDestFlop_q_reg_4_.CN destDecode_pktDecoder_pktDestFlop_q_reg_6_.CN
+    n676: U872.ZN U985.A3
+    n436: U610.A2 U758.ZN
+    destDecode_pktDecoder_pktDestReg[7]: U827.A2 destDecode_pktDecoder_pktDestFlop_q_reg_7_.Q
+    grant[4]: U469.A3 U696.A1 U732.A1 U798.A2 U800.A1 U811.I U949.A2 U968.A2
+    requestNew[1]: U703.Z
+    n570: U657.ZN U788.C
+    n714: U585.A2 U671.A2 U790.A1 U931.ZN
+    n461: U451.ZN U549.B1
+    flitDataIn[67]: q_entry_reg_0__67_.D
+    q_entry[65]: U539.I U673.I U819.A1 q_entry_reg_0__65_.Q
+    q_entry[22]: U857.A1 q_entry_reg_0__22_.Q
+    q_entry[14]: U850.A1 q_entry_reg_0__14_.Q
+    q_entry[50]: U1024.A1 q_entry_reg_0__50_.Q
+    flitDataOut[32]: U883.ZN
+    n473: U447.Z U679.A2
+    n532: U411.A1 U428.A1 U460.A2 U511.ZN U637.A2
+    destDecode_flitDestReg[3]: U510.I U538.A2 U714.I0 U950.A2 destDecode_flitDestFlop_q_reg_3_.Q
+    flitDataIn[4]: q_entry_reg_0__4_.D
+    n404: U522.B U685.ZN
+    n553: U409.I U436.ZN U678.A2 U681.A2
+    n333: U561.A1 U571.ZN
+    n287: U487.ZN U491.A1
+    q_entry[20]: U891.A1 q_entry_reg_0__20_.Q
+    flitDataOut[6]: U900.ZN
+    n735: U501.ZN U817.B U990.I
+    n262: U464.ZN U471.A2
+    n560: U411.ZN U514.A2 U661.A2 U813.A2 U833.A1
+    flitDataOut[55]: U1019.ZN
+    q_entry[16]: U894.A1 q_entry_reg_0__16_.Q
+    n665: U642.A2 U907.A1 U921.ZN
+    n595: U650.A1 U978.A1 U979.ZN
+    destDecode_flitDestReg[4]: U646.A1 U710.I0 U952.A2 U983.I destDecode_flitDestFlop_q_reg_4_.Q
+    n760: U1031.ZN U1033.A1
+    flitDataIn[43]: q_entry_reg_0__43_.D
+    multiFlit[4]: U909.ZN
+    n380: U649.ZN U650.B2
+    n503: U399.A1 U831.ZN
+    n702: U713.A2 U730.ZN U736.A1
+    n567: U591.A2 U809.A2 U840.ZN
+    n605: U726.A2 U800.ZN
+    flitDataIn[29]: q_entry_reg_0__29_.D
+    n243: U434.ZN U446.A2 U447.I
+    n340: U414.ZN U579.A2
+    flitDataOut[23]: U889.ZN
+    flitDataIn[15]: q_entry_reg_0__15_.D
+    n378: U644.ZN U645.C
+    flitDataIn[6]: q_entry_reg_0__6_.D
+    n519: U1009.ZN U1028.A2 U501.A2
+    n536: U628.ZN U813.B1
+    n626: U449.ZN U532.I U785.A1
+    flitDataOut[0]: U905.ZN
+    n251: U393.ZN U459.A2
+    n365: U558.A2 U616.ZN U677.A2
+    n366: U618.ZN U810.A4
+    n671: U467.A3 U950.ZN U991.A1
+    destDecode_flitDestReg[1]: U364.A2 U366.A2 U372.A2 U475.A1 U658.B U874.I0 U951.A2 destDecode_flitDestFlop_q_reg_1_.Q
+    n453: U636.ZN U773.A1
+    n313: U533.A1 U534.ZN
+    n279: U480.ZN U488.C
+    grantVC: U531.A2 U633.A2 U650.B1 U665.A2 U667.A2 U669.A2 U728.I U729.A2 U730.A1 U731.A2 U732.A2
+    n612: U370.A1 U467.A4 U534.I U767.ZN U979.A2
+    n731: U391.A2 U500.I U594.ZN
+    q_entry[1]: U904.A1 q_entry_reg_0__1_.Q
+    n308: U524.I U525.ZN
+    flitDataIn[23]: q_entry_reg_0__23_.D
+    n342: U578.ZN U581.A2
+    n550: U960.A4 U961.ZN
+    n334: U572.ZN U575.A2
+    flitDataIn[16]: q_entry_reg_0__16_.D
+    q_entry[7]: U899.A1 q_entry_reg_0__7_.Q
+    n234: U1030.A2 U1034.A2 U402.Z U842.A2
+    n786: U548.A1 U635.ZN U670.A4 destDecode_flitDestFlop_q_reg_0_.CN destDecode_flitDestFlop_q_reg_1_.CN destDecode_flitDestFlop_q_reg_2_.CN destDecode_flitDestFlop_q_reg_3_.CN destDecode_flitDestFlop_q_reg_4_.CN destDecode_flitDestFlop_q_reg_5_.CN destDecode_flitDestFlop_q_reg_6_.CN destDecode_flitDestFlop_q_reg_7_.CN destDecode_state_reg_0_.CN fsm_state_reg_0_.CN q_capacity_reg_0_.CN q_capacity_reg_1_.CN q_capacity_reg_2_.CN
+    n684: U516.A1 U549.ZN U580.I U792.A2 U960.A3
+    flitDataOut[54]: U1020.ZN
+    q_entry[18]: U892.A1 q_entry_reg_0__18_.Q
+    n458: U780.A2 U781.ZN
+    flitDataIn[33]: q_entry_reg_0__33_.D
+    n585: U373.A2 U381.I U538.ZN
+    n640: U702.A2 U738.ZN
+    n421: U738.A1 U739.ZN
+    n390: U404.A2 U555.A1 U599.ZN
+    n478: U454.ZN U817.A1 U821.A1
+    q_entry[32]: U883.A1 q_entry_reg_0__32_.Q
+    n681: U1000.B U916.ZN
+    flitDataIn[9]: q_entry_reg_0__9_.D
+    n752: U1030.A1 U933.ZN
+    flitDataOut[53]: U1021.ZN
+    n511: U1036.A2 U705.A2 U848.A1 U998.ZN
+    n303: U1003.A2 U508.Z U572.A2 U574.B1 U948.A2
+    n618: U719.A1 U805.ZN
+    n310: U383.A2 U527.ZN
+    n494: U680.ZN U785.A2
+    flitDataOut[31]: U884.ZN
+    q_entry[38]: U859.A1 q_entry_reg_0__38_.Q
+    flitDataOut[50]: U1024.ZN
+    q_entry[13]: U895.A1 q_entry_reg_0__13_.Q
+    n460: U708.ZN U783.A2
+    n457: U776.Z U777.A1
+    n658: U641.B1 U752.A2 U954.ZN
+    n596: U646.B2 U801.A1 U836.ZN
+    flitDataOut[37]: U880.ZN
+    flitDataOut[4]: U902.ZN
+    n649: U499.I U538.A1 U816.ZN
+    n748: U780.A1 U841.ZN
+    grant[3]: U413.A1 U541.B1 U591.B U657.A1 U665.A1 U778.A2 U816.I
+    flitDataIn[3]: q_entry_reg_0__3_.D
+    grant[5]: U522.A1 U633.A1 U722.A2 U797.I
+    n504: U968.A1 U989.ZN
+    n355: U586.A1 U587.CN
+    n632: U661.ZN U693.A1 U807.A1
+    destDecode_flitDestReg[5]: U646.A2 U700.B1 U795.A2 U915.I0 U975.A1 destDecode_flitDestFlop_q_reg_5_.Q
+    q_entry[72]: U1011.A1 U929.A2 q_entry_reg_0__72_.Q
+    n736: U939.A1 U990.ZN
+    requestValid: U663.ZN
+    n415: U589.Z U742.A2
+    n290: U448.ZN U492.A2
+    n672: U869.I U991.ZN
+    n332: U558.ZN U571.A1
+    n472: U449.A2 U756.ZN U805.I
+    requestNew[4]: U868.ZN
+    n258: U461.ZN U464.A1
+    n604: U506.A1 U626.ZN
+    requestNew[2]: U648.ZN
+    flitTypeIn[2]: q_entry_reg_0__74_.D
+    n691: U563.A1 U578.A1 U784.ZN
+    multiFlit[7]: U907.ZN
+    n448: U415.ZN U496.A3
+    flitDataIn[48]: q_entry_reg_0__48_.D
+    n554: U452.ZN U719.A2
+    n761: U1033.A2 U601.I U817.ZN U818.I
+    flitDataIn[1]: q_entry_reg_0__1_.D
+    destDecode_pktDecoder_pktDestReg[3]: U840.A2 destDecode_pktDecoder_pktDestFlop_q_reg_3_.Q
+    n343: U562.ZN U581.A1
+    n549: U507.ZN U681.A1
+    n410: U401.Z U787.B1 U788.A1
+    n331: U557.ZN U571.A2
+    n451: U507.A1 U573.B U755.Z
+    n633: U384.A2 U685.A2 U830.ZN U969.A1
+    n3: U455.I U594.I q_capacity_reg_0_.Q
+    destDecode_pktDecoder_pktDestReg[6]: U967.A2 destDecode_pktDecoder_pktDestFlop_q_reg_6_.Q
+    q_entry[42]: U877.A1 q_entry_reg_0__42_.Q
+    n555: U719.ZN U959.A1
+    n776: U502.ZN U527.A1 U768.I U824.A3 U954.A1
+    n207: U669.ZN destDecode_flitDestFlop_q_reg_7_.D
+    n689: U513.A1 U657.B U971.ZN
+    destDecode_pktDecoder_pktDestReg[1]: U600.A2 destDecode_pktDecoder_pktDestFlop_q_reg_1_.Q
+    n727: U1035.B U943.ZN
+    flitDataOut[49]: U1025.ZN
+    requestNew[7]: U655.Z
+    n613: U461.I U474.A1 U479.A1 U726.ZN
+    n617: U476.I U481.A1 U789.ZN
+    flitDataOut[67]: U1012.ZN
+    n261: U463.ZN U470.A1
+    n634: U397.A1 U955.A3 U969.ZN U989.A3
+    flitDataIn[14]: q_entry_reg_0__14_.D
+    destDecode_state_0_: U794.I U802.I destDecode_state_reg_0_.Q
+    n257: U425.ZN U444.A1
+    n493: U680.A1 U706.ZN
+    n477: U1035.A2 U523.A3 U645.A1 U737.Z
+    n720: U926.A1 U927.ZN
+    flitDataOut[14]: U850.ZN
+    flitDataOut[66]: U1013.ZN
+    n518: U423.Z U701.A2
+    flitDataOut[51]: U1023.ZN
+    n588: U974.A4 U980.A2 U981.ZN
+    n645: U560.A1 U697.ZN
+    n300: U502.A1 U503.ZN
+    q_entry[56]: U1018.A1 q_entry_reg_0__56_.Q
+    n575: U788.ZN U947.A1
+    request[0]: U450.ZN U785.B1 U806.I U844.A1
+    flitDataOut[11]: U897.ZN
+    n627: U792.A1 U957.ZN
+    n325: U546.Z U557.A2 U558.B U559.I U560.A2
+    n454: U535.A2 U754.ZN
+    n335: U573.ZN U575.A1
+    n650: U775.A1 U972.ZN
+    n417: U438.A2 U733.ZN
+    n336: U574.ZN U576.I
+    n753: U1029.B U1030.ZN
+    flitDataIn[35]: q_entry_reg_0__35_.D
+    n443: U762.ZN U763.A2
+    n620: U706.A1 U812.A2 U953.ZN
+    n767: U743.ZN U796.A1
+    flitDataIn[12]: q_entry_reg_0__12_.D
+    flitDataOut[26]: U887.ZN
+    n512: U699.A4 U920.A2 U955.ZN
+    flitDataIn[55]: q_entry_reg_0__55_.D
+    n280: U481.ZN U488.B
+    n621: U432.ZN U484.A1 U622.A1 U680.A2 U783.A1 U962.B
+    n235: U407.A2 U408.ZN
+    n250: U393.A2 U457.ZN
+    q_entry[0]: U905.A1 q_entry_reg_0__0_.Q
+    n371: U621.A2 U623.Z
+    n285: U485.Z U490.A2
+    n499: U520.A3 U621.Z
+    n241: U384.A1 U416.I U424.ZN U441.I U442.A1
+    flitDataOut[65]: U431.ZN U442.B1
+    n664: U631.ZN U907.A2 U908.A2 U909.A2 U910.A2 U911.A2 U912.A2 U913.A2 U914.A2
+    n787: U663.B1 U848.ZN U995.A2
+    n347: U564.A2 U581.ZN
+    n683: U646.B1 U654.I U660.B U793.ZN U977.A1
+    q_entry[47]: U1026.A1 q_entry_reg_0__47_.Q
+    flitDataIn[41]: q_entry_reg_0__41_.D
+    n316: U528.A1 U540.ZN
+    n757: U1030.A4 U743.B1 U818.ZN
+    n513: U545.I U598.I U820.ZN
+    n562: U382.I U824.A1 U828.ZN
+    flitDataIn[49]: q_entry_reg_0__49_.D
+    n266: U468.ZN U480.B
+    request[7]: U655.A2 U660.A2 U768.Z U921.I destDecode_pktDecoder_pktDestFlop_q_reg_7_.D
+    n363: U1008.A2 U612.ZN
+    n293: U491.ZN U493.A1
+    n315: U1007.A1 U539.Z U637.A1
+    n277: U478.ZN U485.A2
+    n351: U548.Z U584.A2
+    q_entry[67]: U1012.A1 q_entry_reg_0__67_.Q
+    n4: U1029.ZN q_capacity_reg_2_.D
+    n406: U521.B U522.ZN
+    requestMask[0]: U712.A1 U715.Z
+    flitTypeOut[0]: U1011.ZN
+    flitDataIn[50]: q_entry_reg_0__50_.D
+    n509: U766.A1 U774.ZN
+    n675: U795.ZN U872.I U980.A3
+    n659: U640.A1 U642.A1 U908.A1 U923.ZN
+    flitDataIn[2]: q_entry_reg_0__2_.D
+    n452: U704.A2 U741.ZN
+    n65: U568.ZN q_entry_reg_0__0_.E q_entry_reg_0__10_.E q_entry_reg_0__11_.E q_entry_reg_0__12_.E q_entry_reg_0__13_.E q_entry_reg_0__14_.E q_entry_reg_0__15_.E q_entry_reg_0__16_.E q_entry_reg_0__17_.E q_entry_reg_0__18_.E q_entry_reg_0__19_.E q_entry_reg_0__1_.E q_entry_reg_0__20_.E q_entry_reg_0__21_.E q_entry_reg_0__22_.E q_entry_reg_0__23_.E q_entry_reg_0__24_.E q_entry_reg_0__25_.E q_entry_reg_0__26_.E q_entry_reg_0__27_.E q_entry_reg_0__28_.E q_entry_reg_0__29_.E q_entry_reg_0__2_.E q_entry_reg_0__30_.E q_entry_reg_0__31_.E q_entry_reg_0__32_.E q_entry_reg_0__33_.E q_entry_reg_0__34_.E q_entry_reg_0__35_.E q_entry_reg_0__36_.E q_entry_reg_0__37_.E q_entry_reg_0__38_.E q_entry_reg_0__39_.E q_entry_reg_0__3_.E q_entry_reg_0__40_.E q_entry_reg_0__41_.E q_entry_reg_0__42_.E q_entry_reg_0__43_.E q_entry_reg_0__44_.E q_entry_reg_0__45_.E q_entry_reg_0__46_.E q_entry_reg_0__47_.E q_entry_reg_0__48_.E q_entry_reg_0__49_.E q_entry_reg_0__4_.E q_entry_reg_0__50_.E q_entry_reg_0__51_.E q_entry_reg_0__52_.E q_entry_reg_0__53_.E q_entry_reg_0__54_.E q_entry_reg_0__55_.E q_entry_reg_0__56_.E q_entry_reg_0__57_.E q_entry_reg_0__58_.E q_entry_reg_0__59_.E q_entry_reg_0__5_.E q_entry_reg_0__60_.E q_entry_reg_0__61_.E q_entry_reg_0__62_.E q_entry_reg_0__63_.E q_entry_reg_0__64_.E q_entry_reg_0__65_.E q_entry_reg_0__66_.E q_entry_reg_0__67_.E q_entry_reg_0__68_.E q_entry_reg_0__69_.E q_entry_reg_0__6_.E q_entry_reg_0__70_.E q_entry_reg_0__71_.E q_entry_reg_0__72_.E q_entry_reg_0__73_.E q_entry_reg_0__74_.E q_entry_reg_0__7_.E q_entry_reg_0__8_.E q_entry_reg_0__9_.E
+    n231: U396.Z U919.I
+    flitDataIn[39]: q_entry_reg_0__39_.D
+    n722: U925.A1 U994.B U996.ZN
+    n367: U544.A2 U619.Z
+    q_entry[8]: U855.A1 q_entry_reg_0__8_.Q
+    n577: U798.A1 U983.ZN
+    n323: U404.A1 U418.A2 U553.Z U554.A1 U555.A2 U556.I
+    n765: U750.ZN U796.A3
+    n486: U776.A1 U825.ZN
+    flitDataOut[59]: U427.ZN U607.A2 U608.A2
+    flitDataIn[62]: q_entry_reg_0__62_.D
+    flitDataOut[41]: U854.ZN
+    destDecode_flitDestReg[6]: U836.I U982.A2 destDecode_flitDestFlop_q_reg_6_.Q
+    n439: U509.A2 U610.ZN
+    flitDataIn[40]: q_entry_reg_0__40_.D
+    destDecode_flitDestReg[7]: U793.A2 U982.A1 destDecode_flitDestFlop_q_reg_7_.Q
+    q_entry[69]: U820.B1 U838.I q_entry_reg_0__69_.Q
+    n572: U426.A2 U721.B U723.A2 U804.ZN U830.I
+    flitDataOut[35]: U865.ZN
+    n330: U570.ZN U571.B
+    destDecode_flitDestReg[2]: U368.A2 U462.A2 U541.A1 U552.I U711.I0 destDecode_flitDestFlop_q_reg_2_.Q
+    flitDataIn[58]: q_entry_reg_0__58_.D
+    flitDataIn[66]: q_entry_reg_0__66_.D
+    flitDataIn[27]: q_entry_reg_0__27_.D
+    requestNew[5]: U985.Z
+    n426: U743.A1 U744.ZN
+    n462: U704.ZN U719.B
+    flitDataOut[60]: U1002.ZN
+    n597: U646.ZN U835.B
+    n496: U621.B U624.ZN U810.A2
+    n668: U468.A2 U873.I U951.ZN
+    n524: U970.ZN U999.B1
+    n551: U543.ZN U960.A2
+    flitTypeIn[0]: q_entry_reg_0__72_.D
+    n416: U401.A1 U438.ZN U473.I U619.I
+    n498: U520.A2 U988.ZN
+    flitDataOut[40]: U878.ZN
+    n407: U521.A1 U694.ZN
+    n295: U453.A1 U493.ZN
+    n260: U374.ZN U470.A2
+    n758: U377.A1 U378.A4 U525.I U777.ZN
+    n249: U456.ZN U457.A2
+    n474: U380.B1 U741.A1 U783.ZN U812.A1
+    q_entry[73]: U629.A2 U632.A2 U903.A1 U926.A4 q_entry_reg_0__73_.Q
+    flitDataOut[9]: U861.ZN
+    n306: U518.A2 U519.ZN
+    n381: U651.ZN U652.A2
+    q_entry[60]: U605.A2 U690.A1 U772.I U831.A2 U970.A2 q_entry_reg_0__60_.Q
+    n240: U417.ZN U434.A3 U435.I U436.A2 U437.A3 U438.A1 U439.I U440.A2
+    flitDataOut[17]: U893.ZN
+    n719: U632.A1 U929.ZN U996.A1
+    n733: U1028.ZN U745.A2
+    n283: U385.ZN U446.C
+    requestMask[4]: U710.Z U906.A1
+    n446: U1010.A1 U745.A1 U764.Z U931.A1
+    n578: U519.A3 U982.ZN
+    n438: U509.A1 U760.ZN
+    n642: U403.A2 U462.A1 U700.B2 U811.ZN
+    n489: U384.ZN U675.A2 U697.A2
+    n530: U656.A2 U682.A3 U813.ZN
+    n711: U670.A3 U815.A3 U822.ZN
+    n686: U1001.A1 U579.A1 U775.ZN
+    n703: U392.A1 U633.ZN U709.A2
+    n271: U472.ZN U482.A2
+    n449: U442.ZN U496.A1
+    flitDataIn[61]: q_entry_reg_0__61_.D
+    n539: U543.A1 U962.ZN
+    n603: U506.A2 U992.ZN
+    flitDataOut[34]: U881.ZN
+    n344: U579.ZN U582.A1
+    n418: U556.Z U653.A1 U705.A1 U848.A2
+    n700: U695.A2 U762.B U842.Z
+    n741: U745.ZN U746.A1 U936.I
+    flitDataOut[39]: U879.ZN
+    n750: U615.A2 U701.ZN
+    n305: U517.A1 U518.ZN
+    n387: U666.ZN U667.B
+    flitDataOut[27]: U862.ZN
+    n694: U761.B1 U825.A2 U844.ZN U846.A2
+    n337: U414.A2 U575.ZN
+    flitDataIn[26]: q_entry_reg_0__26_.D
+    destDecode_pktDecoder_pktDestReg[5]: U546.A2 destDecode_pktDecoder_pktDestFlop_q_reg_5_.Q
+    n399: U607.A1 U608.A1 U690.ZN
+    n701: U688.ZN U695.A1
+    n370: U621.A1 U622.Z
+    n602: U563.ZN U992.A1
+    flitDataOut[20]: U891.ZN
+    q_entry[55]: U1019.A1 q_entry_reg_0__55_.Q
+    n557: U843.A1 U960.ZN
+    n329: U569.ZN U570.A1
+    n693: U523.A1 U777.A2 U843.ZN
+    n568: U1003.B U591.ZN
+    n368: U1003.A1 U620.Z
+    n500: U520.A1 U785.ZN
+    n734: U504.ZN U565.A2 U566.A1 U597.I U764.I U946.A2
+    q_entry[70]: U390.A2 U725.I q_entry_reg_0__70_.Q
+    n237: U417.A1 U418.ZN
+    n674: U1032.ZN U868.I
+    n430: U676.Z U754.A1 U755.I
+    n622: U623.A2 U962.A2 U963.ZN
+    q_entry[53]: U1021.A1 q_entry_reg_0__53_.Q
+    n631: U430.A2 U595.ZN U691.I
+    multiFlit[2]: U911.ZN
+    n647: U699.A1 U956.ZN
+    flitDataIn[28]: q_entry_reg_0__28_.D
+    q_entry[40]: U878.A1 q_entry_reg_0__40_.Q
+    n318: U543.A2 U544.ZN
+    n242: U443.ZN U444.B1 U445.I
+    n743: U791.B2 U935.ZN
+    n501: U379.A3 U454.A2 U810.ZN
+    n766: U1033.ZN U796.A2
+    n302: U505.Z U918.I
+    flitDataOut[56]: U1018.ZN
+    n514: U383.ZN U504.A1 U749.A1
+    q_entry[63]: U605.A1 U628.A2 U690.A2 U771.I U774.A2 U832.A2 q_entry_reg_0__63_.Q
+    n685: U583.A1 U677.ZN U961.A1
+    n312: U530.I U531.ZN
+    n666: U1004.ZN U448.B U986.A1
+    flitDataIn[17]: q_entry_reg_0__17_.D
+    n357: U380.A1 U588.Z U678.A1 U679.A3 U680.B
+    n362: U611.ZN U649.A1
+    n764: U1006.A3 U586.B1 U615.A1 U750.B1 U791.B1 U815.ZN U841.A2 U932.A1
+    n614: U469.A1 U471.A1 U528.ZN
+    n289: U446.ZN U492.B
+    n324: U404.ZN U405.A1 U536.A1 U546.A1
+    flitDataIn[18]: q_entry_reg_0__18_.D
+    q_entry[6]: U900.A1 q_entry_reg_0__6_.Q
+    q_entry[30]: U864.A1 q_entry_reg_0__30_.Q
+    n521: U1009.I U500.ZN U565.B U724.A2 U926.A2
+    n628: U392.A2 U727.ZN
+    flitDataIn[24]: q_entry_reg_0__24_.D
+    n667: U867.I U986.ZN
+    n265: U467.ZN U480.C
+    q_entry[29]: U885.A1 q_entry_reg_0__29_.Q
+    n497: U520.A4 U948.ZN
+    n214: U665.ZN destDecode_flitDestFlop_q_reg_3_.D
+    n413: U432.B1 U529.ZN U537.A1
+    destDecode_pktDecoder_pktDestReg[4]: U845.A1 destDecode_pktDecoder_pktDestFlop_q_reg_4_.Q
+    n552: U773.ZN U960.A1
+    flitDataOut[45]: U853.ZN
+    n382: U654.ZN U655.A1
+    flitDataIn[25]: q_entry_reg_0__25_.D
+    n718: U928.ZN U996.A2
+    n641: U403.B U638.A1 U728.ZN U975.B
+    flitDataIn[42]: q_entry_reg_0__42_.D
+    n420: U412.ZN U437.A2 U438.A3 U440.A3 U682.A1 U720.A1
+    n608: U589.A2 U723.ZN U953.I
+    n502: U379.A2 U454.A3 U520.ZN
+    n5: U406.I U422.A2 U596.A2 U842.A1 q_capacity_reg_2_.Q
+    n707: U1010.B U930.A1 U932.ZN
+    q_entry[49]: U1025.A1 q_entry_reg_0__49_.Q
+    flitDataOut[58]: U1016.ZN
+    destDecode_pktDecoder_pktDestReg[0]: U536.A2 destDecode_pktDecoder_pktDestFlop_q_reg_0_.Q
+    n495: U532.ZN U810.A3
+    enqueue: U1030.A3 U1031.A2 U548.A2 U935.A2 U937.A2 U939.A2 U942.I U946.A1
+    n751: U933.I U934.A2 U937.A1 U938.ZN
+    n345: U516.ZN U583.B
+    n648: U591.A1 U592.ZN U972.A2
+    n639: U502.B1 U514.ZN U694.A1 U738.A2
+    flitDataOut[62]: U1014.ZN
+    n248: U389.ZN U417.A2
+    n740: U652.ZN U822.A2 U941.A1
+    reset: U1036.B U585.A1 U635.I U671.A1
+    n338: U414.A1 U576.ZN
+    n440: U749.A2 U761.ZN
+    n388: U668.ZN U669.B
+    fsm_nextState[1]: U586.ZN fsm_state_reg_1_.D
+    n542: U573.A2 U598.ZN U769.A2 U813.A1 U963.A1
+    n655: U407.ZN U490.A3 U704.A1 U924.A2
+    flitDataIn[70]: q_entry_reg_0__70_.D
+    n224: U370.ZN U374.I U375.A2
+    n729: U501.A1 U566.ZN
+    n445: U377.A2 U378.A3 U763.ZN
+    n270: U471.ZN U481.B
+    n225: U376.ZN U377.A3 U378.A2
+    flitDataIn[44]: q_entry_reg_0__44_.D
+    q_entry[25]: U852.A1 q_entry_reg_0__25_.Q
+    flitDataOut[25]: U852.ZN
+    flitDataIn[71]: q_entry_reg_0__71_.D
+    n759: U1031.A3 U744.A1 U938.A1 U941.ZN
+    n6: U410.ZN q_capacity_reg_1_.D
+    n586: U976.B U977.ZN
+    n309: U526.Z U641.B2
+    q_entry[11]: U897.A1 q_entry_reg_0__11_.Q
+    n389: U585.B U670.ZN U671.B
+    flitDataOut[61]: U1015.ZN
+    flitDataOut[47]: U1026.ZN
+    n584: U518.A1 U980.ZN
+    flitDataOut[5]: U901.ZN
+    n771: U671.ZN destDecode_pktDecoder_pktDestFlop_q_reg_1_.CN destDecode_pktDecoder_pktDestFlop_q_reg_3_.CN destDecode_pktDecoder_pktDestFlop_q_reg_5_.CN destDecode_pktDecoder_pktDestFlop_q_reg_7_.CN
+    n268: U469.ZN U480.A1
+    n428: U750.A1 U751.ZN
+    n656: U495.I U641.A1 U845.ZN
+    n739: U822.A1 U823.ZN U941.A3
+    flitDataIn[38]: q_entry_reg_0__38_.D
+    flitDataIn[52]: q_entry_reg_0__52_.D
+    n615: U373.ZN U375.A1 U463.I
+    q_entry[57]: U1017.A1 q_entry_reg_0__57_.Q
+    n763: U1006.A2 U751.A1 U945.I U946.ZN
+    q_entry[26]: U887.A1 q_entry_reg_0__26_.Q
+    n564: U570.A2 U616.I U617.ZN
+    q_entry[54]: U1020.A1 q_entry_reg_0__54_.Q
+    flitTypeOut[1]: U903.ZN
+    q_entry[61]: U1015.A1 q_entry_reg_0__61_.Q
+    n220: U363.ZN U364.A1 U365.I U366.A1
+    n591: U375.ZN U974.A1
+    n239: U420.ZN U422.A1 U423.I
+    n710: U629.ZN U631.I U931.A2
+    q_entry[2]: U860.A1 q_entry_reg_0__2_.Q
+    n673: U1032.A1 U470.A3 U952.ZN
+    n272: U473.ZN U482.A1
+    n660: U634.I U643.A2 U911.A1 U918.ZN
+    n254: U435.ZN U443.A1
+    q_entry[33]: U882.A1 q_entry_reg_0__33_.Q
+    n391: U387.A1 U408.I U588.I U589.A1 U600.ZN U677.A3 U681.A3
+    q_entry[4]: U902.A1 q_entry_reg_0__4_.Q
+    n1: U1036.ZN fsm_state_reg_1_.CN fsm_state_reg_2_.CN
+    flitDataIn[59]: q_entry_reg_0__59_.D
+    n328: U377.A4 U378.A1 U567.ZN
+    n601: U630.A1 U973.ZN
+    n526: U808.A2 U999.ZN
+    n374: U640.ZN U641.A2
+    flitDataIn[45]: q_entry_reg_0__45_.D
+    n680: U801.ZN U916.I U976.A1 U984.A3
+    n400: U691.ZN U693.A2
+    flitDataOut[19]: U851.ZN
+    n630: U686.A3 U748.A2 U967.ZN
+    n291: U489.ZN U492.A1
+    n598: U650.ZN U835.A2
+    n724: U1006.B U994.ZN
+    n545: U391.ZN U393.A1 U826.I
+    n485: U490.A1 U806.ZN U914.A1 U987.I
+    n361: U607.ZN U687.A2
+    n216: U717.Z destDecode_flitDestFlop_q_reg_1_.D
+    n246: U420.A1 U455.ZN
+    n223: U364.ZN U372.B1 U373.A1
+    n609: U483.A1 U535.ZN U620.I U787.A1
+    n286: U486.ZN U491.A2
+    flitDataOut[69]: U870.ZN
+    flitDataIn[54]: q_entry_reg_0__54_.D
+    n713: U670.A1 U815.A2 U821.ZN
+    n574: U618.A2 U681.ZN U957.A2 U961.A2
+    n398: U607.B U608.B U689.ZN
+    q_entry[66]: U1013.A1 q_entry_reg_0__66_.Q
+    flitDataIn[32]: q_entry_reg_0__32_.D
+    flitDataOut[33]: U882.ZN
+    flitDataOut[29]: U885.ZN
+    flitDataIn[37]: q_entry_reg_0__37_.D
+    q_entry[31]: U884.A1 q_entry_reg_0__31_.Q
+    q_entry[45]: U853.A1 q_entry_reg_0__45_.Q
+    requestMask[5]: U709.A1 U915.Z
+    n638: U503.A1 U740.I U807.ZN
+    n717: U547.A2 U997.ZN
+    n476: U1031.A1 U524.ZN U744.A2 U938.A2
+    q_entry[68]: U515.I U542.I U819.A2 U820.A1 q_entry_reg_0__68_.Q
+    flitDataOut[68]: U441.Z U514.A1 U558.A1
+    n464: U535.A1 U720.ZN
+    multiFlit[1]: U908.ZN
+    n653: U771.ZN U871.A2 U970.A1
+    n297: U494.A1 U496.ZN
+    n581: U736.ZN U971.A1 U980.A1
+    n425: U372.A1 U497.ZN U726.A1 U741.A2 U756.A2
+    flitDataOut[2]: U860.ZN
+    flitDataOut[24]: U888.ZN
+    n359: U388.I U601.ZN U791.A1
+    n467: U678.ZN U844.A2
+    n409: U394.ZN U395.I U513.B1
+    n431: U451.A1 U536.ZN U735.I U756.A1
+    n267: U372.ZN U480.A2
+    n579: U519.A2 U700.ZN
+    fsm_state_0_: U553.I U753.I fsm_state_reg_0_.Q
+    flitDataOut[52]: U1022.ZN
+    n490: U445.ZN U675.A1 U697.A1
+    n508: U400.I U613.A2 U689.B U725.ZN U849.A2
+    n746: U782.A1 U934.ZN
+    n383: U656.ZN U657.A2
+    n589: U974.A3 U975.ZN
+    n696: U474.A2 U758.B U803.ZN
+    flitDataIn[68]: q_entry_reg_0__68_.D
+    n385: U658.ZN U659.A2
+    n228: U382.ZN U383.A1
+    n547: U436.A1 U721.ZN
+    request[6]: U614.ZN U984.A1 destDecode_pktDecoder_pktDestFlop_q_reg_6_.D
+    fsm_nextState[0]: U1006.ZN fsm_state_reg_0_.D
+    q_entry[27]: U862.A1 q_entry_reg_0__27_.Q
+    n506: U387.A2 U446.A1 U465.I U469.A2 U475.A2 U478.A2 U531.A1 U638.A2 U648.A1 U660.A1 U801.A2 U802.Z U803.A2
+    grantValid: U586.A2 U994.A1 U995.B
+    flitDataIn[8]: q_entry_reg_0__8_.D
+    n527: U808.ZN U845.B
+    requestMask[3]: U664.I U714.Z
+    n405: U627.ZN U694.A2
+    n541: U460.A1 U604.A2 U819.ZN
+    n742: U935.A1 U936.ZN
+    n698: U760.I U792.ZN U823.A2 U947.A2
+    n273: U474.ZN U483.A2
+    n278: U479.ZN U486.I
+    q_entry[36]: U866.A1 q_entry_reg_0__36_.Q
+    n350: U565.ZN U567.I
+    n238: U419.ZN U420.A2 U421.I
+    n307: U414.A3 U513.ZN
+    destDecode_flitDestReg[0]: U1004.A2 U512.I U658.A1 U715.I0 U767.A2 destDecode_flitDestFlop_q_reg_0_.Q
+    n590: U974.A2 U976.ZN
+    n375: U641.ZN U645.B
+    n540: U427.A1 U604.B1 U674.ZN U766.A2 U999.B2
+    n583: U517.A2 U978.ZN
+    n304: U365.Z U481.A2 U785.B2
+    n7: U419.I U456.I q_capacity_reg_1_.Q
+    n607: U413.ZN U636.A1 U649.A3 U696.B1
+    flitDataOut[1]: U904.ZN
+    n561: U430.ZN U807.A2 U808.A1
+    n339: U577.ZN U578.A2
+    n230: U385.A1 U387.ZN
+    n563: U523.ZN U626.I
+    request[2]: U634.ZN U647.A1 U711.I1 destDecode_pktDecoder_pktDestFlop_q_reg_2_.D
+    n728: U1035.A1 U645.A2 U944.ZN
+    n756: U1034.Z U744.A3
+    grant[6]: U692.A2 U727.A2 U730.A2 U977.A2
+    fsm_state_1_: U599.A2 U625.A1 U839.I U997.A2 fsm_state_reg_1_.Q
+    n537: U637.ZN U707.I U733.A1 U829.A2 U964.A2
+    n571: U1003.ZN U788.B
+    n706: U533.A2 U717.A2 U731.ZN
+    n690: U577.I U582.A2 U583.C U630.ZN U992.A2
+    n732: U1028.A1 U927.I U940.ZN
+    n616: U426.ZN U434.A1 U617.I
+    n432: U448.A2 U450.A1 U735.ZN U757.I
+    request[1]: U703.A1 U923.I U924.ZN destDecode_pktDecoder_pktDestFlop_q_reg_1_.D
+    n488: U1005.A2 U389.A1 U457.A1 U593.I U839.ZN
+    n463: U458.I U554.ZN U786.A1
+    q_entry[46]: U1027.A1 q_entry_reg_0__46_.Q
+    n384: U533.ZN U659.A1
+    flitDataOut[57]: U1017.ZN
+    n433: U547.A1 U550.ZN U676.A1
+    n281: U482.ZN U488.A2
+    n314: U536.B U537.ZN
+    n427: U1033.B U747.Z U940.A2
+    flitDataOut[64]: U415.I U428.ZN
+    requestMask[1]: U717.A1 U874.Z
+    n294: U453.A2 U492.ZN
+    n222: U368.ZN U370.A2 U371.A2
+    n269: U470.ZN U481.C
+    n455: U754.A2 U769.ZN
+    q_entry[52]: U1022.A1 q_entry_reg_0__52_.Q
+    flitDataIn[22]: q_entry_reg_0__22_.D
+    clk: destDecode_flitDestFlop_q_reg_0_.CP destDecode_flitDestFlop_q_reg_1_.CP destDecode_flitDestFlop_q_reg_2_.CP destDecode_flitDestFlop_q_reg_3_.CP destDecode_flitDestFlop_q_reg_4_.CP destDecode_flitDestFlop_q_reg_5_.CP destDecode_flitDestFlop_q_reg_6_.CP destDecode_flitDestFlop_q_reg_7_.CP destDecode_pktDecoder_pktDestFlop_q_reg_0_.CP destDecode_pktDecoder_pktDestFlop_q_reg_1_.CP destDecode_pktDecoder_pktDestFlop_q_reg_2_.CP destDecode_pktDecoder_pktDestFlop_q_reg_3_.CP destDecode_pktDecoder_pktDestFlop_q_reg_4_.CP destDecode_pktDecoder_pktDestFlop_q_reg_5_.CP destDecode_pktDecoder_pktDestFlop_q_reg_6_.CP destDecode_pktDecoder_pktDestFlop_q_reg_7_.CP destDecode_state_reg_0_.CP fsm_state_reg_0_.CP fsm_state_reg_1_.CP fsm_state_reg_2_.CP q_capacity_reg_0_.CP q_capacity_reg_1_.CP q_capacity_reg_2_.CP q_entry_reg_0__0_.CP q_entry_reg_0__10_.CP q_entry_reg_0__11_.CP q_entry_reg_0__12_.CP q_entry_reg_0__13_.CP q_entry_reg_0__14_.CP q_entry_reg_0__15_.CP q_entry_reg_0__16_.CP q_entry_reg_0__17_.CP q_entry_reg_0__18_.CP q_entry_reg_0__19_.CP q_entry_reg_0__1_.CP q_entry_reg_0__20_.CP q_entry_reg_0__21_.CP q_entry_reg_0__22_.CP q_entry_reg_0__23_.CP q_entry_reg_0__24_.CP q_entry_reg_0__25_.CP q_entry_reg_0__26_.CP q_entry_reg_0__27_.CP q_entry_reg_0__28_.CP q_entry_reg_0__29_.CP q_entry_reg_0__2_.CP q_entry_reg_0__30_.CP q_entry_reg_0__31_.CP q_entry_reg_0__32_.CP q_entry_reg_0__33_.CP q_entry_reg_0__34_.CP q_entry_reg_0__35_.CP q_entry_reg_0__36_.CP q_entry_reg_0__37_.CP q_entry_reg_0__38_.CP q_entry_reg_0__39_.CP q_entry_reg_0__3_.CP q_entry_reg_0__40_.CP q_entry_reg_0__41_.CP q_entry_reg_0__42_.CP q_entry_reg_0__43_.CP q_entry_reg_0__44_.CP q_entry_reg_0__45_.CP q_entry_reg_0__46_.CP q_entry_reg_0__47_.CP q_entry_reg_0__48_.CP q_entry_reg_0__49_.CP q_entry_reg_0__4_.CP q_entry_reg_0__50_.CP q_entry_reg_0__51_.CP q_entry_reg_0__52_.CP q_entry_reg_0__53_.CP q_entry_reg_0__54_.CP q_entry_reg_0__55_.CP q_entry_reg_0__56_.CP q_entry_reg_0__57_.CP q_entry_reg_0__58_.CP q_entry_reg_0__59_.CP q_entry_reg_0__5_.CP q_entry_reg_0__60_.CP q_entry_reg_0__61_.CP q_entry_reg_0__62_.CP q_entry_reg_0__63_.CP q_entry_reg_0__64_.CP q_entry_reg_0__65_.CP q_entry_reg_0__66_.CP q_entry_reg_0__67_.CP q_entry_reg_0__68_.CP q_entry_reg_0__69_.CP q_entry_reg_0__6_.CP q_entry_reg_0__70_.CP q_entry_reg_0__71_.CP q_entry_reg_0__72_.CP q_entry_reg_0__73_.CP q_entry_reg_0__74_.CP q_entry_reg_0__7_.CP q_entry_reg_0__8_.CP q_entry_reg_0__9_.CP
+    n600: U630.A2 U835.ZN
+    n644: U651.A1 U688.A2 U702.ZN
+    n348: U564.A3 U582.ZN
+    requestMask[6]: U1000.ZN U713.A1
+    n523: U595.A1 U613.ZN
+    n392: U394.I U439.Z U496.A2 U514.A3 U557.A1 U592.A1 U683.I U684.A1
+    n414: U699.Z U752.A1
+    n629: U437.ZN U686.A4 U748.A1
+    flitDataIn[56]: q_entry_reg_0__56_.D
+    n253: U443.A2 U459.ZN
+    n747: U780.A3 U791.ZN
+    n507: U737.I U776.A2 U824.ZN
+    n296: U494.A2 U495.ZN
+    n437: U610.A1 U759.ZN
+    n327: U564.ZN U565.A1 U566.A2
+    n623: U623.A1 U962.A1 U964.ZN
+    multiFlit[6]: U912.ZN
+    flitDataOut[43]: U876.ZN
+    n215: U667.ZN destDecode_flitDestFlop_q_reg_2_.D
+    n548: U604.B2 U605.ZN U834.A2
+    n582: U371.ZN U978.A2
+    n468: U402.I U421.ZN U590.I
+    n772: U505.I U718.A2 U761.A1 U787.ZN U958.B1
+    flitDataOut[63]: U871.ZN
+    n356: U593.Z U998.I
+    q_entry[19]: U851.A1 q_entry_reg_0__19_.Q
+    n723: U1036.A1 U653.ZN U994.A2
+    q_entry[58]: U1016.A1 q_entry_reg_0__58_.Q
+    n321: U529.I U547.ZN
+    requestNew[6]: U984.Z
+    n284: U446.B U484.Z
+    n322: U550.A2 U551.ZN
+    n695: U1001.A2 U759.I U958.ZN
+    n754: U724.A1 U746.A2 U942.ZN
+    n592: U973.A2 U974.ZN
+    n229: U385.A2 U386.ZN
+    n533: U424.A2 U515.ZN U765.A1 U829.A1 U833.A2
+    n745: U746.ZN U841.B2 U934.A1
+    n716: U418.A1 U554.A2 U603.ZN U799.I
+    flitDataIn[0]: q_entry_reg_0__0_.D
+    flitDataIn[46]: q_entry_reg_0__46_.D
+    flitDataOut[38]: U859.ZN
+    n679: U679.ZN U874.I1
+    n397: U607.C U608.C U609.ZN
+    q_entry[17]: U893.A1 q_entry_reg_0__17_.Q
+    n637: U503.A2 U692.A1 U722.A1 U827.ZN
+    flitDataIn[7]: q_entry_reg_0__7_.D
+    n569: U682.ZN U809.A1
+    multiCast: U645.ZN
+    flitDataOut[70]: U849.ZN
+    n236: U407.A1 U409.ZN
+    n573: U618.A1 U742.ZN U957.A1
+    n669: U703.A3 U873.ZN
+    flitDataIn[19]: q_entry_reg_0__19_.D
+    flitDataIn[57]: q_entry_reg_0__57_.D
+    flitDataOut[18]: U892.ZN
+    multiFlit[0]: U914.ZN
+    n376: U642.ZN U644.A2
+    flitDataIn[34]: q_entry_reg_0__34_.D
+    destDecode_pktDecoder_pktDestReg[2]: U405.A2 destDecode_pktDecoder_pktDestFlop_q_reg_2_.Q
+    n275: U386.I U476.ZN
+    q_entry[23]: U889.A1 q_entry_reg_0__23_.Q
+    q_entry[44]: U875.A1 q_entry_reg_0__44_.Q
+    n651: U1001.ZN U823.A1
+    n619: U477.A1 U507.A2 U706.A2 U708.I U834.ZN
+    n688: U401.A2 U405.ZN U472.I U574.A1 U778.A1
+    n593: U517.ZN U973.A1
+    requestMask[2]: U666.I U711.Z
+    request[4]: U1032.B2 U698.I U710.I1 U770.Z destDecode_pktDecoder_pktDestFlop_q_reg_4_.D
+    flitDataIn[5]: q_entry_reg_0__5_.D
+    n663: U640.A3 U913.A1 U917.ZN
+    n471: U398.A2 U498.I U555.ZN U600.A1 U609.A2 U827.A1 U840.A1 U845.A2 U967.A1
+    flitDataIn[10]: q_entry_reg_0__10_.D
+    q_entry[12]: U896.A1 q_entry_reg_0__12_.Q
+    n505: U784.A2 U968.ZN
+    n535: U573.A1 U689.A1 U707.ZN U769.A1
+    flitDataOut[12]: U896.ZN
+    n769: U1029.A1 U596.A1 U615.Z
+    n311: U519.A1 U530.ZN
+    n213: U906.ZN destDecode_flitDestFlop_q_reg_4_.D
+    n599: U659.ZN U835.A1
+    q_entry[62]: U1014.A1 q_entry_reg_0__62_.Q
+    n423: U739.A1 U740.ZN
+    n709: U1010.ZN U993.I
+    n712: U506.ZN U670.A2 U815.A1
+    n755: U391.A1 U406.ZN U734.I
+    n422: U722.ZN U739.A2
+    requestNew[0]: U867.ZN
+    n737: U841.A1 U939.ZN
+    n466: U388.ZN U841.B1
+    n558: U687.A1 U748.Z U828.A2
+    n546: U721.A1 U826.ZN
+    n520: U590.ZN U721.A2 U747.I
+    flitDataOut[71]: U662.ZN
+    n245: U379.A1 U453.ZN U454.A1
+    n226: U376.A1 U379.ZN
+    n411: U466.I U468.A1 U489.A1 U696.ZN U789.A1
+    n341: U380.ZN U516.A2
+    n264: U466.ZN U478.A1
+    n744: U791.A2 U937.ZN
+    n434: U604.A1 U606.ZN
+    n442: U749.ZN U762.A1
+    n704: U699.A2 U732.Z U906.B1
+    flitDataOut[48]: U858.ZN
+    flitDataOut[46]: U1027.ZN
+    n538: U544.A1 U779.ZN
+    n317: U542.Z U721.C U733.A2
+    n492: U560.ZN U828.A1
+    n352: U378.ZN U584.A1
+    q_entry[74]: U639.A2 U926.A3 q_entry_reg_0__74_.Q
+    n773: U487.I U602.I U718.A1 U773.B1 U847.ZN U988.A2
+    grant[0]: U497.I U549.A1 U729.A1 U789.A2 U814.I
+    n346: U580.ZN U583.A2
+    q_entry[3]: U863.A1 q_entry_reg_0__3_.Q
+    n372: U595.A2 U625.ZN U676.A2 U928.I
+    n636: U397.A2 U398.ZN U570.B U955.A1 U966.A1 U989.A1
+    flitDataOut[8]: U855.ZN
+    n646: U522.A2 U559.ZN U612.I U699.A3 U968.A3
+    flitTypeOut[2]: U629.A1 U639.Z U929.A1
+    n606: U767.A1 U814.ZN
+    n587: U736.A2 U837.ZN U976.A2
+    requestNew[3]: U869.ZN
+    n654: U606.A2 U765.A2 U838.ZN U870.A2
+    n661: U642.A3 U716.I U910.A1 U922.ZN
+    n288: U488.ZN U492.C
+    flitDataOut[13]: U895.ZN
+    n516: U715.I1 U986.B2 U987.ZN destDecode_pktDecoder_pktDestFlop_q_reg_0_.D
+    n244: U444.ZN U448.A1 U449.A1 U450.A2 U451.B1 U452.A2
+    n360: U602.Z U922.I
+    n396: U621.C U683.ZN U742.A1
+    request[5]: U644.A1 U915.I1 U917.I U920.ZN U985.A1 destDecode_pktDecoder_pktDestFlop_q_reg_5_.D
+    n566: U440.A1 U592.A2 U833.Z
+    n403: U397.ZN U522.C
+    n377: U643.ZN U644.B
+    n232: U398.A1 U399.ZN
+    n678: U485.A1 U679.A1 U812.ZN U924.A1
+    n721: U925.A2 U926.ZN
+    n534: U437.A1 U829.ZN
+    n301: U369.Z U508.I
+    n326: U561.ZN U562.I U563.A2
+    flitDataIn[21]: q_entry_reg_0__21_.D
+    n726: U376.A3 U392.ZN U821.A2 U943.I
+    n256: U425.A2 U460.Z
+    n624: U636.A2 U778.ZN U779.I U948.A1 U988.A1
+    flitDataIn[11]: q_entry_reg_0__11_.D
+    flitDataIn[51]: q_entry_reg_0__51_.D
+    n697: U758.A1 U809.Z U847.B1 U972.A1
+    n715: U587.CLK U705.ZN U790.A2
+    q_entry[51]: U1023.A1 q_entry_reg_0__51_.Q
+    flitDataOut[15]: U856.ZN
+    q_entry[15]: U856.A1 q_entry_reg_0__15_.Q
+    n762: U1034.A1 U724.ZN U751.A2
+    multiFlit[5]: U913.ZN
+    n529: U656.A1 U682.A2 U786.ZN
+    flitDataOut[42]: U877.ZN
+    flitDataIn[63]: q_entry_reg_0__63_.D
+    n320: U429.Z U609.A1
+    n393: U395.ZN U685.A1
+    n610: U528.A2 U541.ZN U649.A2
+    n544: U677.A1 U684.ZN
+    n402: U627.A1 U693.Z
+    flitDataOut[7]: U899.ZN
+    n788: U396.I U687.ZN U702.A1 U954.A2
+    n299: U499.Z U775.A2 U803.A1
+    n227: U371.A1 U381.Z
+    n263: U465.ZN U477.A2
+    n429: U550.A1 U613.A1 U753.ZN
+    q_entry[24]: U888.A1 q_entry_reg_0__24_.Q
+    n738: U376.A2 U597.ZN U932.A2 U941.A2
+    flitDataIn[36]: q_entry_reg_0__36_.D
+    flitDataOut[10]: U898.ZN
+    q_entry[5]: U901.A1 q_entry_reg_0__5_.Q
+    n611: U372.B2 U468.A3 U512.ZN
+    flitDataIn[31]: q_entry_reg_0__31_.D
+    n790: U412.I U422.ZN U424.A1 U425.A1 U426.A1 U427.A2 U428.A2 U429.I U430.A1 U431.A1 U432.A1 U433.I
+    n531: U440.Z U847.A1
+    n699: U652.A1 U695.A3 U752.ZN
+    q_entry[37]: U880.A1 q_entry_reg_0__37_.Q
+    n652: U1002.A2 U628.A1 U661.B2 U772.ZN U774.A1
+    n412: U1008.A1 U675.ZN U784.A1 U956.I
+    n594: U510.ZN U540.A2 U611.A1 U659.C
+    fsm_state_2_: U599.A1 U603.I U625.A2 U997.A1 fsm_state_reg_2_.Q
+    n705: U658.A2 U712.A2 U729.ZN
+    n424: U410.A2 U596.ZN
+    q_entry[71]: U1005.A1 U390.A1 U551.I U662.A1 q_entry_reg_0__71_.Q
+    n221: U367.ZN U368.A1 U369.I
+    n292: U490.ZN U493.A2
+    n212: U709.Z destDecode_flitDestFlop_q_reg_5_.D
+    n708: U1000.A2 U1001.A3 U1004.A1 U1010.A2 U448.A3 U464.A2 U479.A2 U710.S U711.S U714.S U715.S U758.A2 U793.A1 U794.ZN U795.A1 U874.S U915.S U949.A1 U950.A1 U951.A1 U952.A1 U971.A2
+    n768: U410.A1 U796.ZN
+    n435: U537.A2 U604.ZN
+    n576: U563.B U947.ZN
+    flitDataIn[60]: q_entry_reg_0__60_.D
+    n528: U1005.ZN U786.A2
+    flitDataIn[47]: q_entry_reg_0__47_.D
+    flitDataOut[44]: U875.ZN
+    flitTypeIn[1]: q_entry_reg_0__73_.D
+    n444: U695.ZN U763.A1
+    n276: U477.ZN U484.A2
+    requestMask[7]: U660.ZN U668.I
+    grant[2]: U367.I U413.A2 U479.A3 U540.A1 U544.B U611.A2 U622.A2 U667.A1 U788.A2 U958.A1 U962.C
+    q_entry[21]: U890.A1 q_entry_reg_0__21_.Q
+    flitDataIn[64]: q_entry_reg_0__64_.D
+    n441: U509.ZN U762.A2
+    flitDataOut[36]: U866.ZN
+    dequeue: U930.ZN
+    n459: U781.I U782.ZN
+    n247: U389.A2 U390.ZN
+    n211: U713.Z destDecode_flitDestFlop_q_reg_6_.D
+    n469: U653.B1 U663.A1 U799.Z U995.A1
+    grant[7]: U669.A1 U686.A2 U727.A1 U837.I
+    n259: U462.ZN U467.A2
+    n662: U643.A3 U698.ZN U909.A1
+    q_entry[39]: U879.A1 q_entry_reg_0__39_.Q
+    flitDataIn[30]: q_entry_reg_0__30_.D
+    flitDataOut[16]: U894.ZN
+    n217: U712.Z destDecode_flitDestFlop_q_reg_0_.D
+    n525: U1007.ZN U999.A2
+    n394: U608.ZN U686.A1
+    multiFlit[3]: U910.ZN
+    q_entry[34]: U881.A1 q_entry_reg_0__34_.Q
+    q_entry[28]: U886.A1 q_entry_reg_0__28_.Q
+    n692: U523.A2 U638.ZN U965.I
+    q_entry[10]: U898.A1 q_entry_reg_0__10_.Q
+    n682: U1000.A1 U614.I U643.A4 U912.A1 U919.ZN
+    n730: U1035.ZN U817.A2
+    flitDataIn[69]: q_entry_reg_0__69_.D
+    n643: U403.ZN U651.B U688.B
+    n379: U647.ZN U648.B
+    n487: U825.B U965.ZN
+    n635: U397.A3 U557.B U570.C U700.A2 U797.ZN U975.A2
+    n565: U569.I U661.A1 U689.A2 U765.ZN U969.A2 U999.A1
+    n298: U498.Z U996.B
+    n373: U377.ZN U782.A2
+    n252: U458.ZN U459.A1
+    n510: U504.A2 U846.ZN U944.I
+    flitDataIn[53]: q_entry_reg_0__53_.D
+    q_entry[41]: U854.A1 q_entry_reg_0__41_.Q
+    n386: U664.ZN U665.B
+    n725: U1006.A1 U925.ZN
+    n456: U640.A2 U643.A1 U757.Z
+    n670: U552.ZN U648.A2 U659.B
+    flitDataOut[21]: U890.ZN
+    n349: U564.A1 U583.ZN
+    n282: U483.ZN U488.A1
+    request[3]: U714.I1 U716.ZN U991.B2 destDecode_pktDecoder_pktDestFlop_q_reg_3_.D
+    n274: U387.B U475.ZN
+    flitDataOut[3]: U863.ZN
+    q_entry[9]: U861.A1 q_entry_reg_0__9_.Q
+    n625: U624.I U949.ZN
+    flitDataIn[20]: q_entry_reg_0__20_.D
+    q_entry[59]: U674.I U813.B2 U832.A1 U834.A1 q_entry_reg_0__59_.Q
+    n657: U526.I U718.ZN U810.A1 U825.A1 U846.A1 U959.A2
+    flitDataIn[13]: q_entry_reg_0__13_.D
+    n401: U627.A2 U692.ZN
+    n559: U661.B1 U831.A1 U832.ZN
+    n491: U828.A3 U966.ZN
+    n749: U701.A1 U945.ZN
+    empty: U1002.A1 U1011.B1 U1012.B1 U1013.B1 U1014.B1 U1015.B1 U1016.B1 U1017.B1 U1018.B1 U1019.B1 U1020.B1 U1021.B1 U1022.B1 U1023.B1 U1024.B1 U1025.B1 U1026.B1 U1027.B1 U662.B1 U672.ZN U849.A1 U850.B1 U851.B1 U852.B1 U853.B1 U854.B1 U855.B1 U856.B1 U857.B1 U858.B1 U859.B1 U860.B1 U861.B1 U862.B1 U863.B1 U864.B1 U865.B1 U866.B1 U870.A1 U871.A1 U875.B1 U876.B1 U877.B1 U878.B1 U879.B1 U880.B1 U881.B1 U882.B1 U883.B1 U884.B1 U885.B1 U886.B1 U887.B1 U888.B1 U889.B1 U890.B1 U891.B1 U892.B1 U893.B1 U894.B1 U895.B1 U896.B1 U897.B1 U898.B1 U899.B1 U900.B1 U901.B1 U902.B1 U903.B1 U904.B1 U905.B1 U930.A2
+    n687: U572.A1 U720.A2 U766.ZN U963.B1 U964.A1
+    n233: U399.B1 U400.ZN
+    n358: U366.ZN U467.A1 U979.A1
+    q_entry[43]: U876.A1 q_entry_reg_0__43_.Q
+    flitDataOut[22]: U857.ZN
+    n580: U700.A1 U798.ZN U981.I
+    grant[1]: U363.I U452.A1 U489.A2 U677.B U731.A1 U742.B U800.A2
+    n255: U416.ZN U434.A2
+    destDecode_nextState_0_: U993.ZN destDecode_state_reg_0_.D
+    n517: U1008.ZN U920.A1
+    fsm_nextState[2]: U995.ZN fsm_state_reg_2_.D
+    n789: U403.A1 U494.ZN U527.A2 U561.A2 U770.I U824.A2
+    n419: U1029.A2 U1034.A3 U734.Z U940.A1
+    n395: U521.ZN U651.A2 U688.A1
+    n465: U586.B2 U790.Z
+    flitDataOut[28]: U886.ZN
+    n353: U568.I U584.ZN

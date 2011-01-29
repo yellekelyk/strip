@@ -1,0 +1,138 @@
+PktDestDecoder: 
+  clocks: 
+    clk: 1
+  inputs: 
+    flitData: 72
+    reset: 1
+    validIn: 1
+  outputs: 
+    pktDest: 8
+    validOut: 1
+  cells: 
+    U83: INVD1
+    U89: OAI211D1
+    U64: IND2D1
+    U71: INVD1
+    U50: ND2D1
+    U55: ND2D1
+    U94: OAI211D1
+    U65: INR2D1
+    U59: ND3D1
+    U62: NR2D1
+    U78: INVD1
+    U77: INVD1
+    U82: OAI21D1
+    pktDestFlop_q_reg_4_: DFKCNQD1
+    pktDestFlop_q_reg_1_: DFKCNQD1
+    U93: ND3D1
+    U51: ND2D1
+    U74: AOI32D1
+    U75: OAI21D1
+    U90: ND3D1
+    U87: ND3D1
+    U61: OAI211D1
+    pktDestFlop_q_reg_3_: DFKCNQD1
+    U79: NR2D1
+    U73: AOI22D1
+    U52: ND2D1
+    U86: OAI21D1
+    U92: OAI211D1
+    U88: OAI211D1
+    U63: INVD1
+    U66: NR2D1
+    U49: ND2D1
+    U54: ND2D1
+    U80: AOI22D1
+    pktDestFlop_q_reg_2_: DFKCNQD1
+    U84: AOI22D1
+    U48: INVD1
+    U56: ND2D1
+    U72: INVD1
+    U70: OAI21D1
+    U53: ND2D1
+    U60: OAI211D1
+    U96: INVD1
+    U67: INVD1
+    pktDestFlop_q_reg_0_: DFKCNQD1
+    pktDestFlop_q_reg_5_: DFKCNQD1
+    U81: AOI32D1
+    pktDestFlop_q_reg_6_: DFKCNQD1
+    U85: AOI32D1
+    U91: OAI211D1
+    U69: AOI32D1
+    U68: AOI22D1
+    pktDestFlop_q_reg_7_: DFKCNQD1
+    U95: OAI211D1
+    U76: NR2D1
+    U57: NR3D1
+    U58: INR2D1
+  connections: 
+    flitData[68]: U53.A1 U54.A1 U64.A1 U65.B1
+    n22: U59.ZN U60.C
+    n34: U76.ZN U77.I U80.A1
+    n54: U93.ZN U94.C
+    n61: U77.ZN U82.A2 U94.A2 U95.A1
+    pktDestReg[7]: U50.A1 pktDestFlop_q_reg_7_.Q
+    n53: U67.ZN U68.B2 U80.B2 U87.A2 U93.A3
+    n28: U69.ZN U70.B
+    n39: U83.ZN U84.A1
+    pktDestReg[2]: U81.B1 pktDestFlop_q_reg_2_.Q
+    n60: U54.ZN U61.A2 U89.A2 U92.A2 U95.A2
+    pktDest[6]: U95.ZN pktDestFlop_q_reg_6_.D
+    flitData[59]: U59.A1 U67.I U73.A1 U84.B1 U90.A1
+    n42: U64.ZN U70.A2 U75.A1 U82.A1 U86.A2
+    pktDestReg[3]: U85.B1 pktDestFlop_q_reg_3_.Q
+    n55: U58.ZN U60.B U88.B U91.B U94.B
+    flitData[65]: U55.A2 U62.A2 U71.I
+    n46: U88.ZN U89.B
+    n51: U91.ZN U92.B
+    pktDest[3]: U86.ZN pktDestFlop_q_reg_3_.D
+    n48: U78.ZN U79.A2 U87.A3 U90.A3
+    n27: U68.ZN U69.A3
+    n35: U80.ZN U81.A3
+    pktDest[7]: U61.ZN pktDestFlop_q_reg_7_.D
+    n1: U96.ZN pktDestFlop_q_reg_0_.CN pktDestFlop_q_reg_1_.CN pktDestFlop_q_reg_2_.CN pktDestFlop_q_reg_3_.CN pktDestFlop_q_reg_4_.CN pktDestFlop_q_reg_5_.CN pktDestFlop_q_reg_6_.CN pktDestFlop_q_reg_7_.CN
+    n43: U55.ZN U60.A1 U61.A1 U83.I U86.A1
+    n49: U90.ZN U91.C
+    pktDestReg[4]: U52.A1 pktDestFlop_q_reg_4_.Q
+    n37: U79.ZN U80.B1 U84.B2
+    n30: U66.ZN U68.B1 U73.A2
+    clk: pktDestFlop_q_reg_0_.CP pktDestFlop_q_reg_1_.CP pktDestFlop_q_reg_2_.CP pktDestFlop_q_reg_3_.CP pktDestFlop_q_reg_4_.CP pktDestFlop_q_reg_5_.CP pktDestFlop_q_reg_6_.CP pktDestFlop_q_reg_7_.CP
+    flitData[64]: U55.A1 U56.A1 U62.A1 U76.A2
+    flitData[71]: U57.A2 U69.A1 U74.A1 U81.A1 U85.A1
+    n36: U81.ZN U82.B
+    flitData[60]: U59.A2 U66.A1 U78.I U93.A1
+    n26: U62.ZN U63.I U68.A2
+    n32: U74.ZN U75.B
+    n40: U84.ZN U85.A3
+    pktDestReg[6]: U51.A1 pktDestFlop_q_reg_6_.Q
+    flitData[63]: U59.A3 U66.A2 U79.A1 U87.A1 U90.A2 U93.A2
+    n25: U54.A2 U57.ZN U64.B1
+    flitData[70]: U57.A1 U58.A1
+    pktDestReg[1]: U74.B1 pktDestFlop_q_reg_1_.Q
+    n59: U94.ZN U95.B
+    n31: U73.ZN U74.A3
+    pktDestReg[5]: U49.A1 pktDestFlop_q_reg_5_.Q
+    n57: U48.ZN U49.A2 U50.A2 U51.A2 U52.A2 U57.A3 U58.B1 U69.B2 U74.B2 U81.B2 U85.B2
+    n58: U51.ZN U95.C
+    pktDest[5]: U92.ZN pktDestFlop_q_reg_5_.D
+    n41: U85.ZN U86.B
+    validIn: U48.I U69.A2 U74.A2 U81.A2 U85.A2
+    n29: U72.ZN U73.B2
+    pktDest[1]: U75.ZN pktDestFlop_q_reg_1_.D
+    n56: U53.ZN U60.A2 U88.A1 U91.A1 U94.A1
+    n47: U63.ZN U70.A1 U88.A2 U89.A1
+    n24: U60.ZN U61.B
+    n50: U49.ZN U92.C
+    reset: U96.I
+    pktDest[4]: U89.ZN pktDestFlop_q_reg_4_.D
+    flitData[69]: U53.A2 U65.A1
+    pktDest[2]: U82.ZN pktDestFlop_q_reg_2_.D
+    n45: U52.ZN U89.C
+    n52: U56.ZN U72.I U75.A2 U91.A2 U92.A1
+    n44: U87.ZN U88.C
+    n23: U50.ZN U61.C
+    n38: U65.ZN U68.A1 U73.B1 U80.A2 U84.A2
+    pktDestReg[0]: U69.B1 pktDestFlop_q_reg_0_.Q
+    n33: U56.A2 U71.ZN U76.A1
+    pktDest[0]: U70.ZN pktDestFlop_q_reg_0_.D
