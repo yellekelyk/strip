@@ -1,5 +1,6 @@
 import re
 from myutils import *
+import State
 
 class SymbolicLogic:
     "A class for manpiulating Symbolic Boolean Logic"
@@ -10,16 +11,19 @@ class SymbolicLogic:
         inputs = set()
         for flop in flops:
             inputs = set.union(inputs, stateProp.deps[flop])
-        # remove any state-annotated inputs ? 
         inputs = list(inputs)
         inputs.sort()
         inputs.reverse()
         
         self.__flops  = flops
         self.__inputs = inputs
-        #self.__stateProp = stateProp
         self.__logic  = stateProp.logic
-        self.__state  = stateProp.state
+        constInputs = set.intersection(set(stateProp.state.nodes()),
+                                       set(inputs))
+        constInputs = list(constInputs)
+        constInputs.sort()
+        constInputs.reverse()
+        self.__state  = State.subset(stateProp.state, constInputs)
 
     def inputs(self):
         return self.__inputs

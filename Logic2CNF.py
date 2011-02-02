@@ -22,6 +22,7 @@ class Logic2CNF(SymbolicLogic):
         string = re.sub("\[", "_", string)
         string = re.sub("\]", "_", string)
         string = re.sub("\.", "_", string)
+        string = string.lower()
         return string
 
     def convertOps(self, string):
@@ -35,5 +36,8 @@ class Logic2CNF(SymbolicLogic):
                                  stdin=subprocess.PIPE, 
                                  stdout=subprocess.PIPE)
         logic = self.fileHeader() + self.fileBody(state)
+        #fname = "/tmp/" + str(state) + ".logic"
+        #print "Writing Logic File " + fname
+        #self.toFile(fname,state)
         return l2cnf.communicate(logic)[0]
         

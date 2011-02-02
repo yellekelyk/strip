@@ -1,5 +1,5 @@
 def bool2int(boolvec):
-    return int(str(reduce(lambda x,y:str(x)+str(y), map(int,boolvec))),2)
+    return int(str(reduce(lambda x,y:str(x)+str(y), map(int,boolvec),0)),2)
 
 def cleanget(dictionary, key):
     val = dict()
@@ -22,6 +22,8 @@ def invert(dictionary, unique=False):
 def applyAnd(arr):
     "Bitwise AND of arr vector"
     res = None
+    while None in arr:
+        arr.remove(None)
     if len(arr) > 0:
         res = reduce(lambda x,y: "(" + x + ")&(" + y + ")", arr)
     return res
@@ -34,6 +36,8 @@ def applyInv(stateStr, arr):
 def applyOr(arr):
     "Bitwise OR of arr vector"
     res = None
+    while None in arr:
+        arr.remove(None)
     if len(arr) > 0:
         res = reduce(lambda x,y: "(" + x + ")|(" + y + ")", arr)
     return res

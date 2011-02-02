@@ -7,10 +7,16 @@ import time
 
 SATexe = "/home/kkelley/Downloads/minisat/core/minisat_static"
 
-def runAll(logic, processes=4):
-    print "Creating CNF files"
-    nruns = 2**len(logic.outputs())
-    args = zip([logic]*nruns, range(nruns))
+def runAll(logic, processes=4, states=None):
+    if states is None:
+        states = range(2**len(logic.outputs()))
+    elif not isinstance(states, list):
+        raise Exception("states should be a list!")
+        
+    print "Creating CNF files for states=" + str(states)
+
+    args = zip([logic]*len(states), states)
+    #print "args=" + str(args)
 
     start = time.time()
     if processes > 1:
@@ -18,6 +24,7 @@ def runAll(logic, processes=4):
         cnfs = pool.map(SymbolicLogic_cnf, args)
     else:
         cnfs = map(SymbolicLogic_cnf, args)
+
     dur = time.time() - start
     print "CNF creation took " + str(dur) + " seconds"
     print "Running SAT problems"
@@ -34,7 +41,7 @@ def runAll(logic, processes=4):
     outSet = set()
     for idx in range(len(results)):
         if results[idx]:
-            outSet.add(idx)
+            outSet.add(states[idx])
     return outSet
 
 def SymbolicLogic_cnf(ar, **kwar):

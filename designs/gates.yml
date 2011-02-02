@@ -42,6 +42,50 @@ AN4D1:
     Z: 1
   primitive: A1 and A2 and A3 and A4
 
+AO22D1:
+  inputs:
+    A1: 1
+    A2: 1
+    B1: 1
+    B2: 1
+  outputs:
+    Z: 1
+  primitive: (A1 and A2) or (B1 and B2)
+
+AO222D1:
+  inputs:
+    A1: 1
+    A2: 1
+    B1: 1
+    B2: 1
+    C1: 1
+    C2: 1
+  outputs:
+    Z: 1
+  primitive: (A1 and A2) or (B1 and B2) or (C1 and C2)
+
+AO31D1:
+  inputs:
+    A1: 1
+    A2: 1
+    A3: 1
+    B: 1
+  outputs:
+    Z: 1
+  primitive: (A1 and A2 and A3) or (B)
+
+AO33D1:
+  inputs:
+    A1: 1
+    A2: 1
+    A3: 1
+    B1: 1
+    B2: 1
+    B3: 1
+  outputs:
+    Z: 1
+  primitive: (A1 and A2 and A3) or (B1 and B2 and B3)
+
 AOI21D1:
   inputs:
     A1: 1
@@ -71,6 +115,18 @@ AOI211D1:
   outputs: 
     ZN: 1
   primitive: not((A1 and A2) or B or C)
+
+
+AOI221D1:
+  inputs:
+    A1: 1
+    A2: 1
+    B1: 1
+    B2: 1
+    C: 1
+  outputs: 
+    ZN: 1
+  primitive: not((A1 and A2) or (B1 and B2) or C)
 
 
 AOI222D1:
@@ -117,6 +173,18 @@ AOI32D1:
     ZN: 1
   primitive: not((A1 and A2 and A3) or (B1 and B2))
 
+
+AOI33D1:
+  inputs:
+    A1: 1
+    A2: 1
+    A3: 1
+    B1: 1
+    B2: 1
+    B3: 1 
+  outputs: 
+    ZN: 1
+  primitive: not((A1 and A2 and A3) or (B1 and B2 and B3))
    
 BUFFD1:
   inputs:
@@ -230,6 +298,16 @@ INR2XD1:
     ZN: 1
   primitive: not (not A1 or B1)
 
+
+INR3D1:
+  inputs:
+    A1: 1
+    B1: 1
+    B2: 1
+  outputs:
+    ZN: 1
+  primitive: not (not A1 or B1 or B2)
+
 INVD1:
   inputs:
     I: 1
@@ -258,6 +336,16 @@ MAOI22D1:
   primitive: not((A1 and A2) or not(B1 or B2))
 
 
+MAOI222D1:
+  inputs:
+    A: 1
+    B: 1
+    C: 1
+  outputs:
+    ZN: 1
+  primitive: not((A and B) or (A and C) or (B and C))
+
+
 MOAI22D1:
   inputs:
     A1: 1
@@ -276,6 +364,18 @@ MUX2D1:
   outputs:
     Z: 1
   primitive: (I1 and S) or (I0 and (not S))
+
+MUX4D1:
+  inputs:
+    I0: 1
+    I1: 1
+    I2: 1
+    I3: 1
+    S0: 1
+    S1: 1
+  outputs:
+    Z: 1
+  primitive: (I0 and (not S0) and (not S1)) or (I1 and S0 and (not S1)) or (I2 and (not S0) and S1) or (I3 and S0 and S1) 
 
 
 ND2D1:
@@ -365,6 +465,29 @@ OA21D1:
     Z: 1
   primitive: (A1 or A2) and B
 
+OA22D1:
+  inputs:
+    A1: 1
+    A2: 1
+    B1: 1
+    B2: 1
+  outputs:
+    Z: 1
+  primitive: (A1 or A2) and (B1 or B2)
+
+
+OA222D1:
+  inputs:
+    A1: 1
+    A2: 1
+    B1: 1
+    B2: 1
+    C1: 1
+    C2: 1
+  outputs:
+    Z: 1
+  primitive: (A1 or A2) and (B1 or B2) and (C1 or C2)
+
 
 OA31D1:
   inputs:
@@ -375,6 +498,19 @@ OA31D1:
   outputs:
     Z: 1
   primitive: (A1 or A2 or A3) and B
+
+
+OA33D1:
+  inputs:
+    A1: 1
+    A2: 1
+    A3: 1
+    B1: 1
+    B2: 1
+    B3: 1
+  outputs:
+    Z: 1
+  primitive: (A1 or A2 or A3) and (B1 or B2 or B3)
 
 
 OAI21D1:
@@ -408,6 +544,18 @@ OAI221D1:
     ZN: 1
   primitive: not((A1 or A2) and (B1 or B2) and C)
 
+OAI222D1:
+  inputs:
+    A1: 1
+    A2: 1
+    B1: 1
+    B2: 1
+    C1: 1
+    C2: 1
+  outputs:
+    ZN: 1
+  primitive: not((A1 or A2) and (B1 or B2) and (C1 or C2))
+
 
 OAI211D1:
   inputs:
@@ -428,6 +576,37 @@ OAI31D1:
   outputs:
     ZN: 1
   primitive: not((A1 or A2 or A3) and B)
+
+OAI32D1:
+  inputs:
+    A1: 1
+    A2: 1
+    A3: 1
+    B1: 1
+    B2: 1
+  outputs:
+    ZN: 1
+  primitive: not((A1 or A2 or A3) and (B1 or B2))
+
+OAI33D1:
+  inputs:
+    A1: 1
+    A2: 1
+    A3: 1
+    B1: 1
+    B2: 1
+    B3: 1
+  outputs:
+    ZN: 1
+  primitive: not((A1 or A2 or A3) and (B1 or B2 or B3))
+
+OR2D1:
+  inputs:
+    A1: 1
+    A2: 1
+  outputs:
+    Z: 1
+  primitive: A1 or A2
 
 OR2XD1:
   inputs:

@@ -4,19 +4,125 @@ import Netlist
 import SAT
 import State
 import StateProp
+import TruthTable
 
 import copy
+import glob
+import os
 from pygraph.algorithms.searching import depth_first_search
+import sys
+import string
 
 import pdb
 
-a = Netlist.Netlist()
-a.readYAML("designs/gates.yml")
+
+def runHierSAT(sp, outputs):
+    "Run a SAT sweep in a recursive hierarchical fashion"
+
+    print "runHierSAT called with outputs= " + str(outputs)
+
+    if len(outputs) <= 4:
+        l2cnf = Logic2CNF.Logic2CNF(sp, outputs)
+        states = SAT.runAll(l2cnf)
+        return states
+    else:
+        outputs1 = outputs[0:(len(outputs)/2)]
+        outputs2 = outputs[(len(outputs)/2):len(outputs)]
+
+        run1 = runHierSAT(sp, outputs1)
+        run2 = runHierSAT(sp, outputs2)
+        
+        # do reduction step of combining states
+        if len(run1)*len(run2) >= 2**12:
+            #this is too large to sweep, throw our hands up in the air
+            # maybe return None to indicate this ???
+            raise Exception("tooo many states to sweep !!")
+        else:
+           state1 = State.State(outputs1) 
+           state2 = State.State(outputs2) 
+           for st in run1:
+               state1.addState(st)
+           for st in run2:
+               state2.addState(st)
+           state = State.merge(state1, state2)
+           stateList = list(state.states)
+           stateList.sort()
+
+           print str("Running reduction sweep on " + str(len(stateList)) + 
+                     " states: " + str(stateList))
+
+           #pdb.set_trace()
+           if state.nodes() != list(outputs):
+               raise Exception("I expect these to be the same!!")
+
+           l2cnf = Logic2CNF.Logic2CNF(sp, outputs)
+           states = SAT.runAll(l2cnf, states=stateList)
+           return states
+
+
+def runSingleSAT(sp, outputs):
+    result = State.State(outputs)
+    l2cnf = Logic2CNF.Logic2CNF(sp, outputs)
+    states = SAT.runAll(l2cnf)
+    for state in states:
+        result.addState(state)
+    return result
+
+
+def runIterSAT(sp, outputs, group=6, step=1):
+    "Run a SAT sweep; preprocess by running smaller subset sweeps first"
+
+    print "runIterSAT called with outputs= " + str(outputs)
+
+    if len(outputs) < group:
+        group = len(outputs)
+    nRuns = 1 + (len(outputs)-group)/step
+
+    # produce a list of output subsets
+    subsets = map(lambda x:list(outputs[(x*step):(x*step+group)]), range(nRuns))
+    states = map(runSingleSAT,[sp]*len(subsets),subsets)
+    allStates = reduce(State.merge, states)
+
+    stateList = list(allStates.states)
+    stateList.sort()
+
+    if len(stateList) >= 2**12:
+        #this is too large to sweep, throw our hands up in the air
+        # maybe return None to indicate this ???
+        raise Exception("tooo many states to sweep !!")
+    else:
+        print str("Running reduction sweep on " + str(len(stateList)) + 
+                  " states: " + str(stateList))
+
+        if allStates.nodes() != list(outputs):
+            raise Exception("I expect these to be the same!!")
+
+        l2cnf = Logic2CNF.Logic2CNF(sp, outputs)
+        states = SAT.runAll(l2cnf, states=stateList)
+        return states
+
+
+
+
+if len(sys.argv) < 2:
+    print "Usage: python propStates.py <moduleName>"
+    exit(1)
 
 # set design here!!
-a.readYAML("designs/DestinationDecoder.yml")
-a.link("DestinationDecoder")
+design = sys.argv[1]
 
+# set path here!!
+path = 'designs/'
+
+a = Netlist.Netlist()
+for infile in glob.glob(os.path.join(path, '*.yml')):
+    print "Reading " + infile
+    a.readYAML(infile)
+
+print "Linking " + design
+a.link(design)
+
+print "Building DAG"
 sp = StateProp.StateProp(a, reset='reset')
 (gr, flopGroups) = sp.flopReport()
 
@@ -31,7 +137,7 @@ post.reverse()
 # initialization code
 flopStatesOut = dict()
 flopStatesIn = copy.deepcopy(sp.state)
-flopStatesIn_p = State.State([])
+flopStatesIn_p = State.State(flopStatesIn.nodes())
 inputs = dict() 
 outToIn = myutils.invert(sp.dag.flopsIn, True)
 skip = [False]*len(post)
@@ -47,24 +153,22 @@ for group in post:
 # do set comparison to see if input states have changed
 while not (flopStatesIn == flopStatesIn_p):
     print "Start of main loop..."
-    print "current  state nodes are: " + str(flopStatesIn.nodes())
+    print "current state nodes are: " + str(flopStatesIn.nodes())
     print "previous state nodes are: " + str(flopStatesIn_p.nodes())
-    print "current  states are: " + str(flopStatesIn.states)
-    print "previous states are: " + str(flopStatesIn_p.states)
+    #print "current states are: " + str(flopStatesIn.states)
+    #print "previous states are: " + str(flopStatesIn_p.states)
 
     # set the inputs here
-    # the nodes we care about are in flopStatesIn
-    # the states are actually the diff of flopStatesIn and flopStatesIn_p
-    # ensure that nodes match for comparison
-    #flopStatesIn_p = State.subset(flopStatesIn_p, flopStatesIn.nodes())
+    # only use the DIFF of states!
+    # we're guaranteed that flopStatesIn_p.nodes() >= flopStatesIn.nodes()
+    diffNodesIn = set.difference(set(flopStatesIn_p.nodes()),
+                                 set(flopStatesIn.nodes()))
+    flopStatesIn_p = State.subset(flopStatesIn_p, flopStatesIn.nodes())
+    diffStatesIn = State.State(flopStatesIn.nodes())
+    for diff in set.difference(flopStatesIn.states, flopStatesIn_p.states):
+        diffStatesIn.addState(diff)
 
-    #pdb.set_trace()
-
-    # TODO only use the DIFF of states!
-    sp.setInputState(State.merge(userStates, flopStatesIn))
-
-    # save a copy of the initial input state set
-    flopStatesIn_p = copy.deepcopy(flopStatesIn)
+    sp.setInputState(State.merge(userStates, diffStatesIn))
 
     # for each state vector
     for group in post:
@@ -74,26 +178,54 @@ while not (flopStatesIn == flopStatesIn_p):
             outputSet = flopGroups[group]
 
             print "Considering outputs: " + str(outputSet)
+            constIn = list(set.intersection(inputSet,set(flopStatesIn.nodes())))
 
-            # TODO : we should only care about non-constant input set
-            if len(inputSet) < 16:
-                # do simulation to get output states
-                print "Running simulation sweep..."
-                tt = TruthTable.TruthTable(sp, outputSet)
-                states = tt.sweepStates()
+            
+            updated = True
+            # some stateful nodes might have been relaxed
+            if len(set.intersection(diffNodesIn, inputSet)) == 0:
+                print "Input node set hasn't changed"
+                updated = False
+            if not updated:
+                newStates = State.subset(diffStatesIn, constIn)
+                oldStates = State.subset(flopStatesIn_p, constIn)
 
-            elif len(outputSet) < 12:
-                # do SAT
-                print "Running SAT..."
-                l2cnf = Logic2CNF.Logic2CNF(sp, outputSet)
-                states = SAT.runAll(l2cnf, 8)
+                if newStates != oldStates:
+                    updated = True
+
+            #pdb.set_trace()
+            if not updated:
+                #statesInPrev == statesIn:
+                print "Input states haven't changed, no need to run sweep"
             else:
-                # FrEaK OuTTT!
-                raise Exception("Input size is " + str(len(inputSet)) + 
-                                " and Output size is " + str(len(outputSet)))
 
-            for st in states:
-                flopStatesOut[group].addState(st)
+                # we really only care about non-constant input set
+                if len(inputSet)-len(constIn) < 16:
+                    # do simulation to get output states
+                    # TODO: stop simulation early if > half states seen
+                    print "Running simulation sweep..."
+                    tt = TruthTable.TruthTable(sp, outputSet)
+                    states = tt.sweepStates()
+
+                elif len(outputSet) < 12:
+                    # do SAT
+                    print "Running SAT..."
+                    #l2cnf = Logic2CNF.Logic2CNF(sp, outputSet)
+                    #states = SAT.runAll(l2cnf)
+                    #states = runHierSAT(sp, outputSet)
+                    states = runIterSAT(sp, outputSet)
+                else:
+                    # FrEaK OuTTT!
+                    print str("Skipping b/c input size is " + str(len(inputSet)) + 
+                              " and Output size is " + str(len(outputSet)))
+                    states = set()
+                    skip[group] = True
+                    # TODO: try breaking outputs running SAT, combining ?
+                    #raise Exception("Input size is " + str(len(inputSet)) + 
+                    #                " and Output size is " + str(len(outputSet)))
+
+                for st in states:
+                    flopStatesOut[group].addState(st)
 
         else:
             print "Skipped " + str(group)
@@ -103,11 +235,12 @@ while not (flopStatesIn == flopStatesIn_p):
 
     states = []
     # add any new states to cumulative input set
+    # todo add them as we go (should be more efficient)
     for group in post:
 
         # only proceed IF we have less than n/2 states!
         if (len(flopStatesOut[group].states) < 
-            2**(len(flopStatesOut[group].nodes())-1)):
+            2**(len(flopStatesOut[group].nodes())-1)) and not skip[group]:
 
             print "Group " + str(group) + " has compressible states"
 
@@ -130,10 +263,15 @@ while not (flopStatesIn == flopStatesIn_p):
 
         states.append(state)
 
+    #pdb.set_trace()
+
     newStatesIn = reduce(State.merge, states)
 
-    # we should be guaranteed that flopStatesIn.nodes() >= newStatesIn.nodes()
+    # save a copy of the previous input state set
+    flopStatesIn_p = copy.deepcopy(flopStatesIn)
 
+
+    # we should be guaranteed that flopStatesIn.nodes() >= newStatesIn.nodes()
     # remove irrelevant nodes with too many states
     flopStatesIn   = State.subset(flopStatesIn, newStatesIn.nodes())
     #flopStatesIn_p = State.subset(flopStatesIn_p, newStatesIn.nodes())
@@ -148,5 +286,16 @@ while not (flopStatesIn == flopStatesIn_p):
 print "Final output groups:"
 for grp in flopStatesOut:
     if not skip[grp]:
-        print flopStatesOut[grp].nodes()
-        print flopStatesOut[grp].states
+        #print flopStatesOut[grp].nodes()
+        #print flopStatesOut[grp].states
+
+        stateList = list(flopStatesOut[grp].states)
+        stateList.sort()
+        idx = range(len(stateList))
+        stateStr = map(lambda x,y:"S"+str(x)+"="+str(y), idx, stateList)
+        stateStr = reduce(lambda x,y: x + " " + y, stateStr)
+        print "set_fsm_state_vector " + string.join(flopStatesOut[grp].nodes())
+        print "set_fsm_encoding " + stateStr
+
+
+

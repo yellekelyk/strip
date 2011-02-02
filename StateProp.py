@@ -39,9 +39,15 @@ class StateProp:
         # state object
         st = State.State([])
         if reset:
-            st = State.State(self.__dag.flopsIn.keys())
+            flopsIn = self.__dag.flopsIn.keys()
+            flopsIn.sort()
+            flopsIn.reverse()
+            flopsOut = map(self.__dag.flopsIn.get, flopsIn)
+            st = State.State(flopsIn)
 
             inputs = list(self.__dag.inputs)
+            if reset not in inputs:
+                raise Exception("reset input `" + reset + "' is not in design!")
             inputs.remove(reset)
             inputs.append(reset)
             tmp = State.State(inputs)
@@ -52,7 +58,8 @@ class StateProp:
             self.propSims()
 
             #pdb.set_trace()
-            tt = TruthTable.TruthTable(self, self.__dag.flopsIn.values())
+            tt = TruthTable.TruthTable(self, flopsOut)
+            #self.__dag.flopsIn.values())
 
             states = tt.sweepStates()
             if len(states) > 1:
@@ -60,7 +67,7 @@ class StateProp:
             state = states.pop()
 
             print str("Found reset state for flops: " + 
-                      str(self.__dag.flopsIn.values()) + " " +
+                      str(flopsOut) + " " +
                       bin(state)[2:].rjust(len(st.nodes()), '0'))
 
             self.__reset = state
