@@ -201,6 +201,9 @@ class StateProp:
                 raise Exception("Node " + node + " is not an input!")
         self.__state = state
 
+    def getInputState(self):
+        return self.__state
+
     #def annotateState(self, state):
     #    "Annotate a group of inputs with a set of defined states"
     #    # do some checking of the inputs to make sure legal

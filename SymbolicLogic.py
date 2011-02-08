@@ -18,18 +18,40 @@ class SymbolicLogic:
         self.__flops  = flops
         self.__inputs = inputs
         self.__logic  = stateProp.logic
-        constInputs = set.intersection(set(stateProp.state.nodes()),
-                                       set(inputs))
-        constInputs = list(constInputs)
-        constInputs.sort()
-        constInputs.reverse()
-        self.__state  = State.subset(stateProp.state, constInputs)
+        
+        #self.__state = stateProp.getInputState
+
+        self.setState(stateProp.state)
+        #constInputs = set.intersection(set(stateProp.state.nodes()),
+        #                               set(inputs))
+        #constInputs = list(constInputs)
+        #constInputs.sort()
+        #constInputs.reverse()
+        #self.__state  = State.subset(stateProp.state, constInputs)
 
     def inputs(self):
         return self.__inputs
 
     def outputs(self):
         return self.__flops
+
+    def setState(self, state):
+        constInputs = list(set.intersection(set(state.nodes()), 
+                                            set(self.__inputs)))
+        constInputs.sort()
+        constInputs.reverse()
+        self.__state  = State.subset(state, constInputs)
+
+    #def state(self):
+    #    st = self.__state()
+    #    constInputs = list(set.intersection(set(st.nodes()),
+    #                                        set(self.__inputs)))
+    #    constInputs.sort()
+    #    constInputs.reverse()
+    #    return State.subset(st, constInputs)
+
+    def state(self):
+        return self.__state
 
     def toFile(self, fileName, state):
         f = open(fileName, 'w')
@@ -80,8 +102,7 @@ class SymbolicLogic:
 
     def getInLogic(self):
         outputs = []
-        #states = self.__stateProp.state
-        states = self.__state
+        states = self.state()
         for state in states.states:
             stateStr = states.getStateStr(state)
             output = applyInv(stateStr, states.nodes())

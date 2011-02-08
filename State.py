@@ -12,6 +12,7 @@ class State:
         for node in nodes:
             self.__nodeDict[node] = cnt
             cnt = cnt + 1
+        self.__skip = False
 
     def __eq__(self, state):
         ret = False
@@ -22,6 +23,12 @@ class State:
 
     def __ne__(self, state):
         return not self.__eq__(state)
+
+    def full(self):
+        return len(self.__states) > 2**(len(self.__nodes)-1) or self.__skip
+
+    def setSkip(self):
+        self.__skip = True
 
     def addState(self, state):
         if type(state) == type(0) or type(state) == type(0l):
@@ -82,6 +89,12 @@ def subset(state, nodes):
     return stateObj
     
 
+def rename(state, conversion):
+    "rename nodes in state"
+    new = State(map(conversion.get, state.nodes()))
+    for st in state.states:
+        new.addState(st)
+    return new
 
 
 def merge(state1, state2):
@@ -91,8 +104,8 @@ def merge(state1, state2):
     nodesCommon = list(set.intersection(nodes1, nodes2))
     nodesCommon.sort()
     nodesCommon.reverse()
-    for node in nodesCommon:
-        print "merge (info): Node " + node + " is common"
+    #for node in nodesCommon:
+    #    print "merge (info): Node " + node + " is common"
 
     if len(nodesCommon) > 0:
         # do consistency check!!!

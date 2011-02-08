@@ -4,23 +4,25 @@ from multiprocessing import Pool
 import sys
 import time
 
+import pdb
 
 SATexe = "/home/kkelley/Downloads/minisat/core/minisat_static"
 
-def runAll(logic, processes=4, states=None):
+def runAll(logic, processes=3, states=None):
     if states is None:
         states = range(2**len(logic.outputs()))
     elif not isinstance(states, list):
         raise Exception("states should be a list!")
         
-    print "Creating CNF files for states=" + str(states)
+    #print "Creating CNF files for states=" + str(states)
+    print "Creating " + str(len(states)) + " CNF files"
 
     args = zip([logic]*len(states), states)
     #print "args=" + str(args)
 
     start = time.time()
     if processes > 1:
-        pool = Pool(processes)
+        pool = Pool(6)
         cnfs = pool.map(SymbolicLogic_cnf, args)
     else:
         cnfs = map(SymbolicLogic_cnf, args)

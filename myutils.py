@@ -42,8 +42,8 @@ def applyOr(arr):
         res = reduce(lambda x,y: "(" + x + ")|(" + y + ")", arr)
     return res
 
-def applyInvChar(state):
+def applyInvChar(state, char="!"):
     inv = ""
     if state == "0":
-        inv = "!"
+        inv = char
     return inv
