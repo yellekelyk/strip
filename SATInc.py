@@ -12,71 +12,46 @@ import pdb
 
 SATexe = "/home/kkelley/Downloads/minisat.mine/simp/minisat_static"
 
-sat_all = dict()
-sats    = []
+#sat_all = dict()
+#sats    = []
 
 def runAll(logic, processes=3, states=None):
     if states is None:
         states = range(2**len(logic.outputs()))
     elif not isinstance(states, list):
         raise Exception("states should be a list!")
-        
-    #print "Creating CNF files for states=" + str(states)
-    print "Creating " + str(len(states)) + " CNF files"
 
-    start = time.time()
-
-    # create all CNFs serially (and cache them in memory)
-    #for st in states:
-    #    cnf = logic.cnf(st, False)
-
-    # check your lease, you're living in hack city
-    #doneCreating = True
-    #for st in states:
-    #    if not st in logic._Logic2CNF__map:
-    #        doneCreating = False
-    #        break
 
     args = zip([logic]*len(states), states)
-    cnfs = map(SymbolicLogic_cnf, args)
-    #if processes > 1:
-    #    pool = Pool(6)
-    #    cnfs = pool.map(SymbolicLogic_cnf, args)
-    #else:
-    #    cnfs = map(SymbolicLogic_cnf, args)
+    solvers = map(SymbolicLogic_solver, args)    
 
 
-
-
-    #
-    #if doneCreating or processes == 1:
-    #    cnfs = map(SymbolicLogic_cnf, args)
-    #else:
-    #    pool = Pool(processes)
-    #    cnfs = pool.map(SymbolicLogic_cnf, args)
-    #    # make sure to save the computed CNFs for next time
-    #    for i in range(len(cnfs)):
-    #        logic.forceCNF(states[i], cnfs[i][0])
-    #        logic.forceMap(states[i], cnfs[i][2])
-
+    print "Creating " + str(len(states)) + " CNF files"
+    start = time.time()
+    cnfargs = zip([logic]*len(states), states, solvers)
+    if processes > 1:
+        pool = Pool(processes)
+        cnffiles = pool.map(SymbolicLogic_cnf, cnfargs)
+    else:
+        cnffiles = map(SymbolicLogic_cnf, cnfargs)
     dur = time.time() - start
     print "CNF creation took " + str(dur) + " seconds"
 
-    print "Running SAT problems"
 
+    print "Creating " + str(len(states)) + " Assumptions"
     start = time.time()
+    if processes > 1:
+        pool = Pool(processes)
+        assumps = pool.map(SymbolicLogic_assump, args)
+    else:
+        assumps = map(SymbolicLogic_assump, args)
+    dur = time.time() - start
+    print "Assumption creation took " + str(dur) + " seconds"
 
-    if tuple(logic.outputs()) not in sat_all:
-        #print "Initializing sat_all for : " + str(logic.outputs())
-        sat_all[tuple(logic.outputs())] = [None]*(2**len(logic.outputs()))
 
-    global sats
-    sats = sat_all[tuple(logic.outputs())]
-    for i in range(len(sats)):
-        sats[i] = "/tmp/solver" + hashlib.sha224(str(logic.outputs()) + str(i)).hexdigest()
-
-    #pdb.set_trace()
-
+    cnfs = zip(cnffiles, assumps, states, solvers)
+    print "Running SAT problems"
+    start = time.time()
     if processes > 1:
         pool = Pool(processes)
         results = pool.map(run, cnfs)
@@ -84,6 +59,7 @@ def runAll(logic, processes=3, states=None):
         results = map(run, cnfs)
     dur = time.time() - start
     print "SAT runs took " + str(dur) + " seconds"
+
     
     # convert binary array to set
     outSet = set()
@@ -96,29 +72,22 @@ def runAll(logic, processes=3, states=None):
 def SymbolicLogic_cnf(ar, **kwar):
     # make CNF
     cls = ar[0]
-    cnf = cls.cnf(ar[1], constraints=False)
+    # ONLY make if the solver doesn't already exist
+    if os.path.exists(ar[2]):
+        cnffile = None
+    else:
+        cnffile = cls.cnffile(ar[1], constraints=False)
+    return cnffile
 
-    # get assumption string
+def SymbolicLogic_assump(ar, **kwar):
+    cls = ar[0]
     assumps = cls.assumptions(ar[1])
+    return assumps
 
-    #inputs = cls.inputs()
-    #inputs = map(cls.cleanNames, inputs)
-    #mapping = parseCNF(cnf, inputs)
-
-
-    #fileName = "/tmp/design" + str(ar[1])
-    #f = open(fileName + ".cnf", 'w')
-    #f.write(cnf)
-    #f.close()    
-    #
-    #f = open(fileName + ".ass", 'w')
-    #f.write(assumps)
-    #f.close()    
-    #
-    #print "Wrote " + fileName
-    #pair = (cnf, assumps, cls.cnfmap(ar[1]))
-    pair = (cnf, assumps, ar[1])
-    return pair
+def SymbolicLogic_solver(ar, **kwar):
+    cls = ar[0]
+    solver = "/tmp/solver" + hashlib.sha224(str(cls.outputs()) + str(ar[1])).hexdigest()
+    return solver
 
     
 def makeFile(fname):
@@ -134,30 +103,31 @@ def makeFile(fname):
     
 
 def run(cnf):
+
+    #global sats
+
     
     # determine solver name
     #m = hashlib.sha224(str(cnf[0])).hexdigest()
 
-    assumpsFile = "/tmp/assump" + hashlib.sha224(sats[cnf[2]] + str(cnf[1])).hexdigest()
-    f = makeFile(assumpsFile)
-    f.write(cnf[1])
-    f.close()
+    #assumpsFile = "/tmp/assump" + hashlib.sha224(sats[cnf[2]] + str(cnf[1])).hexdigest()
+    #f = makeFile(assumpsFile)
+    #f.write(cnf[1])
+    #f.close()
 
-    global sats
-    if os.path.exists(sats[cnf[2]]):
+    if os.path.exists(cnf[3]):
         #print "Solver exists: loading from " + sats[cnf[2]]
-        sat = subprocess.Popen([SATexe, "-load", sats[cnf[2]], assumpsFile], 
+        sat = subprocess.Popen([SATexe, "-load", cnf[3], cnf[1]], 
                                stdin=None,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     else:
         #print "Loading new solver " + sats[cnf[2]]
-        #m = hashlib.sha224(str(cnf)).hexdigest()
-        cnfFile    = "/tmp/cnf" + hashlib.sha224(sats[cnf[2]] + str(cnf[1])).hexdigest()
-        f = makeFile(cnfFile)
-        f.write(cnf[0])
-        f.close()
-        sat = subprocess.Popen([SATexe, cnfFile, assumpsFile, sats[cnf[2]]], 
+        #cnfFile    = "/tmp/cnf" + hashlib.sha224(sats[cnf[2]] + str(cnf[1])).hexdigest()
+        #f = makeFile(cnfFile)
+        #f.write(cnf[0])
+        #f.close()
+        sat = subprocess.Popen([SATexe, cnf[0], cnf[1], cnf[3]], 
                                stdin=None,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
@@ -216,18 +186,27 @@ def run(cnf):
     result = out[len(out)-2] == "SATISFIABLE"
 
     # remove files
-    #os.remove(cnfFile)
-    os.remove(assumpsFile)
+    # remove assumptions
+    os.remove(cnf[1])
+
+    # remove CNF file if it exists
+    if cnf[0] and os.path.exists(cnf[0]):
+        os.remove(cnf[0])
+
+
+    # remove serialized solver if it exists
     if result:
-        os.remove(sats[cnf[2]])
+        os.remove(cnf[3])
 
 
-    try:
-        cnfFile
-    except NameError:
-        pass
-    else:
-        os.remove(cnfFile)
+
+
+    #try:
+    #    cnfFile
+    #except NameError:
+    #    pass
+    #else:
+    #    os.remove(cnfFile)
 
 
     return result     

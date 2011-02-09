@@ -21,7 +21,6 @@ import pdb
 
 
 l2cnf_all = dict()
-sat_all   = dict()
 
 def runHierSAT(sp, outputs):
     "Run a SAT sweep in a recursive hierarchical fashion"
@@ -75,7 +74,7 @@ def runSingleSAT(sp, outputs, st=None):
     if precompute:
         if tuple(outputs) not in l2cnf_all:
             print "Precomputing cnf files for : " + str(outputs)
-            l2cnf_all[tuple(outputs)] = Logic2CNF.Logic2CNF(sp, outputs, True)
+            l2cnf_all[tuple(outputs)] = Logic2CNF.Logic2CNF(sp, outputs)
 
         l2cnf = l2cnf_all[tuple(outputs)]
         l2cnf.setState(sp.state)
@@ -217,10 +216,6 @@ class FindStates:
                 if outputs in l2cnf_all:
                     print "Garbage collecting l2cnf_all: " + str(outputs)
                     l2cnf_all.pop(outputs)
-
-                #if outputs in SATInc.sat_all:
-                #    print "Garbage collecting sat_all: " + str(outputs)
-                #    SATInc.sat_all.pop(outputs)
 
         return ret
 
