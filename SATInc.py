@@ -6,7 +6,6 @@ import time
 import hashlib
 import os
 import re
-import pexpect
 
 import pdb
 
