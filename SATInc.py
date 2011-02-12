@@ -10,7 +10,15 @@ import pexpect
 
 import pdb
 
-SATexe = "/home/kkelley/Downloads/minisat.mine/simp/minisat_static"
+if "MINISAT" in os.environ:
+    MINISAT = os.environ["MINISAT"]
+else:
+    MINISAT = "/home/kkelley/Downloads/minisat.mine/simp/minisat_static"
+
+if "TMPDIR" in os.environ:
+    TMPDIR = os.environ["TMPDIR"]
+else:
+    TMPDIR="/tmp"
 
 #sat_all = dict()
 #sats    = []
@@ -86,7 +94,7 @@ def SymbolicLogic_assump(ar, **kwar):
 
 def SymbolicLogic_solver(ar, **kwar):
     cls = ar[0]
-    solver = "/tmp/solver" + hashlib.sha224(str(cls.outputs()) + str(ar[1])).hexdigest()
+    solver = TMPDIR + "/solver" + hashlib.sha224(str(cls.outputs()) + str(ar[1])).hexdigest()
     return solver
 
     
@@ -117,7 +125,7 @@ def run(cnf):
 
     if os.path.exists(cnf[3]):
         #print "Solver exists: loading from " + sats[cnf[2]]
-        sat = subprocess.Popen([SATexe, "-load", cnf[3], cnf[1]], 
+        sat = subprocess.Popen([MINISAT, "-load", cnf[3], cnf[1]], 
                                stdin=None,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
@@ -127,7 +135,7 @@ def run(cnf):
         #f = makeFile(cnfFile)
         #f.write(cnf[0])
         #f.close()
-        sat = subprocess.Popen([SATexe, cnf[0], cnf[1], cnf[3]], 
+        sat = subprocess.Popen([MINISAT, cnf[0], cnf[1], cnf[3]], 
                                stdin=None,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)

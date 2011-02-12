@@ -17,8 +17,6 @@ import string
 
 import pdb
 
-#import pexpect
-
 
 l2cnf_all = dict()
 
@@ -266,42 +264,6 @@ class FindStates:
         return (updated, diffStates)
 
 
-    #def updateInputs(self, group):
-    #    "Update the constant inputs associated with group outputs"
-    #    
-    #    stOut = self.__flopStatesOut.get(group)
-    #
-    #    if self.__skip[group]:
-    #        # remove all inputs associated with this group
-    #        self.__removeInputNodes__(group)
-    #    else:
-    #        # check number of states
-    #        # only proceed IF we have less than 2**n states!
-    #        if stOut.full():
-    #            print "Group " + str(group) + " has too many states, skipping"
-    #            # remove all inputs associated with this group
-    #            self.__skip[group] = True
-    #            self.__removeInputNodes__(group)
-    #        else:
-    #            print "Group " + str(group) + " has compressible states"
-    #
-    #            # start with existing states for these inputs
-    #            # todo consider maintaining a map of these states
-    #            # instead of constantly subsetting/merging
-    #            state = State.subset(self.__flopStatesIn, self.__inputs[group])
-    #
-    #            # determine the outputs that matter
-    #            outGrp = map(self.__sp.dag.flopsIn.get, self.__inputs[group])
-    #
-    #            # add new states implied by outputs
-    #            for st in stOut.states:
-    #                boolVec = map(stOut.getState, [st]*len(outGrp), outGrp)
-    #                state.addState(myutils.bool2int(boolVec))
-    #
-    #            # merge new states into flopStatesIn
-    #            self.__mergeInputState__(group, state)
-
-
     def __removeInputNodes__(self, group):
         " Ensures the input state doesn't have any input in it"
         #self.__flopStatesIn_p[group] = copy.deepcopy(self.__flopStatesIn)
@@ -345,12 +307,9 @@ class FindStates:
         # find number of outputs that haven't been SATISFIED
         outputCombos = 2**(len(outputSet))-len(statesOut.states)
 
-        #pdb.set_trace()
-
         # set relevant constant inputs before running
         self.__sp.setInputState(State.merge(self.__userStates, inputs))
 
-        #pdb.set_trace()
 
         # TODO: stop simulation/SAT sweep early if > half states seen
         if inputCombos < 2**16:
@@ -370,7 +329,6 @@ class FindStates:
             outputStates = list(set.difference(set(range(2**len(outputSet))), 
                                                statesOut.states))
 
-            #pdb.set_trace()
             states = runSingleSAT(self.__sp, outputSet, st=outputStates).states
 
             #if outputCombos <= 128:
@@ -396,208 +354,20 @@ class FindStates:
         for st in states:
             statesOut.addState(st)
 
-        #if self.__flopStatesOut.get(group).full():
-        #    print str(group) + " : Outputs are full, setting skip"
-        #    self.__skip[group] = True
-
-
 
     def printGroups(self):
         print "Final output groups:"
         for grp in self.__post:
             stOut = self.__flopStatesOut.get(grp)
             if not stOut.full():
-                stateList = list(stOut.states)
-                stateList.sort()
-                idx = range(len(stateList))
-                stateStr = map(lambda x,y:"S"+str(x)+"="+str(y), idx, stateList)
-                stateStr = reduce(lambda x,y: x + " " + y, stateStr)
-                print str("set_fsm_state_vector {" + 
-                          string.join(stOut.nodes()) + "}")
-                print str("set_fsm_encoding {" + stateStr + "}")
+                print stOut.dcPrint()
+
 
     def print_usage(self):
         print "Usage: python propStates.py <moduleName>"
 
     groups  = property(lambda self: self.__flopGroups)
 
-
-#if len(sys.argv) < 2:
-#    print "Usage: python propStates.py <moduleName>"
-#    exit(1)
-#
-## set design here!!
-#design = sys.argv[1]
-#
-## set path here!!
-#path = 'designs/'
-#
-#a = Netlist.Netlist()
-#for infile in glob.glob(os.path.join(path, '*.yml')):
-#    print "Reading " + infile
-#    a.readYAML(infile)
-#
-#print "Linking " + design
-#a.link(design)
-#
-#print "Building DAG"
-#sp = StateProp.StateProp(a, reset='reset')
-#(gr, flopGroups) = sp.flopReport()
-#
-## set user-specified input constraints here!
-#userStates = State.State([])
-#
-#
-## find iteration order (reverse postorder)
-#st, pre, post = depth_first_search(gr)
-#post.reverse()
-#
-## initialization code
-#flopStatesOut = dict()
-#flopStatesIn = copy.deepcopy(sp.state)
-#flopStatesIn_p = State.State(flopStatesIn.nodes())
-#inputs = dict() 
-#outToIn = myutils.invert(sp.dag.flopsIn, True)
-#skip = [False]*len(post)
-#for group in post:
-#    flopStatesOut[group] = State.State(flopGroups[group])
-#    # 'inputs' is mutually exclusive sets of inputs driven from outputs
-#    inputs[group] = map(outToIn.get, flopGroups[group])
-#    while None in inputs[group]:
-#        inputs[group].remove(None)
-
-
-# start of loop here
-# do set comparison to see if input states have changed
-#while not (flopStatesIn == flopStatesIn_p):
-#    print "Start of main loop..."
-#    print "current state nodes are: " + str(flopStatesIn.nodes())
-#    print "previous state nodes are: " + str(flopStatesIn_p.nodes())
-#    #print "current states are: " + str(flopStatesIn.states)
-#    #print "previous states are: " + str(flopStatesIn_p.states)
-#
-#    # set the inputs here
-#    # only use the DIFF of states!
-#    # we're guaranteed that flopStatesIn_p.nodes() >= flopStatesIn.nodes()
-#    diffNodesIn = set.difference(set(flopStatesIn_p.nodes()),
-#                                 set(flopStatesIn.nodes()))
-#    flopStatesIn_p = State.subset(flopStatesIn_p, flopStatesIn.nodes())
-#    diffStatesIn = State.State(flopStatesIn.nodes())
-#    for diff in set.difference(flopStatesIn.states, flopStatesIn_p.states):
-#        diffStatesIn.addState(diff)
-#
-#    sp.setInputState(State.merge(userStates, diffStatesIn))
-#
-#    # for each state vector
-#    for group in post:
-#
-#        if not skip[group]:
-#            inputSet  = gr.node_attr[group][0]
-#            outputSet = flopGroups[group]
-#
-#            print "Considering outputs: " + str(outputSet)
-#            constIn = list(set.intersection(inputSet,set(flopStatesIn.nodes())))
-#
-#            
-#            updated = True
-#            # some stateful nodes might have been relaxed
-#            if len(set.intersection(diffNodesIn, inputSet)) == 0:
-#                print "Input node set hasn't changed"
-#                updated = False
-#            if not updated:
-#                newStates = State.subset(diffStatesIn, constIn)
-#                oldStates = State.subset(flopStatesIn_p, constIn)
-#
-#                if newStates != oldStates:
-#                    updated = True
-#
-#            #pdb.set_trace()
-#            if not updated:
-#                #statesInPrev == statesIn:
-#                print "Input states haven't changed, no need to run sweep"
-#            else:
-#
-#                # we really only care about non-constant input set
-#                if len(inputSet)-len(constIn) < 16:
-#                    # do simulation to get output states
-#                    # TODO: stop simulation early if > half states seen
-#                    print "Running simulation sweep..."
-#                    tt = TruthTable.TruthTable(sp, outputSet)
-#                    states = tt.sweepStates()
-#
-#                elif len(outputSet) < 12:
-#                    # do SAT
-#                    print "Running SAT..."
-#                    #l2cnf = Logic2CNF.Logic2CNF(sp, outputSet)
-#                    #states = SAT.runAll(l2cnf)
-#                    #states = runHierSAT(sp, outputSet)
-#                    states = runIterSAT(sp, outputSet)
-#                else:
-#                    # FrEaK OuTTT!
-#                    print str("Skipping b/c input size is " + str(len(inputSet)) + 
-#                              " and Output size is " + str(len(outputSet)))
-#                    states = set()
-#                    skip[group] = True
-#                    # TODO: try breaking outputs running SAT, combining ?
-#                    #raise Exception("Input size is " + str(len(inputSet)) + 
-#                    #                " and Output size is " + str(len(outputSet)))
-#
-#                for st in states:
-#                    flopStatesOut[group].addState(st)
-#
-#        else:
-#            print "Skipped " + str(group)
-#            #flopStatesOut[group] = None
-#        
-#    #pdb.set_trace()
-#
-#    states = []
-#    # add any new states to cumulative input set
-#    # todo add them as we go (should be more efficient)
-#    for group in post:
-#
-#        # only proceed IF we have less than n/2 states!
-#        if (len(flopStatesOut[group].states) < 
-#            2**(len(flopStatesOut[group].nodes())-1)) and not skip[group]:
-#
-#            print "Group " + str(group) + " has compressible states"
-#
-#            # start with existing states for these inputs
-#            state = State.subset(flopStatesIn, inputs[group])
-#
-#            # determine the outputs that matter
-#            outGrp = map(sp.dag.flopsIn.get, inputs[group])
-#
-#            # add new states implied by outputs
-#            for st in flopStatesOut[group].states:
-#                boolVec = map(flopStatesOut[group].getState, 
-#                              [st]*len(outGrp), outGrp)
-#                state.addState(myutils.bool2int(boolVec))
-#
-#        else:
-#            print "Group " + str(group) + " has too many states, skipping"
-#            skip[group] = True
-#            state = State.State(inputs[group])
-#
-#        states.append(state)
-#
-#    #pdb.set_trace()
-#
-#    newStatesIn = reduce(State.merge, states)
-#
-#    # save a copy of the previous input state set
-#    flopStatesIn_p = copy.deepcopy(flopStatesIn)
-#
-#
-#    # we should be guaranteed that flopStatesIn.nodes() >= newStatesIn.nodes()
-#    # remove irrelevant nodes with too many states
-#    flopStatesIn   = State.subset(flopStatesIn, newStatesIn.nodes())
-#    #flopStatesIn_p = State.subset(flopStatesIn_p, newStatesIn.nodes())
-#
-#    # include any new states
-#    # newSet = set.difference(newStatesIn.states, flopStatesIn.states)
-#    for st in newStatesIn.states:
-#        flopStatesIn.addState(st)
 
 fs = FindStates()
 fs.run()

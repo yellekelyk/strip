@@ -1,6 +1,7 @@
 import myutils
 import copy
 import pdb
+import string
 
 class State:
     "Generic state information for a group of nodes"
@@ -58,6 +59,19 @@ class State:
     #    "updates self by adding all states in state"
     #    pass
         
+
+    def dcPrint(self):
+        stateList = list(self.states)
+        stateList.sort()
+        stateList = map(lambda x: hex(x), stateList)
+        stateList = map(lambda x: x[2:len(x)], stateList)
+        idx = range(len(stateList))
+        stateStr = map(lambda x,y:"S"+str(x)+"=16#"+str(y), idx, stateList)
+        stateStr = reduce(lambda x,y: x + " " + y, stateStr)
+        output = str("set_fsm_state_vector {" + 
+                     string.join(self.nodes()) + "}\n")
+        output += str("set_fsm_encoding {" + stateStr + "}\n")
+        return output
 
     states = property(lambda self: self.__states)
 

@@ -8,10 +8,21 @@ import pickle
 
 import pdb
 
+
 class Logic2CNF(SymbolicLogic):
     def __init__(self, stateProp, flops=[]):
         SymbolicLogic.__init__(self, stateProp, flops)
-        self.__l2cnf = "/home/kkelley/Downloads/logic2cnf-0.7.2/logic2cnf"
+
+        if "L2CNF" in os.environ:
+            self.__l2cnf = os.environ["L2CNF"]
+        else:
+            self.__l2cnf = "/home/kkelley/Downloads/logic2cnf-0.7.2/logic2cnf"
+
+        if "TMPDIR" in os.environ:
+            self.__tmp = os.environ["TMPDIR"]
+        else:
+            self.__tmp = "/tmp"
+
         self.__cnf = dict()
         #self.__cnfmap = dict()
         self.__re = re.compile("c\s+\|\s+(\d+) = (\S+)")
@@ -76,7 +87,7 @@ class Logic2CNF(SymbolicLogic):
         return fname
 
     def __cnffile__(self, state):
-        f ="/tmp/cnf"+hashlib.sha224(str(self.outputs())+str(state)).hexdigest()
+        f =self.__tmp + "/cnf" +hashlib.sha224(str(self.outputs())+str(state)).hexdigest()
         return f
 
 
@@ -119,7 +130,7 @@ class Logic2CNF(SymbolicLogic):
         #return self.__cnfmap[state]
 
     def __cnfmapfile__(self, state):
-        f ="/tmp/map"+hashlib.sha224(str(self.outputs())+str(state)).hexdigest()
+        f =self.__tmp +"/map"+hashlib.sha224(str(self.outputs())+str(state)).hexdigest()
         return f
 
     def __cnfmap__(self, cnffile):
@@ -170,5 +181,5 @@ class Logic2CNF(SymbolicLogic):
         return fname
 
     def __assumpfile__(self, state):
-        f ="/tmp/assump"+hashlib.sha224(str(self.outputs())+str(state)).hexdigest()
+        f =self.__tmp + "/assump"+hashlib.sha224(str(self.outputs())+str(state)).hexdigest()
         return f
