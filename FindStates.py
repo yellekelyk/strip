@@ -140,6 +140,8 @@ class FindStates:
 
         print "Building DAG"
         self.__sp = StateProp.StateProp(nl, reset='reset')
+
+        print "Finding Flops"
         (self.__gr, self.__flopGroups) = self.__sp.flopReport()
 
         # set user-specified input constraints here!

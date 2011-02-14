@@ -20,11 +20,15 @@ class StateProp:
 
         # create DAG from netlist
         self.__dag = DAGCircuit.DAGCircuit()
+
+        print "Building DAG from netlist"
         self.__dag.fromNetlist(nl, remove=['clk'])
+        print "Breaking Flop Boundaries"
         self.__dag.breakFlops()
 
         # find primary-input dependencies of all nodes
         #(self.__deps, self.__deltas) = self.__findDeps__()
+        print "Finding Node Dependencies"
         self.__calcDeps__()
 
 

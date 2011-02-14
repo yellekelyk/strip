@@ -43,7 +43,9 @@ class DAGCircuit(digraph):
 
         # create edges for all cell pins
         for cell in mod.cells.values():
+            #print "DAG::fromNetlist processing cell " + cell.name
             for pin in cell.pins.values():
+                #print "DAG::fromNetlist processing pin " + pin.name
                 if pin.port.direction == "in":
                     if pin.net.name not in remove:
 
@@ -214,7 +216,8 @@ class DAGCircuit(digraph):
     def connect(self, cellFrom, cellTo, wireName, pinFrom=None, pinTo=None):
         edge = ((cellFrom, cellTo))
         
-        if edge not in self.edges():
+        #if edge not in self.edges():
+        if not self.has_edge(edge):
             digraph.add_edge(self, edge)
             self.set_edge_label(edge, wireName)
             self.__pins[edge] = (pinFrom, set())
