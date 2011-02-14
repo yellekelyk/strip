@@ -27,11 +27,23 @@ class Netlist:
                                 " has not been defined"))
 
         mod = self.__mods[topModule]
+
+        missing = set()
+        # check all cells
         for cell in mod.cells:
             if mod.cells[cell].submodname not in self.__mods:
-                raise Exception(str("link error, " +  
-                                    mod.cells[cell].submodname +
-                                    " has not been defined"))
+                missing.add(mod.cells[cell].submodname)
+
+        if len(missing) > 0:
+            raise Exception(str("link error, " +  
+                                str(missing) + 
+                                " have not been defined"))
+
+        for cell in mod.cells:
+            #if mod.cells[cell].submodname not in self.__mods:
+            #    raise Exception(str("link error, " +  
+            #                        mod.cells[cell].submodname +
+            #                        " has not been defined"))
             
             submod = self.__mods[mod.cells[cell].submodname]
             mod.cells[cell].linkMod(submod)
