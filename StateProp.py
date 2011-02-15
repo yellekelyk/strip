@@ -4,7 +4,9 @@ import string
 import State
 import copy
 import re
-import TruthTable
+import Simulate
+#import TruthTable
+import myutils
 from pygraph.classes.digraph import digraph
 import CNF
 import subprocess
@@ -51,26 +53,31 @@ class StateProp:
             flopsOut = map(self.__dag.flopsIn.get, flopsIn)
             st = State.State(flopsIn)
 
-            inputs = list(self.__dag.inputs)
-            if reset not in inputs:
+            if reset not in self.__dag.inputs:
                 raise Exception("reset input `" + reset + "' is not in design!")
-            inputs.remove(reset)
-            inputs.append(reset)
-            tmp = State.State(inputs)
-            tmp.addState(int(1))
-            self.__state = tmp
+
+            sim = Simulate.Simulate(self, flopsOut)
+            sim.setInputs({reset:True})
+            state = []
+            for flop in flopsOut:
+                state.append(sim.simulate(flop))
+
+            state = myutils.bool2int(state)
+
+            #self.__state = tmp
 
             # propagate simulation equations in->out!
             #self.propSims()
 
             #pdb.set_trace()
-            tt = TruthTable.TruthTable(self, flopsOut)
+            #tt = TruthTable.TruthTable(self, flopsOut)
             #self.__dag.flopsIn.values())
 
-            states = tt.sweepStates()
-            if len(states) > 1:
-                raise Exception("More than 1 reset state found")
-            state = states.pop()
+            #states = tt.sweepStates()
+            #if len(states) > 1:
+            #    raise Exception("More than 1 reset state found")
+
+            #state = states.pop()
 
             print str("Found reset state for flops: " + 
                       str(flopsOut) + " " +
@@ -84,8 +91,10 @@ class StateProp:
 
         self.__state = st
 
+        #pdb.set_trace()
+
         # propagate node info
-        #self.propEquations()
+        self.propEquations()
         #self.propSims()
 
 
