@@ -94,7 +94,7 @@ class StateProp:
         #pdb.set_trace()
 
         # propagate node info
-        self.propEquations()
+        #self.propEquations()
         #self.propSims()
 
 

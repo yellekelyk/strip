@@ -2,6 +2,8 @@ import re
 from myutils import *
 import State
 
+import pdb
+
 class SymbolicLogic:
     "A class for manpiulating Symbolic Boolean Logic"
     def __init__(self, stateProp, flops):
@@ -17,7 +19,9 @@ class SymbolicLogic:
         
         self.__flops  = flops
         self.__inputs = inputs
-        self.__logic  = stateProp.logic
+
+        #self.__logic  = stateProp.logic
+        self.__logic = self.__getLogic__(stateProp)
         
         #self.__state = stateProp.getInputState
 
@@ -28,6 +32,44 @@ class SymbolicLogic:
         #constInputs.sort()
         #constInputs.reverse()
         #self.__state  = State.subset(stateProp.state, constInputs)
+
+    def __getLogic__(self, stateProp):
+        logic = dict()
+        cache = dict()
+        for flop in self.__flops:
+            logic[flop] = self.__getLogicNode__(stateProp, flop, cache)
+        return logic
+
+    def __getLogicNode__(self, stateProp, node, cache):
+        if not node in cache:
+            dag = stateProp.dag
+            lib = stateProp.lib
+            nl  = stateProp.nl
+
+            # base case: return name if it's a circuit input
+            if dag.isInput(node):
+                return node
+
+            # otherwise find sim logic for each predecessor, evaluate
+            # for this node, and return
+            inps = dict()
+            for prev in dag.node_incidence[node]:
+                for pin in dag.pins((prev,node))[1]:
+                    inps[pin] = self.__getLogicNode__(stateProp, prev, cache)
+            name = nl.mods[nl.topMod].cells[node].submodname
+            if len(inps) != len(lib.inputs[name]):
+                raise Exception("Not enough inputs on " + node)
+
+            # construct arguments in order
+            argList = []
+            for arg in lib.inputs[name]:
+                argList.append(inps[arg])
+
+            cache[node] = lib.logic[name](*argList)
+        return(cache[node])
+
+
+
 
     def inputs(self):
         return self.__inputs
