@@ -41,6 +41,10 @@ class SymbolicLogic:
         return logic
 
     def __getLogicNode__(self, stateProp, node, cache):
+
+        # clear it to avoid too much memory usage
+        cache = dict()
+
         if not node in cache:
             dag = stateProp.dag
             lib = stateProp.lib

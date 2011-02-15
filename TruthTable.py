@@ -53,16 +53,32 @@ class TruthTable:
             
         allIn = list(allIn)
 
+        keywords = set(['in'])
+
         for i in range(len(allIn)):
             inStr = allIn[i]
-            if relb.search(inStr):
-                inStr = relb.sub("\\[", inStr)
-            if rerb.search(inStr):
-                inStr = rerb.sub("\\]", inStr)
-            if rep.search(inStr):
-                inStr = rep.sub("\\.", inStr)
 
-            inMap[allIn[i]] = re.compile(inStr)
+            inStr = relb.sub("_", inStr)
+            inStr = rerb.sub("_", inStr)
+            inStr = rep.sub("_", inStr)
+
+            if allIn[i] in keywords:
+                inStr = inStr + "__keyword__"
+
+            inMap[allIn[i]] = inStr
+
+            
+
+
+            #if relb.search(inStr):
+            #    inStr = relb.sub("\\[", inStr)
+            #if rerb.search(inStr):
+            #    inStr = rerb.sub("\\]", inStr)
+            #if rep.search(inStr):
+            #    inStr = rep.sub("\\.", inStr)
+            #inMap[allIn[i]] = re.compile(inStr)
+
+
             #if inStr != allIn[i]:
             #    inMap[allIn[i]] = re.compile(inStr)
             #else:
@@ -100,27 +116,27 @@ class TruthTable:
 
 
     def __getFunction2__(self, flop, inMap):
-        relb = re.compile("\[")
-        rerb = re.compile("\]")
-        rep  = re.compile("\.")
+        #relb = re.compile("\[")
+        #rerb = re.compile("\]")
+        #rep  = re.compile("\.")
 
         print "getFunction2 for " + flop
 
         inps = list(self.__stateProp.deps[flop])
         ## ** MUST make clean lambda function input names!!!!
         evalStr = "lambda "
-        evalStr += reduce(lambda x,y: x + ',' + y, inps)
-        evalStr += ": " + self.__getSimLogic__(flop)
+        evalStr += reduce(lambda x,y: x + ',' + y, map(inMap.get, inps))
+        evalStr += ": " + self.__getSimLogic__(flop, inMap)
 
-        # before evaluating, do regex replacing of input names
-        for i in range(len(inps)):
-            #inp = relb.sub("\\[", inps[i])
-            #inp = rerb.sub("\\]", inp)
-            #inp = rep.sub("\\.", inp)
-            #evalStr = re.sub(inp, str("in"+str(i)), evalStr)
-            #pdb.set_trace()
-            if bool(inMap[inps[i]]):
-                evalStr = inMap[inps[i]].sub(str("in"+str(i)), evalStr)
+        ## before evaluating, do regex replacing of input names
+        #for i in range(len(inps)):
+        #    #inp = relb.sub("\\[", inps[i])
+        #    #inp = rerb.sub("\\]", inp)
+        #    #inp = rep.sub("\\.", inp)
+        #    #evalStr = re.sub(inp, str("in"+str(i)), evalStr)
+        #    #pdb.set_trace()
+        #    if bool(inMap[inps[i]]):
+        #        evalStr = inMap[inps[i]].sub(str("in"+str(i)), evalStr)
 
         #pdb.set_trace()
 
@@ -130,7 +146,7 @@ class TruthTable:
         return func
 
 
-    def __getSimLogic__(self, node):
+    def __getSimLogic__(self, node, inMap):
         if not node in self.__sim:
             dag = self.__stateProp.dag
             lib = self.__stateProp.lib
@@ -138,14 +154,14 @@ class TruthTable:
 
             # base case: return name if it's a circuit input
             if dag.isInput(node):
-                return node
+                return inMap[node]
 
             # otherwise find sim logic for each predecessor, evaluate
             # for this node, and return
             inps = dict()
             for prev in dag.node_incidence[node]:
                 for pin in dag.pins((prev,node))[1]:
-                    inps[pin] = self.__getSimLogic__(prev)
+                    inps[pin] = self.__getSimLogic__(prev, inMap)
             name = nl.mods[nl.topMod].cells[node].submodname
             if len(inps) != len(lib.inputs[name]):
                 raise Exception("Not enough inputs on " + node)
