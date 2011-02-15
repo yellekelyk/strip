@@ -176,7 +176,7 @@ class DAGCircuit(digraph):
     def clean(self):
         "Clean the graph; ensure no dangling nodes IN->OUT"
         nodes = dict()
-        for node in self.nodes():
+        for node in self.node_neighbors:
             nodes[node] = 0
 
         for node in self.order():
@@ -230,13 +230,14 @@ class DAGCircuit(digraph):
         self.__pins[edge][1].add(pinTo)
 
     def isCell(self, node):
-        return node in self.nodes() and node in self.__cells
+        # note: use self._node_neighbors instead of self.nodes() b/c it's fast
+        return node in self.node_neighbors and node in self.__cells
 
     def isInput(self, port):
-        return port in self.nodes() and port in self.__inputs
+        return port in self.node_neighbors and port in self.__inputs
 
     def isOutput(self, port):
-        return port in self.nodes() and port in self.__outputs
+        return port in self.node_neighbors and port in self.__outputs
 
     def order(self, root='__INPUTS__'):
         st, pre, post = depth_first_search(self, root=root)

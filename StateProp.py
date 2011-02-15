@@ -40,6 +40,8 @@ class StateProp:
             self.__logic[node] = node
             self.__sim[node]   = node
 
+        print "Finding Reset State"
+
         # state object
         st = State.State([])
         if reset:
@@ -59,7 +61,7 @@ class StateProp:
             self.__state = tmp
 
             # propagate simulation equations in->out!
-            self.propSims()
+            #self.propSims()
 
             #pdb.set_trace()
             tt = TruthTable.TruthTable(self, flopsOut)
@@ -83,8 +85,8 @@ class StateProp:
         self.__state = st
 
         # propagate node info
-        self.propEquations()
-        self.propSims()
+        #self.propEquations()
+        #self.propSims()
 
 
     def flopReport(self):
@@ -310,8 +312,8 @@ class StateProp:
                 self.__calcDeps__()
 
 
-        self.propSims()
-        self.propEquations()
+        #self.propSims()
+        #self.propEquations()
 
 
     #def toEquationFile(self, fileName, flops = []):
@@ -555,7 +557,9 @@ class StateProp:
     deps  = property(lambda self: self.__deps)
     stages= property(lambda self: self.__stages)
     orders= property(lambda self: self.__orders)
+    lib   = property(lambda self: self.__lib)
     logic = property(lambda self: self.__logic)
+    nl    = property(lambda self: self.__nl)
     sim   = property(lambda self: self.__sim)
     dag   = property(lambda self: self.__dag)
     state = property(lambda self: self.__state)

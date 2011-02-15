@@ -876,4 +876,4 @@ EDFQD1:
     E: 1
   outputs:
     Q: 1
-  primitive: D
+  primitive: D and E

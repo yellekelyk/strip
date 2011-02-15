@@ -10,25 +10,153 @@ class TruthTable:
         self.__outputs = []
         self.__stateProp = stateProp
 
+        self.__sim = dict()
+
         if len(flops) == 0:
             flops = stateProp.defaultFlops()
+
+        inMap = self.__inMap__(flops)
+
 
         # create anonymous functions for simulating
         for flop in flops:
             inps = list(stateProp.deps[flop])
-            #inps = list(stateProp.deps[flop].difference(stateProp.state.nodes()))
-            ## ** MUST make clean lambda function input names!!!!
-            evalStr = "lambda "
-            evalStr += reduce(lambda x,y: x + ',' + y, inps)
-            evalStr += ": " + stateProp.sim[flop]
-            # before evaluating, do regex replacing of input names
-            for i in range(0, len(inps)):
-                inp = re.sub("\[", "\\[", inps[i])
-                inp = re.sub("\]", "\\]", inp)
-                inp = re.sub("\.", "\\.", inp)
-                evalStr = re.sub(inp, str("in"+str(i)), evalStr)
-            func = eval(evalStr)
+            ##inps = list(stateProp.deps[flop].difference(stateProp.state.nodes()))
+            ### ** MUST make clean lambda function input names!!!!
+            #evalStr = "lambda "
+            #evalStr += reduce(lambda x,y: x + ',' + y, inps)
+            #evalStr += ": " + stateProp.sim[flop]
+            ## before evaluating, do regex replacing of input names
+            #for i in range(0, len(inps)):
+            #    inp = relb.sub("\\[", inps[i])
+            #    inp = rerb.sub("\\]", inp)
+            #    inp = rep.sub("\\.", inp)
+            #    #inp = re.sub("\[", "\\[", inps[i])
+            #    #inp = re.sub("\]", "\\]", inp)
+            #    #inp = re.sub("\.", "\\.", inp)
+            #    evalStr = re.sub(inp, str("in"+str(i)), evalStr)
+            #func = eval(evalStr)
+            func = self.__getFunction2__(flop, inMap)
             self.addOutput((inps, func))
+
+
+    def __inMap__(self, flops):
+        allIn = set()
+        inMap = dict()
+        relb = re.compile("\[")
+        rerb = re.compile("\]")
+        rep  = re.compile("\.")
+
+        for flop in flops:
+            for dep in self.__stateProp.deps[flop]:
+                allIn.add(dep)
+            
+        allIn = list(allIn)
+
+        for i in range(len(allIn)):
+            inStr = allIn[i]
+            if relb.search(inStr):
+                inStr = relb.sub("\\[", inStr)
+            if rerb.search(inStr):
+                inStr = rerb.sub("\\]", inStr)
+            if rep.search(inStr):
+                inStr = rep.sub("\\.", inStr)
+
+            inMap[allIn[i]] = re.compile(inStr)
+            #if inStr != allIn[i]:
+            #    inMap[allIn[i]] = re.compile(inStr)
+            #else:
+            #    inMap[allIn[i]] = None
+        return inMap
+        
+
+    def __getFunction__(self, flop, inMap):
+        relb = re.compile("\[")
+        rerb = re.compile("\]")
+        rep  = re.compile("\.")
+
+        inps = list(self.__stateProp.deps[flop])
+        ## ** MUST make clean lambda function input names!!!!
+        evalStr = "lambda "
+        evalStr += reduce(lambda x,y: x + ',' + y, inps)
+        evalStr += ": " + self.__stateProp.sim[flop]
+
+        # before evaluating, do regex replacing of input names
+        for i in range(len(inps)):
+            #inp = relb.sub("\\[", inps[i])
+            #inp = rerb.sub("\\]", inp)
+            #inp = rep.sub("\\.", inp)
+            #evalStr = re.sub(inp, str("in"+str(i)), evalStr)
+            #pdb.set_trace()
+            if bool(inMap[inps[i]]):
+                evalStr = inMap[inps[i]].sub(str("in"+str(i)), evalStr)
+
+        #pdb.set_trace()
+
+        func = eval(evalStr)
+
+        #pdb.set_trace()
+        return func
+
+
+    def __getFunction2__(self, flop, inMap):
+        relb = re.compile("\[")
+        rerb = re.compile("\]")
+        rep  = re.compile("\.")
+
+        print "getFunction2 for " + flop
+
+        inps = list(self.__stateProp.deps[flop])
+        ## ** MUST make clean lambda function input names!!!!
+        evalStr = "lambda "
+        evalStr += reduce(lambda x,y: x + ',' + y, inps)
+        evalStr += ": " + self.__getSimLogic__(flop)
+
+        # before evaluating, do regex replacing of input names
+        for i in range(len(inps)):
+            #inp = relb.sub("\\[", inps[i])
+            #inp = rerb.sub("\\]", inp)
+            #inp = rep.sub("\\.", inp)
+            #evalStr = re.sub(inp, str("in"+str(i)), evalStr)
+            #pdb.set_trace()
+            if bool(inMap[inps[i]]):
+                evalStr = inMap[inps[i]].sub(str("in"+str(i)), evalStr)
+
+        #pdb.set_trace()
+
+        func = eval(evalStr)
+
+        #pdb.set_trace()
+        return func
+
+
+    def __getSimLogic__(self, node):
+        if not node in self.__sim:
+            dag = self.__stateProp.dag
+            lib = self.__stateProp.lib
+            nl = self.__stateProp.nl
+
+            # base case: return name if it's a circuit input
+            if dag.isInput(node):
+                return node
+
+            # otherwise find sim logic for each predecessor, evaluate
+            # for this node, and return
+            inps = dict()
+            for prev in dag.node_incidence[node]:
+                for pin in dag.pins((prev,node))[1]:
+                    inps[pin] = self.__getSimLogic__(prev)
+            name = nl.mods[nl.topMod].cells[node].submodname
+            if len(inps) != len(lib.inputs[name]):
+                raise Exception("Not enough inputs on " + node)
+
+            # construct arguments in order
+            argList = []
+            for arg in lib.inputs[name]:
+                argList.append(inps[arg])
+
+            self.__sim[node] = lib.python[name](*argList)
+        return(self.__sim[node])
 
 
     def addOutput(self, output):
