@@ -40,7 +40,7 @@ class StateProp:
         self.__sim   = dict()
         self.__gen   = dict()
         for node in self.__dag.nodes():
-            self.__logic[node] = node
+            #self.__logic[node] = node
             self.__sim[node]   = node
             self.__gen[node]   = [node]
 
@@ -96,9 +96,9 @@ class StateProp:
         #pdb.set_trace()
 
         # propagate node info
-        #self.propEquations()
+        self.propEquations()
         #self.propSims()
-        self.propGenerators()
+        #self.propGenerators()
 
 
     def flopReport(self):
@@ -259,7 +259,7 @@ class StateProp:
 
     def propEquations(self):
         "build logic equations in->out"
-        self.__propGeneric__(self.__logic, self.__lib.logic)
+        self.__propGeneric__(self.__logic, self.__lib.logic, True)
 
     def propSims(self):
         "simulate in->out"
@@ -269,7 +269,7 @@ class StateProp:
         "build generators in->out"
         self.__propGeneric__(self.__gen, self.__lib.gen)
     
-    def __propGeneric__(self, results, libfuncs):
+    def __propGeneric__(self, results, libfuncs, garbage=False):
         "a generic function for build logic equations/simulating in->out"
         nl = self.__nl
         lib = self.__lib
@@ -293,6 +293,17 @@ class StateProp:
                     argList.append(inps[arg])
                 results[node] = libfuncs[name](*argList)
 
+                if garbage:
+                    for prev in self.__dag.node_incidence[node]:
+                        # check if all successors have been processed
+                        done = True
+                        for succ in self.__dag.node_neighbors[prev]:
+                            if not succ in results:
+                                done = False
+                                break
+                        if done:
+                            print "Garbage collecting " + prev
+                            results.pop(prev)
 
     def pruneNodes(self, flops, maxIn = 15):
         for flop in flops:
