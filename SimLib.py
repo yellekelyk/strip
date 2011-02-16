@@ -1,5 +1,8 @@
 import yaml
 import re
+import tokenize
+import StringIO
+import pdb
 
 class SimLib:
     "Holds simulation info for all primitive gates"
@@ -8,6 +11,7 @@ class SimLib:
         ins = dict()
         logic = dict()
         python = dict()
+        gen = dict()
         #aima = dict()
 
         eqntott = {"and": "&",
@@ -35,6 +39,12 @@ class SimLib:
                 pyStr    = evalStr + self.__primToLogic__(inputs, prim)
                 #aimaStr  = evalStr + self.__primToLogic__(inputs, prim, aimaC)
 
+                genStr = self.__getGenerator__(yaml, modname, eqntott)
+                
+                d = {}
+                exec genStr.strip() in d
+                #setattr(self.__class__, modname, d[modname])
+                gen[modname] = d[modname]
                 sim[modname] = eval(simStr)
                 logic[modname] = eval(logicStr)
                 python[modname] = eval(pyStr)
@@ -44,12 +54,47 @@ class SimLib:
         self.__inputs = ins
         self.__logic = logic
         self.__python = python
+        self.__gen = gen
         #self.__aima = aima
     sim    = property(lambda self: self.__sim)
     inputs = property(lambda self: self.__inputs)
     logic  = property(lambda self: self.__logic)
     python = property(lambda self: self.__python)
+    gen    = property(lambda self: self.__gen)
     #aima   = property(lambda self: self.__aima)
+
+    def __getGenerator__(self, yaml, modname, opMap):
+        #ops = ["or", "and", "not"]
+
+        prim = "(" + yaml.get(modname)["primitive"] + ")"
+        inputs = yaml.get(modname)["inputs"].keys()
+        execStr = "def " + modname + "("
+        execStr += reduce(lambda x,y: x+ "," + y, inputs)
+        execStr += "):\n"
+
+        for token in tokenize.generate_tokens(StringIO.StringIO(prim).readline):
+            # token is a NAME ... this can be not/and/or OR a variable name
+            if token[0] == 1:
+                if token[1] in opMap:
+                    execStr += " yield \" " + opMap[token[1]] + " \"\n"
+                elif token[1] in inputs:
+                    execStr += " for stuff in " + token[1] + ":\n"
+                    #execStr += "  yield \" \"\n"
+                    execStr += "  yield stuff\n"
+                    #execStr += "  yield \" \"\n"
+                else:
+                    raise Exception("Unknown token name: " + token[1])
+            # token is an OP ... usually '(' or ')'
+            elif token[0] == 51:
+                execStr += " yield \"" + token[1] + "\"\n"
+            # endmarker
+            elif token[0] == 0:
+                pass
+            else:
+                raise Exception("Unexpected token: " + str(token))
+
+        return execStr
+
 
     def __primToLogic__(self, inputs, prim, converts=None):
         prim = "str(\"" + prim + "\")"

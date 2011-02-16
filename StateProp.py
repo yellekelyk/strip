@@ -38,9 +38,11 @@ class StateProp:
         # (this is needed for primary inputs as well as feedback paths)
         self.__logic = dict()
         self.__sim   = dict()
+        self.__gen   = dict()
         for node in self.__dag.nodes():
             self.__logic[node] = node
             self.__sim[node]   = node
+            self.__gen[node]   = [node]
 
         print "Finding Reset State"
 
@@ -96,6 +98,7 @@ class StateProp:
         # propagate node info
         #self.propEquations()
         #self.propSims()
+        #self.propGenerators()
 
 
     def flopReport(self):
@@ -261,6 +264,10 @@ class StateProp:
     def propSims(self):
         "simulate in->out"
         self.__propGeneric__(self.__sim, self.__lib.python)
+
+    def propGenerators(self):
+        "build generators in->out"
+        self.__propGeneric__(self.__gen, self.__lib.gen)
     
     def __propGeneric__(self, results, libfuncs):
         "a generic function for build logic equations/simulating in->out"
@@ -268,7 +275,9 @@ class StateProp:
         lib = self.__lib
 
         for node in self.__dag.order():
-            if self.__dag.isCell(node):
+            if self.__dag.isInput(node):
+                results[node] = [node]
+            elif self.__dag.isCell(node):
                 # go through all predecessors, construct dict of inputs
                 inps = dict()
                 for prev in self.__dag.node_incidence[node]:
@@ -320,7 +329,7 @@ class StateProp:
                 # recalculate deltas, deps
                 self.__calcDeps__()
 
-
+        #self.propGenerators()
         #self.propSims()
         #self.propEquations()
 

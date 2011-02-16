@@ -21,7 +21,9 @@ class SymbolicLogic:
         self.__inputs = inputs
 
         #self.__logic  = stateProp.logic
-        self.__logic = self.__getLogic__(stateProp)
+        #self.__logic = self.__getLogic__(stateProp)
+        # todo: fix this hack
+        self.__logic = self.__getLogicFromGen__(stateProp)
         
         #self.__state = stateProp.getInputState
 
@@ -32,6 +34,45 @@ class SymbolicLogic:
         #constInputs.sort()
         #constInputs.reverse()
         #self.__state  = State.subset(stateProp.state, constInputs)
+
+    def __getLogicFromGen__(self, stateProp):
+        logic = dict()
+        for flop in self.__flops:
+            gen = self.__getLogicFromGenNode__(stateProp, flop)
+            logic[flop] = ""
+            for token in gen:
+                logic[flop] += token
+        return logic
+
+
+    # returns a new generator object
+    def __getLogicFromGenNode__(self, stateProp, node):
+
+        dag = stateProp.dag
+        lib = stateProp.lib
+        nl  = stateProp.nl
+
+        # base case: return name if it's a circuit input
+        if dag.isInput(node):
+            return [node]
+
+        # otherwise find generator logic for each predecessor, 
+        # create generator for this node, and return it
+        inps = dict()
+        for prev in dag.node_incidence[node]:
+            for pin in dag.pins((prev,node))[1]:
+                inps[pin] = self.__getLogicFromGenNode__(stateProp, prev)
+        name = nl.mods[nl.topMod].cells[node].submodname
+        if len(inps) != len(lib.inputs[name]):
+            raise Exception("Not enough inputs on " + node)
+
+        # construct arguments in order
+        argList = []
+        for arg in lib.inputs[name]:
+            argList.append(inps[arg])
+
+        return(lib.gen[name](*argList))
+
 
     def __getLogic__(self, stateProp):
         logic = dict()
@@ -133,9 +174,15 @@ class SymbolicLogic:
         flops = self.__flops
         logic = []
         for flop in flops:
-            logic.append(self.__logic[flop])
+            #logic.append(self.__logic[flop])
             #logic.append(self.__stateProp.logic[flop])
+            #thisLogic = ""
+            #for gen in self.__logic[flop]:
+            #    thisLogic += gen
+            logic.append(self.__logic[flop])
         
+        #pdb.set_trace()
+
         if state >= 2**len(flops):
             raise Exception("Invalid state " + str(state))
 
