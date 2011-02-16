@@ -98,7 +98,7 @@ class StateProp:
         # propagate node info
         #self.propEquations()
         #self.propSims()
-        #self.propGenerators()
+        self.propGenerators()
 
 
     def flopReport(self):
@@ -282,7 +282,7 @@ class StateProp:
                 inps = dict()
                 for prev in self.__dag.node_incidence[node]:
                     for pin in self.__dag.pins((prev,node))[1]:
-                        inps[pin] = str(results[prev])
+                        inps[pin] = results[prev]
                 name = nl.mods[nl.topMod].cells[node].submodname
                 if len(inps) != len(lib.inputs[name]):
                     raise Exception("Not enough inputs on " + node)
@@ -579,6 +579,7 @@ class StateProp:
     logic = property(lambda self: self.__logic)
     nl    = property(lambda self: self.__nl)
     sim   = property(lambda self: self.__sim)
+    gen   = property(lambda self: self.__gen)
     dag   = property(lambda self: self.__dag)
     state = property(lambda self: self.__state)
     reset = property(lambda self: self.__reset)

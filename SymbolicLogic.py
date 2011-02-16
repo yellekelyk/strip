@@ -1,6 +1,7 @@
 import re
 from myutils import *
 import State
+import generator_tools
 
 import pdb
 
@@ -38,7 +39,10 @@ class SymbolicLogic:
     def __getLogicFromGen__(self, stateProp):
         logic = dict()
         for flop in self.__flops:
-            gen = self.__getLogicFromGenNode__(stateProp, flop)
+            print "copying generator for " + flop
+            #gen = self.__getLogicFromGenNode__(stateProp, flop)
+            gen = generator_tools.copy_generator(stateProp.gen[flop])
+            print "evaluating generator for " + flop
             logic[flop] = ""
             for token in gen:
                 logic[flop] += token
