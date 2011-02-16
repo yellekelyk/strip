@@ -22,9 +22,8 @@ class SymbolicLogic:
         self.__inputs = inputs
 
         #self.__logic  = stateProp.logic
-        #self.__logic = self.__getLogic__(stateProp)
-        # todo: fix this hack
-        self.__logic = self.__getLogicFromGen__(stateProp)
+        self.__logic = self.__getLogic__(stateProp)
+        #self.__logic = self.__getLogicFromGen__(stateProp)
         
         #self.__state = stateProp.getInputState
 
@@ -114,7 +113,7 @@ class SymbolicLogic:
             for arg in lib.inputs[name]:
                 argList.append(inps[arg])
 
-            cache[node] = lib.logic[name](*argList)
+            cache[node] = lib.func[name](*argList)
         return(cache[node])
 
 

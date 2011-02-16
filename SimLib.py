@@ -12,6 +12,7 @@ class SimLib:
         logic = dict()
         python = dict()
         gen = dict()
+        func = dict()
         #aima = dict()
 
         eqntott = {"and": "&",
@@ -45,6 +46,13 @@ class SimLib:
                 exec genStr.strip() in d
                 #setattr(self.__class__, modname, d[modname])
                 gen[modname] = d[modname]
+
+                funcStr = self.__getFunction__(yaml, modname, eqntott)
+
+                f = {}
+                exec funcStr.strip() in f
+                func[modname] = f[modname]
+
                 sim[modname] = eval(simStr)
                 logic[modname] = eval(logicStr)
                 python[modname] = eval(pyStr)
@@ -55,13 +63,47 @@ class SimLib:
         self.__logic = logic
         self.__python = python
         self.__gen = gen
+        self.__func = func
         #self.__aima = aima
     sim    = property(lambda self: self.__sim)
     inputs = property(lambda self: self.__inputs)
     logic  = property(lambda self: self.__logic)
     python = property(lambda self: self.__python)
     gen    = property(lambda self: self.__gen)
+    func   = property(lambda self: self.__func)
     #aima   = property(lambda self: self.__aima)
+
+    def __getFunction__(self, yaml, modname, opMap):
+        prim = "(" + yaml.get(modname)["primitive"] + ")"
+        inputs = yaml.get(modname)["inputs"].keys()
+        execStr = "def " + modname + "("
+        execStr += reduce(lambda x,y: x+ "," + y, inputs)
+        execStr += "):\n"
+
+        execStr += " retStr = \"\"\n"
+
+        for token in tokenize.generate_tokens(StringIO.StringIO(prim).readline):
+            # token is a NAME ... this can be not/and/or OR a variable name
+            if token[0] == 1:
+                if token[1] in opMap:
+                    execStr += " retStr += \" " + opMap[token[1]] + " \"\n"
+                elif token[1] in inputs:
+                    execStr += " retStr += " + token[1] + "\n"
+                else:
+                    raise Exception("Unknown token name: " + token[1])
+            # token is an OP ... usually '(' or ')'
+            elif token[0] == 51:
+                execStr += " retStr += \"" + token[1] + "\"\n"
+            # endmarker
+            elif token[0] == 0:
+                pass
+            else:
+                raise Exception("Unexpected token: " + str(token))
+
+        execStr += " return retStr\n"
+
+        return execStr
+
 
     def __getGenerator__(self, yaml, modname, opMap):
         #ops = ["or", "and", "not"]
@@ -94,7 +136,6 @@ class SimLib:
                 raise Exception("Unexpected token: " + str(token))
 
         return execStr
-
 
     def __primToLogic__(self, inputs, prim, converts=None):
         prim = "str(\"" + prim + "\")"

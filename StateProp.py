@@ -96,7 +96,7 @@ class StateProp:
         #pdb.set_trace()
 
         # propagate node info
-        self.propEquations()
+        #self.propEquations()
         #self.propSims()
         #self.propGenerators()
 
@@ -259,7 +259,7 @@ class StateProp:
 
     def propEquations(self):
         "build logic equations in->out"
-        self.__propGeneric__(self.__logic, self.__lib.logic, True)
+        self.__propGeneric__(self.__logic, self.__lib.logic)
 
     def propSims(self):
         "simulate in->out"
