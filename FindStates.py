@@ -139,7 +139,14 @@ class FindStates:
         nl.link(design)
 
         print "Building DAG"
-        self.__sp = StateProp.StateProp(nl, reset='reset')
+        if 'reset' in nl.mods[design].ports:
+            reset = 'reset'
+        elif 'Reset' in nl.mods[design].ports:
+            reset = 'Reset'
+        else:
+            raise Exception("Couldn't find reset signal")
+
+        self.__sp = StateProp.StateProp(nl, reset)
 
         print "Finding Flops"
         (self.__gr, self.__flopGroups) = self.__sp.flopReport()

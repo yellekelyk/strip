@@ -303,6 +303,16 @@ CKXOR2D1:
     Z: 1
   primitive: (A1 and (not A2)) or ((not A1) and A2)
 
+FCICIND1:
+  inputs:
+    A: 1
+    B: 1
+    CIN: 1
+  outputs:
+    CO: 1
+  primitive: (A and B) or (A and not CIN) or (B and not CIN)
+
+
 IAO21D1:
   inputs:
     A1: 1
@@ -818,6 +828,16 @@ XNR3D1:
     ZN: 1
   primitive: not((A1 and (not A2) and (not A3)) or ((not A1) and A2 and (not A3)) or ((not A1) and (not A2) and A3))
 
+XNR4D1:
+  inputs:
+    A1: 1
+    A2: 1
+    A3: 1
+    A4: 1
+  outputs:
+    ZN: 1
+  primitive: not((A1 and (not A2) and (not A3) and (not A4)) or ((not A1) and A2 and (not A3) and (not A4)) or ((not A1) and (not A2) and A3 and (not A4)) or ((not A1) and (not A2) and (not A3) and A4))
+
 
 XOR2D1:
   inputs:
@@ -826,6 +846,25 @@ XOR2D1:
   outputs:
     Z: 1
   primitive: (A1 and (not A2)) or ((not A1) and A2)
+
+XOR3D1:
+  inputs:
+    A1: 1
+    A2: 1
+    A3: 1
+  outputs:
+    Z: 1
+  primitive: (A1 and (not A2) and (not A3)) or ((not A1) and A2 and (not A3)) or ((not A1) and (not A2) and A3)
+
+XOR4D1:
+  inputs:
+    A1: 1
+    A2: 1
+    A3: 1
+    A4: 1
+  outputs:
+    Z: 1
+  primitive: (A1 and (not A2) and (not A3) and (not A4)) or ((not A1) and A2 and (not A3) and (not A4)) or ((not A1) and (not A2) and A3 and (not A4)) or ((not A1) and (not A2) and (not A3) and A4)
 
 DFQD1:
   clocks:

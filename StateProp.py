@@ -24,7 +24,7 @@ class StateProp:
         self.__dag = DAGCircuit.DAGCircuit()
 
         print "Building DAG from netlist"
-        self.__dag.fromNetlist(nl, remove=['clk'])
+        self.__dag.fromNetlist(nl, remove=['clk', 'Clk'])
         print "Breaking Flop Boundaries"
         self.__dag.breakFlops()
 
@@ -140,9 +140,10 @@ class StateProp:
             for node in inputs:
                 if node in self.__dag.flopsIn:
                     flop = self.__dag.flopsIn[node]
-                    edge = (flopSetLookup[flop], state)
-                    if not gr.has_edge(edge):
-                        gr.add_edge(edge)
+                    if flop in flopSetLookup:
+                        edge = (flopSetLookup[flop], state)
+                        if not gr.has_edge(edge):
+                            gr.add_edge(edge)
 
         print "The dependency graph for states is"
         print gr
@@ -174,9 +175,12 @@ class StateProp:
                 newflops.append(flop)
                 newflops.sort()
                 newflops.reverse()
-                flopGroup.add(tuple(newflops))
             else:
                 print "Warning: Ignoring " + flop + " because it's not a bus"
+                newflops = [flop]
+                
+            flopGroup.add(tuple(newflops))
+
                 
         return flopGroup
 
