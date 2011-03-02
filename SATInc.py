@@ -82,6 +82,10 @@ def runAll(logic, processes=3, states=None):
         dur = time.time() - start
         print "Solver Creation took " + str(dur) + " seconds"
 
+    if cnffile and os.path.exists(cnffile):
+        os.remove(cnffile)
+
+
 
     #pdb.set_trace()
     
@@ -233,8 +237,8 @@ def run(cnf):
     os.remove(cnf[1])
 
     # remove CNF file if it exists
-    if cnf[0] and os.path.exists(cnf[0]):
-        os.remove(cnf[0])
+    #if cnf[0] and os.path.exists(cnf[0]):
+    #    os.remove(cnf[0])
 
 
     # remove serialized solver if it exists
