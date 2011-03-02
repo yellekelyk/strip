@@ -32,12 +32,16 @@ def runAll(logic, processes=3, states=None):
     args = zip([logic]*len(states), states)
     solvers = map(SymbolicLogic_solver, args)    
 
+    cnfprocesses = processes
+    cnfprocesses = 1
+    
+
 
     print "Creating " + str(len(states)) + " CNF files"
     start = time.time()
     cnfargs = zip([logic]*len(states), states, solvers)
-    if processes > 1:
-        pool = Pool(processes)
+    if cnfprocesses > 1:
+        pool = Pool(cnfprocesses)
         cnffiles = pool.map(SymbolicLogic_cnf, cnfargs)
     else:
         cnffiles = map(SymbolicLogic_cnf, cnfargs)
@@ -45,15 +49,20 @@ def runAll(logic, processes=3, states=None):
     print "CNF creation took " + str(dur) + " seconds"
 
 
+    # the assumptions (input constraints) are actually the same across outputs
+    # this implies we can get away with 1 assumption file
     print "Creating " + str(len(states)) + " Assumptions"
+
     start = time.time()
-    if processes > 1:
-        pool = Pool(processes)
+    if cnfprocesses > 1:
+        pool = Pool(cnfprocesses)
         assumps = pool.map(SymbolicLogic_assump, args)
     else:
         assumps = map(SymbolicLogic_assump, args)
     dur = time.time() - start
     print "Assumption creation took " + str(dur) + " seconds"
+
+    #pdb.set_trace()
 
 
     cnfs = zip(cnffiles, assumps, states, solvers)
@@ -194,6 +203,7 @@ def run(cnf):
 
     # remove files
     # remove assumptions
+    # edit: don't remove here because all SATs will share 1 assumption file!
     os.remove(cnf[1])
 
     # remove CNF file if it exists

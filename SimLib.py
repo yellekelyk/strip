@@ -3,6 +3,7 @@ import re
 import tokenize
 import StringIO
 import pdb
+import Gate2CNF
 
 class SimLib:
     "Holds simulation info for all primitive gates"
@@ -13,6 +14,7 @@ class SimLib:
         python = dict()
         gen = dict()
         func = dict()
+        py2cnf = dict()
         #aima = dict()
 
         eqntott = {"and": "&",
@@ -56,6 +58,7 @@ class SimLib:
                 sim[modname] = eval(simStr)
                 logic[modname] = eval(logicStr)
                 python[modname] = eval(pyStr)
+                py2cnf[modname] = Gate2CNF.Gate2CNF(prim)
                 #aima[modname] = eval(aimaStr)
                 ins[modname] = inputs
         self.__sim = sim
@@ -64,6 +67,7 @@ class SimLib:
         self.__python = python
         self.__gen = gen
         self.__func = func
+        self.__py2cnf = py2cnf
         #self.__aima = aima
     sim    = property(lambda self: self.__sim)
     inputs = property(lambda self: self.__inputs)
@@ -71,6 +75,7 @@ class SimLib:
     python = property(lambda self: self.__python)
     gen    = property(lambda self: self.__gen)
     func   = property(lambda self: self.__func)
+    py2cnf = property(lambda self: self.__py2cnf)
     #aima   = property(lambda self: self.__aima)
 
     def __getFunction__(self, yaml, modname, opMap):

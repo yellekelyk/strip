@@ -1,4 +1,5 @@
 import Logic2CNF
+import DAG2CNF
 import myutils
 import Netlist
 import SAT
@@ -72,7 +73,8 @@ def runSingleSAT(sp, outputs, st=None):
     if precompute:
         if tuple(outputs) not in l2cnf_all:
             print "Precomputing cnf files for : " + str(outputs)
-            l2cnf_all[tuple(outputs)] = Logic2CNF.Logic2CNF(sp, outputs)
+            l2cnf_all[tuple(outputs)] = DAG2CNF.DAG2CNF(sp, outputs)
+            #l2cnf_all[tuple(outputs)] = Logic2CNF.Logic2CNF(sp, outputs)
 
         l2cnf = l2cnf_all[tuple(outputs)]
         l2cnf.setState(sp.state)
@@ -319,6 +321,9 @@ class FindStates:
         # set relevant constant inputs before running
         self.__sp.setInputState(State.merge(self.__userStates, inputs))
 
+        # todo remove this  ... it's only a test!!!
+        # *********************************
+        #inputCombos = 2**16
 
         # TODO: stop simulation/SAT sweep early if > half states seen
         if inputCombos < 2**16:
