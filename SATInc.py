@@ -31,40 +31,60 @@ def runAll(logic, processes=3, states=None):
 
     args = zip([logic]*len(states), states)
     solvers = map(SymbolicLogic_solver, args)    
+    solvers = [solvers[0]]*len(states)
 
     cnfprocesses = processes
     cnfprocesses = 1
     
-
-
+    # todo: we could try creating 1 cnf file and len(states) assumption files
+    # this will allow us to get away with 1 solver instance
+    # (but probably won't change the SAT solve times very much 
+    # but it will save on disk space / bandwidth with 1 solver file instead
     print "Creating " + str(len(states)) + " CNF files"
     start = time.time()
     cnfargs = zip([logic]*len(states), states, solvers)
-    if cnfprocesses > 1:
-        pool = Pool(cnfprocesses)
-        cnffiles = pool.map(SymbolicLogic_cnf, cnfargs)
-    else:
-        cnffiles = map(SymbolicLogic_cnf, cnfargs)
+    #if cnfprocesses > 1:
+    #    pool = Pool(cnfprocesses)
+    #    cnffiles = pool.map(SymbolicLogic_cnf, cnfargs)
+    #else:
+    #    cnffiles = map(SymbolicLogic_cnf, cnfargs)
+    cnffile  = SymbolicLogic_cnf(cnfargs[0])
+    cnffiles = [cnffile]*len(cnfargs)
     dur = time.time() - start
     print "CNF creation took " + str(dur) + " seconds"
 
 
+    #pdb.set_trace()
+
     # the assumptions (input constraints) are actually the same across outputs
     # this implies we can get away with 1 assumption file
-    print "Creating " + str(len(states)) + " Assumptions"
-
+    print "Creating " + str(len(states)) + " Assumption Files"
     start = time.time()
-    if cnfprocesses > 1:
-        pool = Pool(cnfprocesses)
-        assumps = pool.map(SymbolicLogic_assump, args)
-    else:
-        assumps = map(SymbolicLogic_assump, args)
+    #if cnfprocesses > 1:
+    #    pool = Pool(cnfprocesses)
+    #    assumps = pool.map(SymbolicLogic_assump, args)
+    #else:
+    #    assumps = map(SymbolicLogic_assump, args)
+    #assump = SymbolicLogic_assump(args[0])
+    #assumps = [assump]*len(args)
+    assumps = logic.assumptions(states)
     dur = time.time() - start
     print "Assumption creation took " + str(dur) + " seconds"
 
+    if not os.path.exists(solvers[0]):
+        print "Creating Solver"
+        start = time.time()
+        sat = subprocess.Popen([MINISAT, cnffile, assumps[0], solvers[0]],
+                               stdin=None,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+        sat.communicate()
+        dur = time.time() - start
+        print "Solver Creation took " + str(dur) + " seconds"
+
+
     #pdb.set_trace()
-
-
+    
     cnfs = zip(cnffiles, assumps, states, solvers)
     print "Running SAT problems"
     start = time.time()
@@ -76,7 +96,11 @@ def runAll(logic, processes=3, states=None):
     dur = time.time() - start
     print "SAT runs took " + str(dur) + " seconds"
 
+    # remove assumption files here
+    #os.remove(assump)
     
+    os.remove(solvers[0])
+
     # convert binary array to set
     outSet = set()
     for idx in range(len(results)):
@@ -138,6 +162,7 @@ def run(cnf):
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     else:
+        raise Exception("Solver doesn't exist")
         #print "Loading new solver " + sats[cnf[2]]
         #cnfFile    = "/tmp/cnf" + hashlib.sha224(sats[cnf[2]] + str(cnf[1])).hexdigest()
         #f = makeFile(cnfFile)
@@ -204,6 +229,7 @@ def run(cnf):
     # remove files
     # remove assumptions
     # edit: don't remove here because all SATs will share 1 assumption file!
+    # edit: now remove!
     os.remove(cnf[1])
 
     # remove CNF file if it exists
@@ -212,8 +238,8 @@ def run(cnf):
 
 
     # remove serialized solver if it exists
-    if result:
-        os.remove(cnf[3])
+    #if result:
+    #    os.remove(cnf[3])
 
 
 

@@ -118,7 +118,8 @@ class DAG2CNF:
 
         # create the cnf file if it doesn't exist
         if not os.path.exists(fname):
-            cnf = self.__comment + self.__cnf + self.__cnf__(state)
+            #cnf = self.__comment + self.__cnf + self.__cnf__(state)
+            cnf = self.__comment + self.__cnf
             newfd = os.open(fname, os.O_EXCL | os.O_CREAT | os.O_RDWR)
             f = os.fdopen(newfd, 'w') 
             f.write(cnf)
@@ -131,75 +132,55 @@ class DAG2CNF:
         return f
 
 
-    def __cnf__(self, state):
+    def __cnf__(self, state, dnf=False):
         """ produces the state-specific portion of the cnf file"""
         if state >= 2**len(self.__flops):
             raise Exception("Invalid state " + str(state))
         stateStr = bin(state)[2:].rjust(len(self.__flops), '0')
         cnf = ""
+
+        if dnf:
+            endStr = " "
+        else:
+            endStr = " 0\n"
+
         for i in range(len(self.__flops)):
             invchar = ""
             if stateStr[i] == "0":
                 invchar = "-"
 
-            cnf += invchar + str(self.__nodemap[self.__flops[i]]) + " 0\n"
+            cnf += invchar + str(self.__nodemap[self.__flops[i]]) + endStr
+
+        if dnf:
+            cnf += "0\n"
         return cnf
 
-    #def cnfmap(self, state):
-    #    fname = self.__cnfmapfile__(state)
-    #    if os.path.exists(fname):
-    #        f = open(fname, 'rb')
-    #        thismap = pickle.load(f)
-    #
-    #    else:
-    #        thismap = self.__cnfmap__(self.cnffile(state, False))
-    #        f = open(fname, 'wb')
-    #        pickle.dump(thismap, f, pickle.HIGHEST_PROTOCOL)
-    #
-    #    return thismap
-    #    #if state not in self.__cnfmap:
-    #    #    self.__cnfmap[state] = self.__cnfmap__(self.cnffile(state, False))
-    #    #return self.__cnfmap[state]
-    #
-    #def __cnfmapfile__(self, state):
-    #    f =self.__tmp +"/map"+hashlib.sha224(str(self.outputs())+str(state)).hexdigest()
-    #    return f
-    #
-    #def __cnfmap__(self, cnffile):
-    #    "Parse CNF comments, build map of input name -> number"
-    #    #print "Internal findCNFMap function called"
-    #
-    #    mapping = dict()
-    #
-    #    # read CNF file into cnf
-    #    f = open(cnffile, 'r')
-    #    cnf = f.readlines()
-    #    f.close()
-    #
-    #    #cnf = string.split(cnf, "\n")
-    #    inputs = map(self.cleanNames, self.inputs())
-    #    
-    #    for line in cnf:
-    #        if len(line) > 0 and line[0] == "c":
-    #            m = self.__re.match(line)
-    #            if m:
-    #                if m.group(2) in inputs:
-    #                    mapping[m.group(2)] = m.group(1)
-    #    return mapping
 
+    def assumptions(self, states):
+        assumps = self.__assumptions__()
+        fnames = []
+        for state in states:
+            fname = self.__assumpfile__(state)
+            fnames.append(fname)
+            f = open(fname, 'w')
+            #f.write(assump)
+            for assump in assumps:
+                f.write(assump + " " + self.__cnf__(state, dnf=True))
+            f.close()
+        return fnames
 
-    def assumptions(self, state):
+    def __assumptions__(self):
         """
         Produces a DNF-like file listing the input assumptions per line
         Uses mapping as dict to map between input names and output numbers
         """
-        fname = self.__assumpfile__(state)
+        #fname = self.__assumpfile__(-1)
 
         # ALWAYS create new assumption files
         #mapping = self.cnfmap(state)
         mapping = self.__nodemap
-        #output = ""
-        f = open(fname, 'w') 
+        output = []
+        #f = open(fname, 'w') 
         states = self.state()
         for state in states.states:
             stateStr = states.getStateStr(state)
@@ -207,10 +188,11 @@ class DAG2CNF:
             nodes = map(mapping.get, nodes)
             inv = map(applyInvChar, list(stateStr), ["-"]*len(stateStr))
             tmp = map(lambda x,y:str(x)+str(y), inv, nodes)
-            #output += reduce(lambda x,y:x + " " + y, tmp) + " 0\n"
-            f.write(reduce(lambda x,y:x + " " + y, tmp) + " 0\n")
-        f.close()
-        return fname
+            output.append(reduce(lambda x,y:x + " " + y, tmp))
+            #f.write(reduce(lambda x,y:x + " " + y, tmp) + " 0\n")
+        #f.close()
+        #return fname
+        return output
 
     def __assumpfile__(self, state):
         f =self.__tmp + "/assump"+hashlib.sha224(str(self.outputs())+str(state)).hexdigest()

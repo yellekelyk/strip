@@ -323,9 +323,10 @@ class FindStates:
 
         # todo remove this  ... it's only a test!!!
         # *********************************
-        #inputCombos = 2**16
+        inputCombos = 2**16
 
         # TODO: stop simulation/SAT sweep early if > half states seen
+        # TODO: avoid TT simulation if logic cone is large 
         if inputCombos < 2**16:
             # do simulation to get output states
             print "Running simulation sweep..."
