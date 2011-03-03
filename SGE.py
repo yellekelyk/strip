@@ -6,26 +6,31 @@ import time
 
 import pdb
 
-if "TMPDIR" in os.environ:
-    TMPDIR = os.environ["TMPDIR"]
+if "TMPSHARED" in os.environ:
+    TMPSHARED = os.environ["TMPSHARED"]
 else:
-    TMPDIR="/tmp"
-
-TMPDIR="/nobackup/kkelley/tmp"
+    TMPSHARED="/nobackup/kkelley/tmp"
 
 
 class SGE:
     def __init__(self):
-        self.__asub  = os.environ["SMASH"] + "/bin/asub"
-        self.__qstat = "/sge-root/bin/lx24-amd64/qstat"
+        self.__asub   = os.environ["SMASH"] + "/bin/asub"
+        self.__qstat  = "/sge-root/bin/lx24-amd64/qstat"
+        self.__queues = 20
 
-    def map(self, jobs):
+        # todo: write script to run multiple SAT per job
+
+    def run(self, jobs):
         outFiles   = dict()
         jobNums    = []
         self.__cnt = 0
              
         # submit all jobs
-        jobInfo = map(self.__submit__, jobs)
+        jobInfo = []
+        for job in jobs:
+            jobInfo.append(self.__submit__(job))
+        #jobInfo = map(self.__submit__, jobs)
+        
         waiting = set(range(self.__cnt))
         jobOuts = [""]*len(jobs)
 
@@ -41,17 +46,23 @@ class SGE:
 
                 # check if the job is finished
                 if not jobNum in jobsWaiting:
-                    # check if the output file exists
-                    if os.path.exists(jobOut):
-                        f = open(jobOut)
-                        jobOuts[idx] = f.read()
-                        f.close()
-                        os.remove(jobOut)
-                    else:
-                        raise Exception(str("Job " + str(jobNum) + 
-                                            " seems to have finished but " + 
-                                            jobOut +  " doesn't exist"))
+                    # allow some time for the network storage to sync
+                    start = time.time()
+                    while not os.path.exists(jobOut):
+                        # chown should supposedly flush nfs cache
+                        os.chown(TMPSHARED, os.geteuid(), -1)
+                        dur = time.time() - start
+                        if dur > 5:
+                            pdb.set_trace()
+                            raise Exception(str("Job " + str(jobNum) + 
+                                                " seems to have finished but " + 
+                                                jobOut +  " doesn't exist"))
                     
+                    f = open(jobOut)
+                    jobOuts[idx] = f.read()
+                    f.close()
+                    os.remove(jobOut)
+
                     # mark this job as done
                     done.add(idx)
 
@@ -61,25 +72,28 @@ class SGE:
 
             # sleep before retrying
             if len(waiting) > 0:
-                time.sleep(0.5)
+                time.sleep(0.3)
                                      
         return jobOuts
 
 
     def __submit__(self, job):
         """ Submit a job, return a tuple with (jobNum, outFile) """
-        outFile = TMPDIR + "/sge.out." + str(self.__cnt)
+        outFile = TMPSHARED + "/sge.out." + str(self.__cnt)
         if os.path.exists(outFile):
             os.remove(outFile)
         self.__cnt += 1
         cmd = [self.__asub, "-o", outFile]
         cmd.extend(job)
+        print "submitting " + str(job)
+        #pdb.set_trace()
         sge = subprocess.Popen(cmd,
                                stdin=None,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
         jobNum = string.split(sge.communicate()[0], "\n")
         jobNum = string.split(jobNum[len(jobNum)-3], ".")[0]
+        print "num=" + str(jobNum)
         return (jobNum, outFile)
         
 
