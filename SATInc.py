@@ -21,7 +21,7 @@ else:
     TMPDIR="/tmp"
 
 
-def runAll(logic, processes=4, states=None):
+def runAll(logic, processes=3, states=None):
     if states is None:
         states = range(2**len(logic.outputs()))
     elif not isinstance(states, list):
@@ -57,23 +57,23 @@ def runAll(logic, processes=4, states=None):
 
     # the assumptions (input constraints) are actually the same across outputs
     # this implies we can get away with 1 assumption file
-    print "Creating " + str(len(states)) + " Assumption Files"
+    print "Creating Input Assumption File"
     start = time.time()
-    #if cnfprocesses > 1:
-    #    pool = Pool(cnfprocesses)
-    #    assumps = pool.map(SymbolicLogic_assump, args)
-    #else:
-    #    assumps = map(SymbolicLogic_assump, args)
-    #assump = SymbolicLogic_assump(args[0])
-    #assumps = [assump]*len(args)
-    assumps = logic.assumptions(states)
+    assumpsIn = logic.assumptionsIn()
     dur = time.time() - start
-    print "Assumption creation took " + str(dur) + " seconds"
+    print "Input Assumption creation took " + str(dur) + " seconds"
+
+    print "Creating Output Assumption Files"
+    start = time.time()
+    assumpsOut = logic.assumptionsOut(states)
+    dur = time.time() - start
+    print "Output Assumption creation took " + str(dur) + " seconds"
+
 
     if not os.path.exists(solvers[0]):
         print "Creating Solver"
         start = time.time()
-        sat = subprocess.Popen([MINISAT, cnffile, assumps[0], solvers[0]],
+        sat = subprocess.Popen([MINISAT, cnffile, assumpsIn, assumpsOut[0], solvers[0]],
                                stdin=None,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
@@ -81,14 +81,16 @@ def runAll(logic, processes=4, states=None):
         dur = time.time() - start
         print "Solver Creation took " + str(dur) + " seconds"
 
+
+    #pdb.set_trace()
+
+
+
     if cnffile and os.path.exists(cnffile):
         os.remove(cnffile)
 
-
-
-    #pdb.set_trace()
     
-    cnfs = zip(cnffiles, assumps, states, solvers)
+    cnfs = zip(cnffiles, [assumpsIn]*len(cnffiles), assumpsOut, states, solvers)
     print "Running SAT problems"
     start = time.time()
     if processes > 1:
@@ -97,6 +99,7 @@ def runAll(logic, processes=4, states=None):
         #timeEst = dur * len(cnfs) / (processes/2)
         timeEst = (dur*len(cnfs) * 0.31 + 2.24)/2
         print "Estimated SAT solve time: " + str(timeEst)
+        timeEst = 0
         if timeEst > 20:
             print "Running on grid..."
             results = runSGE(cnfs)
@@ -109,7 +112,9 @@ def runAll(logic, processes=4, states=None):
     print "SAT runs took " + str(dur) + " seconds"
 
     # remove assumption files here
-    #os.remove(assump)
+    os.remove(assumpsIn)
+    for assump in assumpsOut:
+        os.remove(assump)
     
     os.remove(solvers[0])
 
@@ -162,8 +167,8 @@ def getResult(output):
 
 def run(cnf):
 
-    if os.path.exists(cnf[3]):
-        sat = subprocess.Popen([MINISAT, "-load", cnf[3], cnf[1]], 
+    if os.path.exists(cnf[4]):
+        sat = subprocess.Popen([MINISAT, "-load", cnf[4], cnf[1], cnf[2]], 
                                stdin=None,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
@@ -175,16 +180,16 @@ def run(cnf):
     result = getResult(sat.communicate()[0])
 
     # remove assumptions
-    os.remove(cnf[1])
+    #os.remove(cnf[1])
 
     return result     
 
 
 def runSGE(cnfs):
-    jobs = map(lambda x: [MINISAT, "-load", x[3], x[1]], cnfs)
+    jobs = map(lambda x: [MINISAT, "-load", x[4], x[1], x[2]], cnfs)
     sge = SGE.SGE()
     outputs = sge.run(jobs)
     # remove assumptions
-    for cnf in cnfs:
-        os.remove(cnf[1])
+    #for cnf in cnfs:
+    #    os.remove(cnf[1])
     return map(getResult, outputs)

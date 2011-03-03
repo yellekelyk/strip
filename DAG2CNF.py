@@ -1,6 +1,5 @@
 from SymbolicLogic import *
 from myutils import *
-#from odict import OrderedDict
 import string
 import subprocess
 import hashlib
@@ -156,18 +155,40 @@ class DAG2CNF:
         return cnf
 
 
-    def assumptions(self, states):
+    def assumptionsIn(self):
+        fname   = self.__assumpfile__(0, False)
         assumps = self.__assumptions__()
+        f = open(fname, 'w')
+        for assump in assumps:
+            f.write(assump + " 0\n")
+        f.close()
+        return fname
+
+
+    def assumptionsOut(self, states):
         fnames = []
         for state in states:
-            fname = self.__assumpfile__(state)
+            fname = self.__assumpfile__(state, True)
             fnames.append(fname)
             f = open(fname, 'w')
-            #f.write(assump)
-            for assump in assumps:
-                f.write(assump + " " + self.__cnf__(state, dnf=True))
+            f.write(self.__cnf__(state, dnf=True))
             f.close()
         return fnames
+
+
+    #def assumptions(self, states):
+    #    raise Exception("deprecated!!!")
+    #    assumps = self.__assumptions__()
+    #    fnames = []
+    #    for state in states:
+    #        fname = self.__assumpfile__(state)
+    #        fnames.append(fname)
+    #        f = open(fname, 'w')
+    #        #f.write(assump)
+    #        for assump in assumps:
+    #            f.write(assump + " " + self.__cnf__(state, dnf=True))
+    #        f.close()
+    #    return fnames
 
     def __assumptions__(self):
         """
@@ -194,6 +215,10 @@ class DAG2CNF:
         #return fname
         return output
 
-    def __assumpfile__(self, state):
-        f =self.__tmp + "/assump"+hashlib.sha224(str(self.outputs())+str(state)).hexdigest()
+    def __assumpfile__(self, state, out=True):
+        if out:
+            typeStr = "Out"
+        else:
+            typeStr = "In"
+        f =self.__tmp + "/assump"+typeStr+hashlib.sha224(str(self.outputs())+str(state)+str(out)).hexdigest()
         return f
