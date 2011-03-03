@@ -21,7 +21,7 @@ else:
     TMPDIR="/tmp"
 
 
-def runAll(logic, processes=3, states=None):
+def runAll(logic, processes=4, states=None):
     if states is None:
         states = range(2**len(logic.outputs()))
     elif not isinstance(states, list):
@@ -92,9 +92,17 @@ def runAll(logic, processes=3, states=None):
     print "Running SAT problems"
     start = time.time()
     if processes > 1:
-        #pool = Pool(processes)
-        #results = pool.map(run, cnfs)
-        results = runSGE(cnfs)
+        # use solver creation time to estimate total runtime
+        # this time estimated from CC numbers on neva-2
+        #timeEst = dur * len(cnfs) / (processes/2)
+        timeEst = (dur*len(cnfs) * 0.31 + 2.24)/2
+        print "Estimated SAT solve time: " + str(timeEst)
+        if timeEst > 20:
+            print "Running on grid..."
+            results = runSGE(cnfs)
+        else:
+            pool = Pool(processes)
+            results = pool.map(run, cnfs)
     else:
         results = map(run, cnfs)
     dur = time.time() - start
@@ -175,5 +183,8 @@ def run(cnf):
 def runSGE(cnfs):
     jobs = map(lambda x: [MINISAT, "-load", x[3], x[1]], cnfs)
     sge = SGE.SGE()
-    outputs = sge.map(jobs)
+    outputs = sge.run(jobs)
+    # remove assumptions
+    for cnf in cnfs:
+        os.remove(cnf[1])
     return map(getResult, outputs)
