@@ -9,10 +9,10 @@ class State:
         self.__states = set()
         self.__nodes = nodes
         self.__nodeDict = dict()
-        cnt = 0
+        cnt = len(nodes)-1
         for node in nodes:
             self.__nodeDict[node] = cnt
-            cnt = cnt + 1
+            cnt -= 1
         self.__skip = False
 
     def __eq__(self, state):
@@ -43,7 +43,14 @@ class State:
     def getState(self, state, node):
         if state not in self.__states:
             raise Exception("state " + str(state) + " not in set of states")
-        return bool(int(bin(state)[2:].rjust(len(self.__nodes), '0')[self.__nodeDict[node]]))
+        return bool(state & (2**self.__nodeDict[node]))
+
+    def getStateVec(self, state, nodes=None):
+        if state not in self.__states:
+            raise Exception(str(state) + " has not been added!")
+        if nodes is None:
+            nodes = self.__nodes
+        return map(self.getState, [state]*len(nodes), nodes)
 
     def getStateStr(self, state, nodes=None):
         if state not in self.__states:
@@ -51,7 +58,7 @@ class State:
         if nodes is None:
             nodes = self.__nodes
 
-        st= myutils.bool2int(map(self.getState, [state]*len(nodes), nodes))
+        st= myutils.bool2int(self.getStateVec(state, nodes))
         full = bin(st)[2:].rjust(len(nodes), '0')
         return full
 
@@ -148,8 +155,10 @@ def merge(state1, state2):
         for oldState in state1.states:
             for newState in state2.states:
                 # only add newState that correspond to oldState
-                if (state1.getStateStr(oldState, nodesCommon) == 
-                    state2.getStateStr(newState, nodesCommon)):
+                vec1 = state1.getStateVec(oldState, nodesCommon)
+                vec2 = state2.getStateVec(newState, nodesCommon)
+
+                if vec1 == vec2:
                     newStSub = int(state2.getStateStr(newState,nodes2),2)
                     stateObj.addState(oldState* 2**(len(nodes2))+newStSub)
 

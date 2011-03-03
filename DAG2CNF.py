@@ -138,7 +138,6 @@ class DAG2CNF:
         """ produces the state-specific portion of the cnf file"""
         if state >= 2**len(self.outputs()):
             raise Exception("Invalid state " + str(state))
-        stateStr = bin(state)[2:].rjust(len(self.outputs()), '0')
         cnf = ""
 
         if dnf:
@@ -147,11 +146,9 @@ class DAG2CNF:
             endStr = " 0\n"
 
         for i in range(len(self.outputs())):
-            invchar = ""
-            if stateStr[i] == "0":
-                invchar = "-"
-
-            cnf += invchar + str(self.__nodemap[self.outputs()[i]]) + endStr
+            if not state & (2**(len(self.outputs())-1-i)):
+                cnf += "-"
+            cnf += str(self.__nodemap[self.outputs()[i]]) + endStr
 
         if dnf:
             cnf += "0\n"
@@ -192,12 +189,14 @@ class DAG2CNF:
         states = self.state()
         # todo: need more efficient conversion between state and string
         for state in states.states:
-            stateStr = states.getStateStr(state)
-            nodes = states.nodes()
-            nodes = map(mapping.get, nodes)
-            inv = map(applyInvChar, list(stateStr), ["-"]*len(stateStr))
-            tmp = map(lambda x,y:str(x)+str(y), inv, nodes)
-            output.append(reduce(lambda x,y:x + " " + y, tmp))
+            nodes    = states.nodes()
+            nodeNums = map(mapping.get, nodes)
+            outStr = ''
+            for i in range(len(nodes)):
+                if not states.getState(state, nodes[i]):
+                    outStr += '-'
+                outStr += str(nodeNums[i]) + ' '
+            output.append(outStr)
         return output
 
     def __assumpfile__(self, state, out=True):
