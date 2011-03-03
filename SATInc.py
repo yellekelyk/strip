@@ -6,6 +6,7 @@ import time
 import hashlib
 import os
 import re
+import SGE
 
 import pdb
 
@@ -19,8 +20,6 @@ if "TMPDIR" in os.environ:
 else:
     TMPDIR="/tmp"
 
-#sat_all = dict()
-#sats    = []
 
 def runAll(logic, processes=3, states=None):
     if states is None:
@@ -93,8 +92,9 @@ def runAll(logic, processes=3, states=None):
     print "Running SAT problems"
     start = time.time()
     if processes > 1:
-        pool = Pool(processes)
-        results = pool.map(run, cnfs)
+        #pool = Pool(processes)
+        #results = pool.map(run, cnfs)
+        results = runSGE(cnfs)
     else:
         results = map(run, cnfs)
     dur = time.time() - start
@@ -146,115 +146,34 @@ def makeFile(fname):
     return new_file
     
 
+def getResult(output):
+    out    = string.split(output, "\n")
+    return out[len(out)-2] == "SATISFIABLE"
+
+
+
 def run(cnf):
 
-    #global sats
-
-    
-    # determine solver name
-    #m = hashlib.sha224(str(cnf[0])).hexdigest()
-
-    #assumpsFile = "/tmp/assump" + hashlib.sha224(sats[cnf[2]] + str(cnf[1])).hexdigest()
-    #f = makeFile(assumpsFile)
-    #f.write(cnf[1])
-    #f.close()
-
     if os.path.exists(cnf[3]):
-        #print "Solver exists: loading from " + sats[cnf[2]]
         sat = subprocess.Popen([MINISAT, "-load", cnf[3], cnf[1]], 
                                stdin=None,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     else:
         raise Exception("Solver doesn't exist")
-        #print "Loading new solver " + sats[cnf[2]]
-        #cnfFile    = "/tmp/cnf" + hashlib.sha224(sats[cnf[2]] + str(cnf[1])).hexdigest()
-        #f = makeFile(cnfFile)
-        #f.write(cnf[0])
-        #f.close()
-        sat = subprocess.Popen([MINISAT, cnf[0], cnf[1], cnf[3]], 
-                               stdin=None,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-        #os.remove(cnfFile)
-
-    
-    #if sats[cnf[2]] is None:
-    #    # we must first write cnf[0] and cnf[1] to files
-    #    m = hashlib.sha224(str(cnf)).hexdigest()
-    #    cnfFile    = "/tmp/inc" + m
-    #    #assumpsFile = "/tmp/inc" + m + "1"
-    #    f = makeFile(cnfFile)
-    #    f.write(cnf[0])
-    #    f.close()
-    #    #sats[cnf[2]] = pexpect.spawn(SATexe, [cnfFile])
-    #    sat = subprocess.Popen([SATexe, cnfFile], 
-    #                           stdin=subprocess.PIPE,
-    #                           stdout=subprocess.PIPE,
-    #                           stderr=subprocess.PIPE)
-    #   
-    #sat = sats[cnf[2]]
-
-    #f = makeFile(assumpsFile)
-    #f.write(cnf[1])
-    #f.close()
-
-    #this code was from attempts at sending assumps 1 line at a time
-    #result = False
-    #for line in string.split(cnf[1], "\n"):
-    #    #sat.sendline(line)
-    #    #index = sat.expect(["UNSATISFIABLE",
-    #    #                    "SATISFIABLE",
-    #    #                    pexpect.EOF, 
-    #    #                    pexpect.TIMEOUT])
-    #    #if index == 1:
-    #    #    result = True
-    #    #    sats[cnf[2]] = None
-    #    #    break
-    #    sat.stdin.write(line + "\n")
-    #    output = sat.stdout.readline()
-    #    output.rstrip()
-    #    if output == "SATISFIABLE":
-    #        result = True
-    #        sat.close()
-    #        os.remove(sats[cnf[2]])
-    #        break
-
         
-    out = string.split(sat.communicate()[0], "\n")
-    #out = string.split(sat.communicate(cnf[0])[0], "\n")
+    #out = string.split(sat.communicate()[0], "\n")
+    #result = out[len(out)-2] == "SATISFIABLE"
+    result = getResult(sat.communicate()[0])
 
-    #pdb.set_trace()
-
-    # parse SAT results here
-    #result = out[len(out)-2] != "UNSATISFIABLE"
-    result = out[len(out)-2] == "SATISFIABLE"
-
-    # remove files
     # remove assumptions
-    # edit: don't remove here because all SATs will share 1 assumption file!
-    # edit: now remove!
     os.remove(cnf[1])
-
-    # remove CNF file if it exists
-    #if cnf[0] and os.path.exists(cnf[0]):
-    #    os.remove(cnf[0])
-
-
-    # remove serialized solver if it exists
-    #if result:
-    #    os.remove(cnf[3])
-
-
-
-
-    #try:
-    #    cnfFile
-    #except NameError:
-    #    pass
-    #else:
-    #    os.remove(cnfFile)
-
 
     return result     
 
+
+def runSGE(cnfs):
+    jobs = map(lambda x: [MINISAT, "-load", x[3], x[1]], cnfs)
+    sge = SGE.SGE()
+    outputs = sge.map(jobs)
+    return map(getResult, outputs)
