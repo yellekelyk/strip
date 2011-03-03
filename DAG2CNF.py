@@ -108,6 +108,9 @@ class DAG2CNF:
     def inputs(self):
         return self.__inputs
 
+    def setOutputs(self, outputs):
+        self.__flops = outputs
+
     def outputs(self):
         return self.__flops
 
@@ -133,9 +136,9 @@ class DAG2CNF:
 
     def __cnf__(self, state, dnf=False):
         """ produces the state-specific portion of the cnf file"""
-        if state >= 2**len(self.__flops):
+        if state >= 2**len(self.outputs()):
             raise Exception("Invalid state " + str(state))
-        stateStr = bin(state)[2:].rjust(len(self.__flops), '0')
+        stateStr = bin(state)[2:].rjust(len(self.outputs()), '0')
         cnf = ""
 
         if dnf:
@@ -143,12 +146,12 @@ class DAG2CNF:
         else:
             endStr = " 0\n"
 
-        for i in range(len(self.__flops)):
+        for i in range(len(self.outputs())):
             invchar = ""
             if stateStr[i] == "0":
                 invchar = "-"
 
-            cnf += invchar + str(self.__nodemap[self.__flops[i]]) + endStr
+            cnf += invchar + str(self.__nodemap[self.outputs()[i]]) + endStr
 
         if dnf:
             cnf += "0\n"
@@ -176,33 +179,18 @@ class DAG2CNF:
         return fnames
 
 
-    #def assumptions(self, states):
-    #    raise Exception("deprecated!!!")
-    #    assumps = self.__assumptions__()
-    #    fnames = []
-    #    for state in states:
-    #        fname = self.__assumpfile__(state)
-    #        fnames.append(fname)
-    #        f = open(fname, 'w')
-    #        #f.write(assump)
-    #        for assump in assumps:
-    #            f.write(assump + " " + self.__cnf__(state, dnf=True))
-    #        f.close()
-    #    return fnames
-
     def __assumptions__(self):
         """
         Produces a DNF-like file listing the input assumptions per line
         Uses mapping as dict to map between input names and output numbers
         """
-        #fname = self.__assumpfile__(-1)
 
         # ALWAYS create new assumption files
         #mapping = self.cnfmap(state)
         mapping = self.__nodemap
         output = []
-        #f = open(fname, 'w') 
         states = self.state()
+        # todo: need more efficient conversion between state and string
         for state in states.states:
             stateStr = states.getStateStr(state)
             nodes = states.nodes()
@@ -210,9 +198,6 @@ class DAG2CNF:
             inv = map(applyInvChar, list(stateStr), ["-"]*len(stateStr))
             tmp = map(lambda x,y:str(x)+str(y), inv, nodes)
             output.append(reduce(lambda x,y:x + " " + y, tmp))
-            #f.write(reduce(lambda x,y:x + " " + y, tmp) + " 0\n")
-        #f.close()
-        #return fname
         return output
 
     def __assumpfile__(self, state, out=True):

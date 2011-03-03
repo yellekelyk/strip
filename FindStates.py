@@ -19,7 +19,9 @@ import string
 import pdb
 
 
-l2cnf_all = dict()
+#l2cnf_all = dict()
+dag2cnf = None
+
 
 def runHierSAT(sp, outputs):
     "Run a SAT sweep in a recursive hierarchical fashion"
@@ -66,23 +68,17 @@ def runHierSAT(sp, outputs):
 
 
 def runSingleSAT(sp, outputs, st=None):
+    global dag2cnf
+
+    if not dag2cnf:
+        print "Precomputing dag2cnf for whole circuit"
+        dag2cnf = DAG2CNF.DAG2CNF(sp)
+
+    dag2cnf.setOutputs(outputs)
+    dag2cnf.setState(sp.state)
+
+    states = SATInc.runAll(dag2cnf, states=st)
     result = State.State(outputs)
-
-    precompute = True
-
-    if precompute:
-        if tuple(outputs) not in l2cnf_all:
-            print "Precomputing cnf files for : " + str(outputs)
-            l2cnf_all[tuple(outputs)] = DAG2CNF.DAG2CNF(sp, outputs)
-            #l2cnf_all[tuple(outputs)] = Logic2CNF.Logic2CNF(sp, outputs)
-
-        l2cnf = l2cnf_all[tuple(outputs)]
-        l2cnf.setState(sp.state)
-    else:
-        l2cnf = Logic2CNF.Logic2CNF(sp, outputs)
-
-    states = SATInc.runAll(l2cnf, states=st)
-    #states = SAT.runAll(l2cnf, states=st)
     for state in states:
         result.addState(state)
     return result
@@ -220,11 +216,11 @@ class FindStates:
             # check if we should garbage collect
             # this means we can remove this group from l2cnf_all to
             # save on memory
-            if self.__flopStatesOut.get(group).full():
-                outputs = tuple(self.__flopGroups[group])
-                if outputs in l2cnf_all:
-                    print "Garbage collecting l2cnf_all: " + str(outputs)
-                    l2cnf_all.pop(outputs)
+            #if self.__flopStatesOut.get(group).full():
+            #    outputs = tuple(self.__flopGroups[group])
+            #    if outputs in l2cnf_all:
+            #        print "Garbage collecting l2cnf_all: " + str(outputs)
+            #        l2cnf_all.pop(outputs)
 
         return ret
 
