@@ -1,11 +1,17 @@
-import subprocess
 import os
+import re
 import string
+import subprocess
+import time
+
+import pdb
 
 if "TMPDIR" in os.environ:
     TMPDIR = os.environ["TMPDIR"]
 else:
     TMPDIR="/tmp"
+
+TMPDIR="/nobackup/kkelley/tmp"
 
 
 class SGE:
@@ -20,7 +26,7 @@ class SGE:
              
         # submit all jobs
         jobInfo = map(self.__submit__, jobs)
-        waiting = range(self.__cnt)
+        waiting = set(range(self.__cnt))
         jobOuts = [""]*len(jobs)
 
         # now wait for all jobs to complete
@@ -40,6 +46,7 @@ class SGE:
                         f = open(jobOut)
                         jobOuts[idx] = f.read()
                         f.close()
+                        os.remove(jobOut)
                     else:
                         raise Exception(str("Job " + str(jobNum) + 
                                             " seems to have finished but " + 
@@ -50,7 +57,11 @@ class SGE:
 
             # remove finished jobs
             for idx in done:
-                waiting.pop(idx)
+                waiting.remove(idx)
+
+            # sleep before retrying
+            if len(waiting) > 0:
+                time.sleep(0.5)
                                      
         return jobOuts
 
@@ -58,24 +69,30 @@ class SGE:
     def __submit__(self, job):
         """ Submit a job, return a tuple with (jobNum, outFile) """
         outFile = TMPDIR + "/sge.out." + str(self.__cnt)
+        if os.path.exists(outFile):
+            os.remove(outFile)
         self.__cnt += 1
-        sge = subprocess.Popen([self.__asub, "-o", outFile, job],
+        cmd = [self.__asub, "-o", outFile]
+        cmd.extend(job)
+        sge = subprocess.Popen(cmd,
                                stdin=None,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
         jobNum = string.split(sge.communicate()[0], "\n")
-        jobNum = string.split(jobNum[len(jobNum)-1], ".")[0]
+        jobNum = string.split(jobNum[len(jobNum)-3], ".")[0]
         return (jobNum, outFile)
         
 
     def __getJobsWaiting__(self):
-        qstat = subprocess.Popen([self.__qstat]
+        qstat = subprocess.Popen([self.__qstat],
                                  stdin=None,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
         allJobInfo = string.split(qstat.communicate()[0], "\n")
+        allJobInfo.pop(len(allJobInfo)-1)
+
         jobs = set()
-        if len(allJobInfo > 0):
+        if len(allJobInfo) > 1:
             # remove the first 2 useless lines
             allJobInfo.pop(0)
             allJobInfo.pop(0)
@@ -84,5 +101,6 @@ class SGE:
                 if m:
                     jobs.add(m.group(1))
                 else:
+                    pdb.set_trace()
                     raise Exception("malformed line " + jobInfo)
         return jobs
