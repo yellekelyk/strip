@@ -334,21 +334,11 @@ class FindStates:
             # do SAT
             print "Running SAT..."
             
-            #l2cnf = Logic2CNF.Logic2CNF(sp, outputSet)
-            #states = SAT.runAll(l2cnf)
-            #states = runHierSAT(sp, outputSet)
             outputStates = list(set.difference(set(range(2**len(outputSet))), 
                                                statesOut.states))
 
             states = runSingleSAT(self.__sp, outputSet, st=outputStates).states
 
-            #if outputCombos <= 128:
-            #states = runSingleSAT(self.__sp, outputSet, st=outputStates).states
-                               
-                           
-            #else:
-            #    # attempt to 'prune' problem before sweeping
-            #    states = runIterSAT(self.__sp, outputSet).states
 
         else:
             # FrEaK OuTTT!

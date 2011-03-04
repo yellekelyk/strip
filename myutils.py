@@ -1,5 +1,10 @@
 def bool2int(boolvec):
-    return int(str(reduce(lambda x,y:str(x)+str(y), map(int,boolvec),0)),2)
+    num = 0
+    for i in range(len(boolvec)):
+        if boolvec[i]:
+            num += (1 << (len(boolvec)-i-1))
+    return num
+
 
 def cleanget(dictionary, key):
     val = dict()

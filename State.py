@@ -43,7 +43,7 @@ class State:
     def getState(self, state, node):
         if state not in self.__states:
             raise Exception("state " + str(state) + " not in set of states")
-        return bool(state & (2**self.__nodeDict[node]))
+        return bool(state & (1 << self.__nodeDict[node]))
 
     def getStateVec(self, state, nodes=None):
         if state not in self.__states:
@@ -62,10 +62,6 @@ class State:
         full = bin(st)[2:].rjust(len(nodes), '0')
         return full
 
-    #def update(self, state):
-    #    "updates self by adding all states in state"
-    #    pass
-        
 
     def dcPrint(self):
         stateList = list(self.states)
@@ -105,7 +101,8 @@ def subset(state, nodes):
 
     stateObj = State(nodes)
     for st in state.states:
-        newst = myutils.bool2int(map(state.getState, [st]*len(nodes), nodes))
+        vec = state.getStateVec(st, nodes)
+        newst = myutils.bool2int(vec)
         stateObj.addState(newst)
     return stateObj
     

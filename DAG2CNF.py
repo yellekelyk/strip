@@ -146,7 +146,7 @@ class DAG2CNF:
             endStr = " 0\n"
 
         for i in range(len(self.outputs())):
-            if not state & (2**(len(self.outputs())-1-i)):
+            if not state & (1 << (len(self.outputs())-1-i)):
                 cnf += "-"
             cnf += str(self.__nodemap[self.outputs()[i]]) + endStr
 
@@ -156,12 +156,27 @@ class DAG2CNF:
 
 
     def assumptionsIn(self):
+        """
+        Produces a DNF-like file listing the input assumptions per line
+        Uses mapping as dict to map between input names and output numbers
+        """
         fname   = self.__assumpfile__(0, False)
-        assumps = self.__assumptions__()
+        mapping = self.__nodemap
+        states = self.state()
+        nodes    = states.nodes()
+        nodeNums = map(mapping.get, nodes)
+
         f = open(fname, 'w')
-        for assump in assumps:
-            f.write(assump + " 0\n")
+        outStr = ''
+        for state in states.states:
+            for i in range(len(nodes)):
+                if not states.getState(state, nodes[i]):
+                    outStr += '-'
+                outStr += str(nodeNums[i]) + ' '
+            outStr += " 0\n"
+        f.write(outStr)
         f.close()
+
         return fname
 
 
@@ -175,29 +190,6 @@ class DAG2CNF:
             f.close()
         return fnames
 
-
-    def __assumptions__(self):
-        """
-        Produces a DNF-like file listing the input assumptions per line
-        Uses mapping as dict to map between input names and output numbers
-        """
-
-        # ALWAYS create new assumption files
-        #mapping = self.cnfmap(state)
-        mapping = self.__nodemap
-        output = []
-        states = self.state()
-        # todo: need more efficient conversion between state and string
-        for state in states.states:
-            nodes    = states.nodes()
-            nodeNums = map(mapping.get, nodes)
-            outStr = ''
-            for i in range(len(nodes)):
-                if not states.getState(state, nodes[i]):
-                    outStr += '-'
-                outStr += str(nodeNums[i]) + ' '
-            output.append(outStr)
-        return output
 
     def __assumpfile__(self, state, out=True):
         if out:
