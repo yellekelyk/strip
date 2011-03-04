@@ -1,8 +1,8 @@
 from pygraph.classes.digraph import digraph
 from pygraph.algorithms.searching import depth_first_search
 from pygraph.algorithms.cycles import find_cycle
-import gv
-from pygraph.readwrite.dot import write
+#import gv
+#from pygraph.readwrite.dot import write
 import copy
 
 class DAGCircuit(digraph):
@@ -260,10 +260,11 @@ class DAGCircuit(digraph):
         return self.__pins[edge]
 
     def png(self, fileName):
-        dot = write(self)
-        gvv = gv.readstring(dot)
-        gv.layout(gvv,'dot')
-        gv.render(gvv,'png',fileName)
+        raise Exception("deprecated!")
+        #dot = write(self)
+        #gvv = gv.readstring(dot)
+        #gv.layout(gvv,'dot')
+        #gv.render(gvv,'png',fileName)
 
 
     cells   = property(lambda self: self.__cells)
