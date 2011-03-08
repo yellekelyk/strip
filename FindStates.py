@@ -165,13 +165,10 @@ class FindStates:
         # inputs: maps group output -> constrained input
         # flopsIn: maps group -> constrained inputs
         self.__flopStatesOut = StateGroup.StateGroup()
-        #self.__flopStatesIn = copy.deepcopy(self.__sp.state)
-        #self.__flopStatesIn_p = State.State(self.__flopStatesIn.nodes())
         self.__flopStatesIn_p = dict()
         self.__inputs = dict() 
         self.__flopsIn = dict()
         outToIn = myutils.invert(self.__sp.dag.flopsIn, True)
-        #self.__skip = [False]*len(self.__post)
         self.__outToIn = outToIn
         for group in self.__post:
             self.__inputs[group] = map(outToIn.get, self.__flopGroups[group])
@@ -184,8 +181,25 @@ class FindStates:
             flopsIn = set.intersection(set(self.__gr.node_attr[group][0]), 
                                        set(self.__sp.dag.flopsIn.keys()))
             self.__flopsIn[group] = flopsIn
-            self.__flopStatesIn_p[group] = State.State(flopsIn)
 
+        # create empty flopStatesIn_p for each group
+        for group in self.__post:
+            inGrps = dict()
+            for flop in self.__flopsIn[group]:
+                # get output node
+                flopOut = self.__sp.dag.flopsIn[flop]
+                
+                # lookup group associated with this node
+                key = self.__flopStatesOut.lookup(flopOut)
+                if not key in inGrps:
+                    inGrps[key] = []
+                inGrps[key].append(flop)
+            sg = StateGroup.StateGroup()            
+            for key in inGrps:
+                inGrps[key].sort()
+                inGrps[key].reverse()
+                sg.insert(key, State.State(inGrps[key]))
+            self.__flopStatesIn_p[group] = sg
 
 
     def run(self):
@@ -240,8 +254,9 @@ class FindStates:
 
         # calculate the current input state for this group
         flopsOut = map(self.__sp.dag.flopsIn.get, flopsIn)
-        inStates = State.rename(self.__flopStatesOut.toState(flopsOut),
-                                self.__outToIn)
+        #inStates = State.rename(self.__flopStatesOut.toState(flopsOut),
+        #                        self.__outToIn)
+        inStates = self.__flopStatesOut.subset(flopsOut).rename(self.__outToIn)
 
         updated = True
         # determine if anything has been updated
@@ -249,20 +264,22 @@ class FindStates:
             if inStates == inStates_p:
                 updated = False
         else:
-            inStates_p = State.State(list(inStates.nodes()))
+            inStates_p = StateGroup.StateGroup()
+            inStates_p.initGroups(inStates)
 
         # calculate state diff
-        diffStates = State.State(list(inStates.nodes()))
-        for st in set.difference(inStates.states, inStates_p.states):
-            diffStates.addState(st)
+        #diffStates = State.State(list(inStates.nodes()))
+        #for st in set.difference(inStates.states, inStates_p.states):
+        #    diffStates.addState(st)
+        diffStates = inStates.diff(inStates_p)
 
         print str(str(group) + ": There were " + 
                   str(len(self.__flopStatesIn_p[group].nodes())-
                       len(inStates.nodes())) + 
                   " input constraints dropped")      
 
-        print str(str(group) + ": Considering " + str(len(diffStates.states)) + 
-                  " new input states")
+        #print str(str(group) + ": Considering " + str(len(diffStates.states))  
+        # " new input states")
 
 
         # set previous state
@@ -283,7 +300,6 @@ class FindStates:
         self.__flopStatesIn = State.subset(self.__flopStatesIn, nodes)
 
     def __mergeInputState__(self, group, state):
-        #self.__flopStatesIn_p = copy.deepcopy(self.__flopStatesIn)
         self.__flopStatesIn_p[group] = State.subset(self.__flopStatesIn,
                                                     self.__inputs[group])
         subsetNodes =[]
@@ -299,7 +315,6 @@ class FindStates:
 
         statesOut = self.__flopStatesOut.get(group)
         if statesOut.full():
-            #if self.__skip[group]:
             raise Exception("Shouldn't call if skip is true!")
 
         inputSet  = self.__gr.node_attr[group][0]
@@ -309,13 +324,15 @@ class FindStates:
         constIn = list(set.intersection(inputSet, set(inputs.nodes())))
 
         # find number of inputs that we effectively have to sweep
-        inputCombos = 2**(len(inputSet)-len(constIn)) + len(inputs.states)
+        #inputCombos = 2**(len(inputSet)-len(constIn)) + len(inputs.states)
+        inputCombos = 2**(len(inputSet)-len(constIn)) + inputs.numStates()
 
         # find number of outputs that haven't been SATISFIED
         outputCombos = 2**(len(outputSet))-len(statesOut.states)
 
         # set relevant constant inputs before running
-        self.__sp.setInputState(State.merge(self.__userStates, inputs))
+        #self.__sp.setInputState(State.merge(self.__userStates, inputs))
+        self.__sp.setInputState(inputs)
 
         # todo remove this  ... it's only a test!!!
         # *********************************

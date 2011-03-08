@@ -13,7 +13,7 @@ import pdb
 if "MINISAT" in os.environ:
     MINISAT = os.environ["MINISAT"]
 else:
-    MINISAT = "/home/kkelley/Downloads/minisat.mine/simp/minisat_static"
+    MINISAT = "/home/kkelley/Downloads/minisat.mine/simp/minisat_static.assumps"
 
 if "TMPDIR" in os.environ:
     TMPDIR = os.environ["TMPDIR"]
@@ -21,7 +21,7 @@ else:
     TMPDIR="/tmp"
 
 
-def runAll(logic, processes=3, states=None):
+def runAll(logic, processes=1, states=None):
     if states is None:
         states = range(2**len(logic.outputs()))
     elif not isinstance(states, list):
@@ -32,9 +32,6 @@ def runAll(logic, processes=3, states=None):
     solvers = map(SymbolicLogic_solver, args)    
     solvers = [solvers[0]]*len(states)
 
-    cnfprocesses = processes
-    cnfprocesses = 1
-    
     # todo: we could try creating 1 cnf file and len(states) assumption files
     # this will allow us to get away with 1 solver instance
     # (but probably won't change the SAT solve times very much 
@@ -56,8 +53,8 @@ def runAll(logic, processes=3, states=None):
     #pdb.set_trace()
 
     # the assumptions (input constraints) are actually the same across outputs
-    # this implies we can get away with 1 assumption file
-    print "Creating Input Assumption File"
+    # this implies we can get away with 1 assumption file PER group
+    print "Creating Input Assumption Files"
     start = time.time()
     assumpsIn = logic.assumptionsIn()
     dur = time.time() - start
@@ -73,7 +70,10 @@ def runAll(logic, processes=3, states=None):
     if not os.path.exists(solvers[0]):
         print "Creating Solver"
         start = time.time()
-        sat = subprocess.Popen([MINISAT, cnffile, assumpsIn, assumpsOut[0], solvers[0]],
+        sat = subprocess.Popen([MINISAT, 
+                                "-cnf="+cnffile, 
+                                assumpsOut[0], 
+                                "-save="+solvers[0]],
                                stdin=None,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
@@ -82,12 +82,8 @@ def runAll(logic, processes=3, states=None):
         print "Solver Creation took " + str(dur) + " seconds"
 
 
-    #pdb.set_trace()
-
-
-
-    if cnffile and os.path.exists(cnffile):
-        os.remove(cnffile)
+    #if cnffile and os.path.exists(cnffile):
+    #    os.remove(cnffile)
 
     
     cnfs = zip(cnffiles, [assumpsIn]*len(cnffiles), assumpsOut, states, solvers)
@@ -112,7 +108,8 @@ def runAll(logic, processes=3, states=None):
     print "SAT runs took " + str(dur) + " seconds"
 
     # remove assumption files here
-    os.remove(assumpsIn)
+    for assump in assumpsIn:
+        os.remove(assump)
     for assump in assumpsOut:
         os.remove(assump)
     
@@ -164,32 +161,33 @@ def getResult(output):
     return out[len(out)-2] == "SATISFIABLE"
 
 
+def makeSATArgs(arr):
+    satArgs = [MINISAT, "-load="+str(arr[4]), arr[2]]
+    satArgs.extend(arr[1])
+    return satArgs
+
 
 def run(cnf):
 
+    #pdb.set_trace()
+
     if os.path.exists(cnf[4]):
-        sat = subprocess.Popen([MINISAT, "-load", cnf[4], cnf[1], cnf[2]], 
+        satArgs = makeSATArgs(cnf)
+        pdb.set_trace()
+        sat = subprocess.Popen(satArgs,
                                stdin=None,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     else:
         raise Exception("Solver doesn't exist")
         
-    #out = string.split(sat.communicate()[0], "\n")
-    #result = out[len(out)-2] == "SATISFIABLE"
     result = getResult(sat.communicate()[0])
-
-    # remove assumptions
-    #os.remove(cnf[1])
 
     return result     
 
 
 def runSGE(cnfs):
-    jobs = map(lambda x: [MINISAT, "-load", x[4], x[1], x[2]], cnfs)
+    jobs = map(makeSATArgs, cnfs)
     sge = SGE.SGE()
     outputs = sge.run(jobs)
-    # remove assumptions
-    #for cnf in cnfs:
-    #    os.remove(cnf[1])
     return map(getResult, outputs)

@@ -100,7 +100,7 @@ class DAG2CNF:
                                             set(self.__inputs)))
         constInputs.sort()
         constInputs.reverse()
-        self.__state  = State.subset(state, constInputs)
+        self.__state  = state.subset(constInputs)
 
     def state(self):
         return self.__state
@@ -160,9 +160,34 @@ class DAG2CNF:
         Produces a DNF-like file listing the input assumptions per line
         Uses mapping as dict to map between input names and output numbers
         """
-        fname   = self.__assumpfile__(0, False)
-        mapping = self.__nodemap
+        froot   = self.__assumpfile__(0, False)
+        #mapping = self.__nodemap
         states = self.state()
+        #nodes    = states.nodes()
+        #nodeNums = map(mapping.get, nodes)
+
+        fnames = []
+        for grp in states.states():
+            fname = froot + "." + str(grp)
+            self.__writeGrpAssumptions__(fname, states.states()[grp])
+            fnames.append(fname)
+
+        #f = open(fname, 'w')
+        #outStr = ''
+        #for state in states.states:
+        #    for i in range(len(nodes)):
+        #        if not states.getState(state, nodes[i]):
+        #            outStr += '-'
+        #        outStr += str(nodeNums[i]) + ' '
+        #    outStr += " 0\n"
+        #f.write(outStr)
+        #f.close()
+
+        return fnames
+
+
+    def __writeGrpAssumptions__(self, fname, states):
+        mapping  = self.__nodemap
         nodes    = states.nodes()
         nodeNums = map(mapping.get, nodes)
 
@@ -176,8 +201,6 @@ class DAG2CNF:
             outStr += " 0\n"
         f.write(outStr)
         f.close()
-
-        return fname
 
 
     def assumptionsOut(self, states):
