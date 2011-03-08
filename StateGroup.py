@@ -67,15 +67,16 @@ class StateGroup:
 
 
     def subset(self, nodes):
-        """ Returns a copy of StateGroup, only keeping nodes """
+        """ Returns a copy of StateGroup, only keeping nodes with constraints"""
         keys = dict()
         for node in nodes:
             if not node in self.__inputs:
                 raise Exception("node not in StateGroup: " + node)
             (state, key) = self.__inputs[node]
-            if key not in keys:
-                keys[key] = []
-            keys[key].append(node)
+            if not state.full():
+                if key not in keys:
+                    keys[key] = []
+                keys[key].append(node)
             
         sg = StateGroup()
         for key in keys:

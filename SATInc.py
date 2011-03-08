@@ -21,7 +21,7 @@ else:
     TMPDIR="/tmp"
 
 
-def runAll(logic, processes=1, states=None):
+def runAll(logic, processes=3, states=None):
     if states is None:
         states = range(2**len(logic.outputs()))
     elif not isinstance(states, list):
@@ -70,10 +70,10 @@ def runAll(logic, processes=1, states=None):
     if not os.path.exists(solvers[0]):
         print "Creating Solver"
         start = time.time()
-        sat = subprocess.Popen([MINISAT, 
-                                "-cnf="+cnffile, 
-                                assumpsOut[0], 
-                                "-save="+solvers[0]],
+        satArgs = [MINISAT, "-cnf="+cnffile, assumpsOut[0]]
+        satArgs.extend(assumpsIn)
+        satArgs.append("-save="+solvers[0])
+        sat = subprocess.Popen(satArgs,
                                stdin=None,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
@@ -81,10 +81,7 @@ def runAll(logic, processes=1, states=None):
         dur = time.time() - start
         print "Solver Creation took " + str(dur) + " seconds"
 
-
-    #if cnffile and os.path.exists(cnffile):
-    #    os.remove(cnffile)
-
+    #pdb.set_trace()
     
     cnfs = zip(cnffiles, [assumpsIn]*len(cnffiles), assumpsOut, states, solvers)
     print "Running SAT problems"
@@ -113,6 +110,9 @@ def runAll(logic, processes=1, states=None):
     for assump in assumpsOut:
         os.remove(assump)
     
+    if cnffile and os.path.exists(cnffile):
+        os.remove(cnffile)
+
     os.remove(solvers[0])
 
     # convert binary array to set
@@ -163,17 +163,20 @@ def getResult(output):
 
 def makeSATArgs(arr):
     satArgs = [MINISAT, "-load="+str(arr[4]), arr[2]]
+    #satArgs = [MINISAT, "-cnf="+str(arr[0]), arr[2]]
     satArgs.extend(arr[1])
     return satArgs
 
 
 def run(cnf):
 
-    #pdb.set_trace()
+    #if cnf[3] == 18:
+        #pdb.set_trace()
+
 
     if os.path.exists(cnf[4]):
         satArgs = makeSATArgs(cnf)
-        pdb.set_trace()
+        #pdb.set_trace()
         sat = subprocess.Popen(satArgs,
                                stdin=None,
                                stdout=subprocess.PIPE,

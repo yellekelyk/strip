@@ -288,26 +288,26 @@ class FindStates:
         return (updated, diffStates)
 
 
-    def __removeInputNodes__(self, group):
-        " Ensures the input state doesn't have any input in it"
-        #self.__flopStatesIn_p[group] = copy.deepcopy(self.__flopStatesIn)
-        self.__flopStatesIn_p[group] = State.subset(self.__flopStatesIn,
-                                                    self.__inputs[group])
-        nodes = list(self.__flopStatesIn.nodes())
-        for node in self.__inputs[group]:
-            if node in nodes:
-                nodes.remove(node)
-        self.__flopStatesIn = State.subset(self.__flopStatesIn, nodes)
-
-    def __mergeInputState__(self, group, state):
-        self.__flopStatesIn_p[group] = State.subset(self.__flopStatesIn,
-                                                    self.__inputs[group])
-        subsetNodes =[]
-        for node in self.__flopStatesIn.nodes():
-            if node not in state.nodes():
-                subsetNodes.append(node)
-        subset = State.subset(self.__flopStatesIn, subsetNodes)
-        self.__flopStatesIn = State.merge(subset, state)
+    #def __removeInputNodes__(self, group):
+    #    " Ensures the input state doesn't have any input in it"
+    #    #self.__flopStatesIn_p[group] = copy.deepcopy(self.__flopStatesIn)
+    #    self.__flopStatesIn_p[group] = State.subset(self.__flopStatesIn,
+    #                                                self.__inputs[group])
+    #    nodes = list(self.__flopStatesIn.nodes())
+    #    for node in self.__inputs[group]:
+    #        if node in nodes:
+    #            nodes.remove(node)
+    #    self.__flopStatesIn = State.subset(self.__flopStatesIn, nodes)
+    #
+    #def __mergeInputState__(self, group, state):
+    #    self.__flopStatesIn_p[group] = State.subset(self.__flopStatesIn,
+    #                                                self.__inputs[group])
+    #    subsetNodes =[]
+    #    for node in self.__flopStatesIn.nodes():
+    #        if node not in state.nodes():
+    #            subsetNodes.append(node)
+    #    subset = State.subset(self.__flopStatesIn, subsetNodes)
+    #    self.__flopStatesIn = State.merge(subset, state)
 
 
     def runGroup(self, group, inputs):
