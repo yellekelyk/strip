@@ -13,7 +13,7 @@ import pdb
 if "MINISAT" in os.environ:
     MINISAT = os.environ["MINISAT"]
 else:
-    MINISAT = "/home/kkelley/Downloads/minisat.mine/simp/minisat_static.assumps"
+    MINISAT = "/home/kkelley/Downloads/minisat.mine/simp/minisat_static"
 
 if "TMPDIR" in os.environ:
     TMPDIR = os.environ["TMPDIR"]
@@ -70,7 +70,8 @@ def runAll(logic, processes=3, states=None):
     if not os.path.exists(solvers[0]):
         print "Creating Solver"
         start = time.time()
-        satArgs = [MINISAT, "-cnf="+cnffile, assumpsOut[0]]
+        #satArgs = [MINISAT, "-cnf="+cnffile]
+        satArgs = [MINISAT, "-cnf="+cnffile, "-output="+assumpsOut[0]]
         satArgs.extend(assumpsIn)
         satArgs.append("-save="+solvers[0])
         sat = subprocess.Popen(satArgs,
@@ -81,8 +82,9 @@ def runAll(logic, processes=3, states=None):
         dur = time.time() - start
         print "Solver Creation took " + str(dur) + " seconds"
 
-    #pdb.set_trace()
-    
+
+    pdb.set_trace()
+
     cnfs = zip(cnffiles, [assumpsIn]*len(cnffiles), assumpsOut, states, solvers)
     print "Running SAT problems"
     start = time.time()
@@ -103,6 +105,8 @@ def runAll(logic, processes=3, states=None):
         results = map(run, cnfs)
     dur = time.time() - start
     print "SAT runs took " + str(dur) + " seconds"
+
+    #pdb.set_trace()
 
     # remove assumption files here
     for assump in assumpsIn:
@@ -162,8 +166,8 @@ def getResult(output):
 
 
 def makeSATArgs(arr):
-    satArgs = [MINISAT, "-load="+str(arr[4]), arr[2]]
-    #satArgs = [MINISAT, "-cnf="+str(arr[0]), arr[2]]
+    #satArgs = [MINISAT, "-load="+str(arr[4]), "-output="+str(arr[2])]
+    satArgs = [MINISAT, "-cnf="+str(arr[0]), "-output="+str(arr[2])]
     satArgs.extend(arr[1])
     return satArgs
 
