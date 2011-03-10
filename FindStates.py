@@ -15,6 +15,7 @@ import os
 from pygraph.algorithms.searching import depth_first_search
 import sys
 import string
+import time
 
 import pdb
 
@@ -73,7 +74,7 @@ def runSingleSAT(sp, outputs, st=None):
     if not dag2cnf:
         print "Precomputing dag2cnf for whole circuit"
         dag2cnf = DAG2CNF.DAG2CNF(sp)
-        dag2cnf.cnffile(0, force=True)
+        dag2cnf.cnffile(force=True)
 
     dag2cnf.setOutputs(outputs)
     dag2cnf.setState(sp.state)
@@ -218,8 +219,10 @@ class FindStates:
         for group in self.__post:
             if not self.__flopStatesOut.get(group).full():
                 #if not self.__skip[group]:
+                start = time.time()
                 (updated, inputs) = self.checkInputs(group)
-                #pdb.set_trace()
+                dur = time.time() - start
+                print "checkInputs() took " + str(dur) + " seconds"
                 if updated:
                     # mark a global update
                     ret = True
@@ -243,11 +246,6 @@ class FindStates:
     def checkInputs(self, group):
         "checks to see if group has any new input constraints"
         
-        # these are ALL inputs for this group
-        #inputSet  = self.__gr.node_attr[group][0]
-        # these are ALL flop inputs for the circuit
-        #inputFlops = self.__sp.dag.flopsIn.keys()
-
         # these are ALL flop inputs for the current group
         flopsIn = self.__flopsIn[group]
 
@@ -256,8 +254,6 @@ class FindStates:
 
         # calculate the current input state for this group
         flopsOut = map(self.__sp.dag.flopsIn.get, flopsIn)
-        #inStates = State.rename(self.__flopStatesOut.toState(flopsOut),
-        #                        self.__outToIn)
         inStates = self.__flopStatesOut.subset(flopsOut).rename(self.__outToIn)
 
         updated = True
@@ -288,28 +284,6 @@ class FindStates:
         self.__flopStatesIn_p[group] = inStates
 
         return (updated, diffStates)
-
-
-    #def __removeInputNodes__(self, group):
-    #    " Ensures the input state doesn't have any input in it"
-    #    #self.__flopStatesIn_p[group] = copy.deepcopy(self.__flopStatesIn)
-    #    self.__flopStatesIn_p[group] = State.subset(self.__flopStatesIn,
-    #                                                self.__inputs[group])
-    #    nodes = list(self.__flopStatesIn.nodes())
-    #    for node in self.__inputs[group]:
-    #        if node in nodes:
-    #            nodes.remove(node)
-    #    self.__flopStatesIn = State.subset(self.__flopStatesIn, nodes)
-    #
-    #def __mergeInputState__(self, group, state):
-    #    self.__flopStatesIn_p[group] = State.subset(self.__flopStatesIn,
-    #                                                self.__inputs[group])
-    #    subsetNodes =[]
-    #    for node in self.__flopStatesIn.nodes():
-    #        if node not in state.nodes():
-    #            subsetNodes.append(node)
-    #    subset = State.subset(self.__flopStatesIn, subsetNodes)
-    #    self.__flopStatesIn = State.merge(subset, state)
 
 
     def runGroup(self, group, inputs):
@@ -348,7 +322,7 @@ class FindStates:
             tt = TruthTable.TruthTable(self.__sp, outputSet)
             states = tt.sweepStates()
             
-        elif outputCombos < 2**12:
+        elif outputCombos < 2**13:
 
             # do SAT
             print "Running SAT..."

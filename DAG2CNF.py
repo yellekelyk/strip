@@ -96,11 +96,12 @@ class DAG2CNF:
 
 
     def setState(self, state):
-        constInputs = list(set.intersection(set(state.nodes()), 
-                                            set(self.__inputs)))
-        constInputs.sort()
-        constInputs.reverse()
-        self.__state  = state.subset(constInputs)
+        #constInputs = list(set.intersection(set(state.nodes()), 
+        #                                    set(self.__inputs)))
+        #constInputs.sort()
+        #constInputs.reverse()
+        #self.__state  = state.subset(constInputs)
+        self.__state = state
 
     def state(self):
         return self.__state
@@ -114,16 +115,15 @@ class DAG2CNF:
     def outputs(self):
         return self.__flops
 
-    def cnffile(self, state, constraints=False, force=False):
+    def cnffile(self, force=False):
         "Returns the name of a CNF file, creates it if missing"
-        fname = self.__cnffile__(state)
+        fname = self.__cnffile__()
 
         if force and os.path.exists(fname):
             os.remove(fname)
 
         # create the cnf file if it doesn't exist
         if not os.path.exists(fname):
-            #cnf = self.__comment + self.__cnf + self.__cnf__(state)
             cnf = self.__comment + self.__cnf
             newfd = os.open(fname, os.O_EXCL | os.O_CREAT | os.O_RDWR)
             f = os.fdopen(newfd, 'w') 
@@ -132,8 +132,8 @@ class DAG2CNF:
         
         return fname
 
-    def __cnffile__(self, state):
-        f =self.__tmp + "/cnf" +hashlib.sha224(str(self.outputs())+str(state)).hexdigest()
+    def __cnffile__(self):
+        f =self.__tmp + "/cnf"
         return f
 
 

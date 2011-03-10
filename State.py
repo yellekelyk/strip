@@ -26,7 +26,8 @@ class State:
         return not self.__eq__(state)
 
     def full(self):
-        return len(self.__states) > 2**(len(self.__nodes)-1) or self.__skip
+        #return len(self.__states) > 2**(len(self.__nodes)-1) or self.__skip
+        return len(self.__states) == 2**(len(self.__nodes)) or self.__skip
 
     def setSkip(self):
         self.__skip = True

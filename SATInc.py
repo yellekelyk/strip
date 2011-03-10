@@ -116,8 +116,8 @@ def runAll(logic, processes=1, states=None):
     os.remove(assumpsOut)
     #for assump in assumpsOut:
     #    os.remove(assump)   
-    if cnffile and os.path.exists(cnffile):
-        os.remove(cnffile)
+    #if cnffile and os.path.exists(cnffile):
+    #    os.remove(cnffile)
     #os.remove(solvers[0])
 
     # convert binary array to set
@@ -136,7 +136,8 @@ def SymbolicLogic_cnf(ar, **kwar):
         cnffile = None
     else:
         #cnffile = cls.cnffile(ar[1], constraints=False)
-        cnffile = cls.cnffile(0, constraints=False)
+        #cnffile = cls.cnffile(0, constraints=False)
+        cnffile = cls.cnffile()
     return cnffile
 
 def SymbolicLogic_assump(ar, **kwar):
