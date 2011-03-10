@@ -205,6 +205,14 @@ class DAG2CNF:
         f.close()
 
 
+    def assumptionsOutAll(self, states):
+        fname = self.__assumpfile__(0, True)
+        f = open(fname, 'w')
+        for state in states:
+            f.write(self.__cnf__(state, dnf=True))
+        f.close()
+        return fname
+
     def assumptionsOut(self, states):
         fnames = []
         for state in states:
