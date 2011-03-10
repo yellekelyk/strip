@@ -73,9 +73,11 @@ def runSingleSAT(sp, outputs, st=None):
     if not dag2cnf:
         print "Precomputing dag2cnf for whole circuit"
         dag2cnf = DAG2CNF.DAG2CNF(sp)
+        dag2cnf.cnffile(0, force=True)
 
     dag2cnf.setOutputs(outputs)
     dag2cnf.setState(sp.state)
+
 
     states = SATInc.runAll(dag2cnf, states=st)
     result = State.State(outputs)

@@ -135,7 +135,8 @@ def SymbolicLogic_cnf(ar, **kwar):
     if os.path.exists(ar[2]):
         cnffile = None
     else:
-        cnffile = cls.cnffile(ar[1], constraints=False)
+        #cnffile = cls.cnffile(ar[1], constraints=False)
+        cnffile = cls.cnffile(0, constraints=False)
     return cnffile
 
 def SymbolicLogic_assump(ar, **kwar):

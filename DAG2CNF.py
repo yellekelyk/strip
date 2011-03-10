@@ -114,9 +114,12 @@ class DAG2CNF:
     def outputs(self):
         return self.__flops
 
-    def cnffile(self, state, constraints=False):
+    def cnffile(self, state, constraints=False, force=False):
         "Returns the name of a CNF file, creates it if missing"
         fname = self.__cnffile__(state)
+
+        if force and os.path.exists(fname):
+            os.remove(fname)
 
         # create the cnf file if it doesn't exist
         if not os.path.exists(fname):
