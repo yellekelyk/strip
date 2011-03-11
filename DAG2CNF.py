@@ -27,6 +27,7 @@ class DAG2CNF:
         inputs.sort()
         inputs.reverse()
         
+        self.__design = stateProp.nl.topMod
         self.__flops  = flops
         self.__inputs = inputs
         
@@ -133,7 +134,7 @@ class DAG2CNF:
         return fname
 
     def __cnffile__(self):
-        f =self.__tmp + "/cnf"
+        f =self.__tmp + "/cnf" + self.__design
         return f
 
 
@@ -208,13 +209,26 @@ class DAG2CNF:
         f.close()
 
 
-    def assumptionsOutAll(self, states):
-        fname = self.__assumpfile__(0, True)
-        f = open(fname, 'w')
-        for state in states:
-            f.write(self.__cnf__(state, dnf=True))
-        f.close()
-        return fname
+    def assumptionsOutGroup(self, states, groups=1):
+        fnames = []
+        stateGroups = []
+        if len(states) < groups:
+            groups = len(states)
+
+        nPerGroup = (len(states) / groups) + (len(states) % groups)
+        for i in range(groups):
+            fname = self.__assumpfile__(i, True)
+            f = open(fname, 'w')
+
+            stateGroup = []
+            for j in range(i*nPerGroup,min(len(states),(i+1)*nPerGroup)):
+            #for state in states:
+                f.write(self.__cnf__(states[j], dnf=True))
+                stateGroup.append(states[j])
+            f.close()
+            fnames.append(fname)
+            stateGroups.append(stateGroup)
+        return (fnames, stateGroups)
 
     def assumptionsOut(self, states):
         fnames = []

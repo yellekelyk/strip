@@ -8,11 +8,6 @@ class State:
     def __init__(self, nodes):
         self.__states = set()
         self.__nodes = nodes
-        self.__nodeDict = dict()
-        cnt = len(nodes)-1
-        for node in nodes:
-            self.__nodeDict[node] = cnt
-            cnt -= 1
         self.__skip = False
 
     def __eq__(self, state):
@@ -40,11 +35,11 @@ class State:
         else:
             raise TypeError("Bad type received: " + str(type(state)))
 
-
     def getState(self, state, node):
         if state not in self.__states:
             raise Exception("state " + str(state) + " not in set of states")
-        return bool(state & (1 << self.__nodeDict[node]))
+        shift = len(self.__nodes) - 1 - self.__nodes.index(node)
+        return bool(state & (1 << shift))
 
     def getStateVec(self, state, nodes=None):
         if state not in self.__states:

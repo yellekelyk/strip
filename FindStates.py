@@ -17,6 +17,8 @@ import sys
 import string
 import time
 
+import gc
+import cProfile
 import pdb
 
 
@@ -220,9 +222,21 @@ class FindStates:
             if not self.__flopStatesOut.get(group).full():
                 #if not self.__skip[group]:
                 start = time.time()
+                #asdf = {'self':self, 'group':group, 
+                #        'updated':None, 'inputs':None}
+                #cProfile.runctx('(updated, inputs) = self.checkInputs(group)', globals(), asdf)
+                #updated = asdf['updated']
+                #inputs  = asdf['inputs']
+
                 (updated, inputs) = self.checkInputs(group)
+                
                 dur = time.time() - start
                 print "checkInputs() took " + str(dur) + " seconds"
+              
+                #if dur > 1:
+                #    exit(1)
+
+
                 if updated:
                     # mark a global update
                     ret = True
@@ -254,6 +268,7 @@ class FindStates:
 
         # calculate the current input state for this group
         flopsOut = map(self.__sp.dag.flopsIn.get, flopsIn)
+
         inStates = self.__flopStatesOut.subset(flopsOut).rename(self.__outToIn)
 
         updated = True
@@ -269,6 +284,12 @@ class FindStates:
         #diffStates = State.State(list(inStates.nodes()))
         #for st in set.difference(inStates.states, inStates_p.states):
         #    diffStates.addState(st)
+        #if group == 10:
+        #   pdb.set_trace()
+
+        #if group == 5:
+        #   pdb.set_trace()
+
         diffStates = inStates.diff(inStates_p)
 
         print str(str(group) + ": There were " + 
@@ -364,7 +385,9 @@ class FindStates:
 
 
 fs = FindStates()
+gc.disable()
 fs.run()
+gc.enable()
 fs.printGroups()
 
 

@@ -4,8 +4,8 @@ import pdb
 class StateGroup:
     "A class that holds a group of State objects"
     def __init__(self):
-        self.__inputs = dict()
-        self.__states = dict()
+        self.__node2key = dict()
+        self.__key2state = dict()
 
     def initGroups(self, sg):
         """ Initialize using the same node groupings, but assume no states """
@@ -31,24 +31,22 @@ class StateGroup:
     def insert(self, key, state):
         for node in state.nodes():
             # state objects MUST be mutually exclusive!
-            if node in self.__inputs:
+            if node in self.__node2key:
                 raise Exception("Attempt to add state with node " + node)
-
-        for node in state.nodes():
-            self.__inputs[node] = (state, key)
-        self.__states[key] = state
+            self.__node2key[node] = key
+        self.__key2state[key] = state
 
     def get(self, key):
-        return self.__states[key]
+        return self.__key2state[key]
 
     def lookup(self, node):
-        return self.__inputs[node][1]
+        return self.__node2key[node]
 
     def nodes(self):
-        return self.__inputs.keys()
+        return self.__node2key.keys()
 
     def states(self):
-        return self.__states
+        return self.__key2state
 
     def numStates(self):
         numStates = 1
@@ -60,8 +58,8 @@ class StateGroup:
     def rename(self, conversion):
         """ Uses conversion to rename all nodes """
         sg = StateGroup()
-        for key in self.__states:
-            st = State.rename(self.__states[key], conversion)
+        for key in self.__key2state:
+            st = State.rename(self.__key2state[key], conversion)
             sg.insert(key, st)
         return sg
 
@@ -70,9 +68,10 @@ class StateGroup:
         """ Returns a copy of StateGroup, only keeping nodes with constraints"""
         keys = dict()
         for node in nodes:
-            if not node in self.__inputs:
+            if not node in self.__node2key:
                 raise Exception("node not in StateGroup: " + node)
-            (state, key) = self.__inputs[node]
+            key   = self.__node2key[node]
+            state = self.__key2state[key]
             if not state.full():
                 if key not in keys:
                     keys[key] = []
@@ -80,7 +79,7 @@ class StateGroup:
             
         sg = StateGroup()
         for key in keys:
-            sg.insert(key, State.subset(self.__states[key], keys[key]))
+            sg.insert(key, State.subset(self.__key2state[key], keys[key]))
 
         return sg
 
@@ -111,9 +110,8 @@ class StateGroup:
         keys = set()
         keys2nodes = dict()
         for node in nodes:
-            pair = self.__inputs[node]
-            state = pair[0]
-            key = pair[1]
+            key   = self.__node2key[node]
+            state = self.__key2node[key]
             keys.add(key)
             if key not in keys2nodes:
                 keys2nodes[key] = []
