@@ -36,6 +36,9 @@ class StateGroup:
             self.__node2key[node] = key
         self.__key2state[key] = state
 
+    def keys(self):
+        return self.__key2state.keys()
+
     def get(self, key):
         return self.__key2state[key]
 

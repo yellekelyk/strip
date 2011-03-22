@@ -1,3 +1,4 @@
+import DC
 import Logic2CNF
 import DAG2CNF
 import myutils
@@ -372,23 +373,26 @@ class FindStates:
 
     def printGroups(self):
         print "Final output groups:"
+        cnt = 0
         for grp in self.__post:
             stOut = self.__flopStatesOut.get(grp)
             if not stOut.full():
                 print stOut.dcPrint()
+                cnt += 1
 
 
     def print_usage(self):
-        print "Usage: python propStates.py <moduleName>"
+        print "Usage: python FindStates.py <moduleName>"
 
     groups  = property(lambda self: self.__flopGroups)
-
+    states  = property(lambda self: self.__flopStatesOut)
 
 fs = FindStates()
 gc.disable()
 fs.run()
 gc.enable()
-fs.printGroups()
+#fs.printGroups()
+DC.DC(fs.states)
 
 
 
