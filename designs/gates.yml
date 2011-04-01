@@ -432,6 +432,16 @@ IOA21D1:
     ZN: 1
   primitive: not(((not A1) or (not A2)) and B)
 
+IOA22D1:
+  inputs:
+    A1: 1
+    A2: 1
+    B1: 1
+    B2: 1
+  outputs:
+    ZN: 1
+  primitive: not(((not A1) or (not A2)) and (B1 or B2))
+
 
 MAOI22D1:
   inputs:

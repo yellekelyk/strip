@@ -156,7 +156,17 @@ class FindStates:
         (self.__gr, self.__flopGroups) = self.__sp.flopReport()
 
         # set user-specified input constraints here!
-        self.__userStates = State.State([])
+        self.__userStates = StateGroup.StateGroup()
+
+        # TEST CODE!####
+        #asdf = State.State(['in[3]','in[2]','in[1]','in[0]'])
+        #asdf.addState(1)
+        #asdf.addState(2)
+        #asdf.addState(4)
+        #asdf.addState(8)
+        #self.__userStates.insert(-1, asdf)
+
+        # END TEST CODE!###
 
 
         # find iteration order (reverse postorder)
@@ -176,6 +186,7 @@ class FindStates:
         self.__flopsIn = dict()
         outToIn = myutils.invert(self.__sp.dag.flopsIn, True)
         self.__outToIn = outToIn
+        self.__cnt = dict()
         for group in self.__post:
             self.__inputs[group] = map(outToIn.get, self.__flopGroups[group])
             while None in self.__inputs[group]:
@@ -187,6 +198,7 @@ class FindStates:
             flopsIn = set.intersection(set(self.__gr.node_attr[group][0]), 
                                        set(self.__sp.dag.flopsIn.keys()))
             self.__flopsIn[group] = flopsIn
+            self.__cnt[group] = 0
 
         # create empty flopStatesIn_p for each group
         for group in self.__post:
@@ -231,6 +243,8 @@ class FindStates:
 
                 (updated, inputs) = self.checkInputs(group)
                 
+                #pdb.set_trace()
+
                 dur = time.time() - start
                 print "checkInputs() took " + str(dur) + " seconds"
               
@@ -238,23 +252,14 @@ class FindStates:
                 #    exit(1)
 
 
-                if updated:
+                if updated or self.__cnt[group] == 0:
                     # mark a global update
                     ret = True
+                    # mark this group as being run again
+                    self.__cnt[group] += 1
+
                     # updates the outputs for group
                     self.runGroup(group, inputs)
-                    # updates all inputs from group
-                    #self.updateInputs(group)
-
-
-            # check if we should garbage collect
-            # this means we can remove this group from l2cnf_all to
-            # save on memory
-            #if self.__flopStatesOut.get(group).full():
-            #    outputs = tuple(self.__flopGroups[group])
-            #    if outputs in l2cnf_all:
-            #        print "Garbage collecting l2cnf_all: " + str(outputs)
-            #        l2cnf_all.pop(outputs)
 
         return ret
 
@@ -328,8 +333,12 @@ class FindStates:
         # find number of outputs that haven't been SATISFIED
         outputCombos = 2**(len(outputSet))-len(statesOut.states)
 
-        # set relevant constant inputs before running
-        #self.__sp.setInputState(State.merge(self.__userStates, inputs))
+        # add user-specified input constraints before running
+        userConstraints = self.__userStates.states()
+        userKey = -1
+        for st in userConstraints:
+            inputs.insert(userKey,userConstraints[st])
+            userKey -= 1
         self.__sp.setInputState(inputs)
 
         # todo remove this  ... it's only a test!!!

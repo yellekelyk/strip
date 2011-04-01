@@ -8,9 +8,9 @@ class DC:
         for key in keys:
             st = sg.get(key)
             if not st.full():
-                print self.__pre__(key)
+                #print self.__pre__(key)
                 print st.dcPrint()
-                print self.__post__(key)
+                #print self.__post__(key)
                 self.__prev = key
 
 
