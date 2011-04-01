@@ -1,0 +1,99 @@
+# EDIT HERE in the comment
+# all opcodes are listed below
+# mark those opcodes that are needed for 'uncached' with a *
+#*  define S_NOP                                               6'b0_00000 0
+#*  define S_LOAD                                              6'b0_00000 0
+#*  define S_STORE                                             6'b1_00000 32
+#*  define S_METALOAD                                          6'b0_00100 4
+#*  define S_METASTORE                                         6'b1_00100 36
+#   define S_SYNCLOAD                                          6'b0_00010 2
+#   define S_SYNCSTORE                                         6'b1_00010 34
+#   define S_RESETLOAD                                         6'b0_00011 3
+#   define S_SETSTORE                                          6'b1_00011 35
+#   define S_FUTURELOAD                                        6'b0_00001 1
+#*  define S_RAWLOAD                                           6'b0_00101 5
+#*  define S_RAWSTORE                                          6'b1_00101 37
+#*  define S_RAWMETALOAD                                       6'b0_00110 6
+#*  define S_RAWMETASTORE                                      6'b1_00110 38
+#   define S_FIFOLOAD                                          6'b0_00111 7
+#   define S_FIFOSTORE                                         6'b1_00111 39
+#   define S_CACHEGANGCLEAR                                    6'b1_01000 40
+#   define S_CACHECONDGANGCLEAR                                6'b1_01001 41
+#   define S_MATGANGCLEAR                                      6'b1_01010 42
+#   define S_MATCONDGANGCLEAR                                  6'b1_01011 43
+#   define S_HARDINTCLEAR                                      6'b1_01100 44
+#   define S_MEMBAR                                            6'b0_10011 19
+#   define S_SAFE_LOAD                                         6'b0_10000 16
+
+# the states need to be listed below (in base 10)
+opcodes0:
+  nodes: ProcOpcode0_in[5] ProcOpcode0_in[4] ProcOpcode0_in[3] ProcOpcode0_in[2] ProcOpcode0_in[1] ProcOpcode0_in[0]
+  states: 0 32 4 36 5 37 6 38
+
+opcodes1:
+  nodes: ProcOpcode1_in[5] ProcOpcode1_in[4] ProcOpcode1_in[3] ProcOpcode1_in[2] ProcOpcode1_in[1] ProcOpcode1_in[0]
+  states: 0 32 4 36 5 37 6 38
+
+opcodes2:
+  nodes: ProcOpcode2_in[5] ProcOpcode2_in[4] ProcOpcode2_in[3] ProcOpcode2_in[2] ProcOpcode2_in[1] ProcOpcode2_in[0]
+  states: 0 32 4 36 5 37 6 38
+
+opcodes3:
+  nodes: ProcOpcode3_in[5] ProcOpcode3_in[4] ProcOpcode3_in[3] ProcOpcode3_in[2] ProcOpcode3_in[1] ProcOpcode3_in[0]
+  states: 0 32 4 36 5 37 6 38
+
+
+
+# message types
+# EDIT HERE in the comment
+# mark those opcodes that are needed for 'uncached' with a *
+#   mem[175][7:4]  <= 4'd9;         // LSU_CC_MSG2 : cfg_lsu_cc_msg_cache_cntrl
+#   mem[175][11:8] <= 4'd10;        // LSU_CC_MSG2 : cfg_lsu_cc_msg_prefetch_miss
+#*  mem[175][3:0]  <= 4'd8;         // LSU_CC_MSG2 : cfg_lsu_cc_msg_hard_int_clr
+#*  mem[176][11:8] <= 4'd4;         // LSU_CC_MSG1 : cfg_lsu_cc_msg_unc_wakeup
+#   mem[176][27:24] <= 4'd5;         // LSU_CC_MSG1 : cfg_lsu_cc_msg_cache_wakeup
+#*  mem[176][7:4]  <= 4'd3;         // LSU_CC_MSG1 : cfg_lsu_cc_msg_unc_smiss
+#*  mem[176][3:0]  <= 4'd0;         // LSU_CC_MSG1 : cfg_lsu_cc_msg_off_tile
+#   mem[176][19:16] <= 4'd2;         // LSU_CC_MSG1 : cfg_lsu_cc_msg_upg_miss
+#   mem[176][31:28] <= 4'd7;         // LSU_CC_MSG1 : cfg_lsu_cc_msg_tcc_fifofull
+#   mem[176][23:20] <= 4'd6;         // LSU_CC_MSG1 : cfg_lsu_cc_msg_cache_smiss
+#   mem[176][15:12] <= 4'd1;         // LSU_CC_MSG1 : cfg_lsu_cc_msg_cache_miss
+msgTypes0:
+  nodes: ProcMsgType0_in[3] ProcMsgType0_in[2] ProcMsgType0_in[1] ProcMsgType0_in[0]
+  states: 8 4 3 0
+
+msgTypes1:
+  nodes: ProcMsgType1_in[3] ProcMsgType1_in[2] ProcMsgType1_in[1] ProcMsgType1_in[0]
+  states: 8 4 3 0
+
+msgTypes2:
+  nodes: ProcMsgType2_in[3] ProcMsgType2_in[2] ProcMsgType2_in[1] ProcMsgType2_in[0]
+  states: 8 4 3 0
+
+msgTypes3:
+  nodes: ProcMsgType3_in[3] ProcMsgType3_in[2] ProcMsgType3_in[1] ProcMsgType3_in[0]
+  states: 8 4 3 0
+
+
+#ProcSenderID 
+# this is from lsu_data_reverse_cc_sig_msg.v
+#assign   lsu_data_path_sender_id_cc              = {Tile_ID,PROC_ID,PORT_ID};
+# PROC_ID is constant 0
+# PORT_ID is 0/1
+procSenderID0:
+  nodes: ProcSenderID0_in[3] ProcSenderID0_in[2] ProcSenderID0_in[1] ProcSenderID0_in[0]
+  states: 0 1 4 5 8 9 12 13
+
+procSenderID1:
+  nodes: ProcSenderID1_in[3] ProcSenderID1_in[2] ProcSenderID1_in[1] ProcSenderID1_in[0]
+  states: 0 1 4 5 8 9 12 13
+
+procSenderID2:
+  nodes: ProcSenderID2_in[3] ProcSenderID2_in[2] ProcSenderID2_in[1] ProcSenderID2_in[0]
+  states: 0 1 4 5 8 9 12 13
+
+procSenderID3:
+  nodes: ProcSenderID3_in[3] ProcSenderID3_in[2] ProcSenderID3_in[1] ProcSenderID3_in[0]
+  states: 0 1 4 5 8 9 12 13
+
+
