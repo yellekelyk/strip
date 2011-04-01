@@ -157,6 +157,15 @@ class FindStates:
 
         # set user-specified input constraints here!
         self.__userStates = StateGroup.StateGroup()
+        if len(sys.argv) > 2:
+            self.__userStates.readYAML(sys.argv[2])
+            # do a check on the node names specified in user constraints file
+            for node in self.__userStates.nodes():
+                if node in nl.mods[design].ports:
+                    if nl.mods[design].ports[node].direction != "in":
+                        raise Exception("User-specified node " + node + " is not an input port in design " + design)
+                else:
+                    raise Exception("User-specified node " + node + " is not in module port list for design " + design)
 
         # TEST CODE!####
         #asdf = State.State(['in[3]','in[2]','in[1]','in[0]'])
@@ -391,7 +400,7 @@ class FindStates:
 
 
     def print_usage(self):
-        print "Usage: python FindStates.py <moduleName>"
+        print "Usage: python FindStates.py <moduleName> [inputConstraintFile]"
 
     groups  = property(lambda self: self.__flopGroups)
     states  = property(lambda self: self.__flopStatesOut)

@@ -1,0 +1,4 @@
+inputs:
+  nodes: in[3] in[2] in[1] in[0]
+  states: 1 2 4 8
+

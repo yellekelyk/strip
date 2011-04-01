@@ -1,5 +1,7 @@
 import State
+import yaml
 import pdb
+
 
 class StateGroup:
     "A class that holds a group of State objects"
@@ -32,7 +34,7 @@ class StateGroup:
         for node in state.nodes():
             # state objects MUST be mutually exclusive!
             if node in self.__node2key:
-                raise Exception("Attempt to add state with node " + node)
+                raise Exception("Node already has state defined: " + node)
             self.__node2key[node] = key
         self.__key2state[key] = state
 
@@ -129,3 +131,30 @@ class StateGroup:
 
         return stateAll
       
+
+    def readYAML(self, yamlFile):
+        " Read a YAML config file, add all groups "
+
+        file = open(yamlFile)
+        grps = yaml.safe_load(file)
+        file.close()
+
+        for grp in grps.keys():
+            nodes = str(grps.get(grp)["nodes"])
+            st = State.State(nodes.split())
+            vals  = str(grps.get(grp)["states"])
+            vals = map(int, vals.split())
+            for val in vals:
+                st.addState(val)
+                
+            try:
+                int(grp)
+            except ValueError:
+                if grp in self.keys():
+                    raise Exception("A group with name " + grp + " has already been added")
+                self.insert(grp, st)
+            else:
+                raise Exception("Numeric group names not allowed!: " + str(grp))
+
+
+
