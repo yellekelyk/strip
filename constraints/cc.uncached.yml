@@ -99,17 +99,17 @@ procSenderID3:
 
 # no configuration interface needed
 configWr:
-  nodes: ConfigWrEn_in
+  nodes: ConfigWrEn_in_tmp
   states: 0
 
 configData:
-  nodes: ConfigData_in[31] ConfigData_in[30] ConfigData_in[29] ConfigData_in[28] ConfigData_in[27] ConfigData_in[26] ConfigData_in[25] ConfigData_in[24] ConfigData_in[23] ConfigData_in[22] ConfigData_in[21] ConfigData_in[20] ConfigData_in[19] ConfigData_in[18] ConfigData_in[17] ConfigData_in[16] ConfigData_in[15] ConfigData_in[14] ConfigData_in[13] ConfigData_in[12] ConfigData_in[11] ConfigData_in[10] ConfigData_in[9] ConfigData_in[8] ConfigData_in[7] ConfigData_in[6] ConfigData_in[5] ConfigData_in[4] ConfigData_in[3] ConfigData_in[2] ConfigData_in[1] ConfigData_in[0]
+  nodes: ConfigData_in_tmp[31] ConfigData_in_tmp[30] ConfigData_in_tmp[29] ConfigData_in_tmp[28] ConfigData_in_tmp[27] ConfigData_in_tmp[26] ConfigData_in_tmp[25] ConfigData_in_tmp[24] ConfigData_in_tmp[23] ConfigData_in_tmp[22] ConfigData_in_tmp[21] ConfigData_in_tmp[20] ConfigData_in_tmp[19] ConfigData_in_tmp[18] ConfigData_in_tmp[17] ConfigData_in_tmp[16] ConfigData_in_tmp[15] ConfigData_in_tmp[14] ConfigData_in_tmp[13] ConfigData_in_tmp[12] ConfigData_in_tmp[11] ConfigData_in_tmp[10] ConfigData_in_tmp[9] ConfigData_in_tmp[8] ConfigData_in_tmp[7] ConfigData_in_tmp[6] ConfigData_in_tmp[5] ConfigData_in_tmp[4] ConfigData_in_tmp[3] ConfigData_in_tmp[2] ConfigData_in_tmp[1] ConfigData_in_tmp[0]
   states: 0
 
 configRd:
-  nodes: ConfigRdEn_in
+  nodes: ConfigRdEn_in_tmp
   states: 0
 
 configAddr:
-  nodes: ConfigAddress_in[17] ConfigAddress_in[16] ConfigAddress_in[15] ConfigAddress_in[14] ConfigAddress_in[13] ConfigAddress_in[12] ConfigAddress_in[11] ConfigAddress_in[10] ConfigAddress_in[9] ConfigAddress_in[8] ConfigAddress_in[7] ConfigAddress_in[6] ConfigAddress_in[5] ConfigAddress_in[4] ConfigAddress_in[3] ConfigAddress_in[2] ConfigAddress_in[1] ConfigAddress_in[0]
+  nodes: ConfigAddress_in_tmp[17] ConfigAddress_in_tmp[16] ConfigAddress_in_tmp[15] ConfigAddress_in_tmp[14] ConfigAddress_in_tmp[13] ConfigAddress_in_tmp[12] ConfigAddress_in_tmp[11] ConfigAddress_in_tmp[10] ConfigAddress_in_tmp[9] ConfigAddress_in_tmp[8] ConfigAddress_in_tmp[7] ConfigAddress_in_tmp[6] ConfigAddress_in_tmp[5] ConfigAddress_in_tmp[4] ConfigAddress_in_tmp[3] ConfigAddress_in_tmp[2] ConfigAddress_in_tmp[1] ConfigAddress_in_tmp[0]
   states: 0
