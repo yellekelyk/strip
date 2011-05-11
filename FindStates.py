@@ -133,7 +133,7 @@ class FindStates:
 
         # set design here!!
         design = sys.argv[1]
-        path = 'designs/'
+        path = 'designs.protocol/'
 
         nl = Netlist.Netlist()
         for infile in glob.glob(os.path.join(path, '*.yml')):
