@@ -14,6 +14,7 @@ import copy
 import glob
 import os
 from pygraph.algorithms.searching import depth_first_search
+import re
 import sys
 import string
 import time
@@ -155,6 +156,11 @@ class FindStates:
         print "Finding Flops"
         (self.__gr, self.__flopGroups) = self.__sp.flopReport()
 
+
+        # DIFFERENCE for protocol
+        self.__combineGroupsByStr__("_capacity_")
+
+
         # set user-specified input constraints here!
         self.__userStates = StateGroup.StateGroup()
         if len(sys.argv) > 2:
@@ -167,20 +173,31 @@ class FindStates:
                 else:
                     raise Exception("User-specified node " + node + " is not in module port list for design " + design)
 
-        # TEST CODE!####
-        #asdf = State.State(['in[3]','in[2]','in[1]','in[0]'])
-        #asdf.addState(1)
-        #asdf.addState(2)
-        #asdf.addState(4)
-        #asdf.addState(8)
-        #self.__userStates.insert(-1, asdf)
 
-        # END TEST CODE!###
-
+        # set root node for reverse post-ordering
+        nodes = self.__gr.nodes()
+        self.__gr.add_node(-1)
+        for node in nodes:
+            for inp in self.__gr.node_attr[node][0]:
+                if inp in nl.mods[design].ports:
+                    if nl.mods[design].ports[inp].direction == "in":
+                        edge = (-1, node)
+                        if not self.__gr.has_edge(edge):
+                            self.__gr.add_edge(edge)
+            
+                
 
         # find iteration order (reverse postorder)
-        st, pre, self.__post = depth_first_search(self.__gr)
-        self.__post.reverse()
+        st, pre, self.__post = depth_first_search(self.__gr, root=-1)
+        self.__post.reverse()     
+        # in protocol-mode, we don't care about ordering
+        # DIFFERENCE
+        #self.__post = self.__gr.nodes()
+
+        self.__post.remove(-1)
+
+
+
 
         # initialization code
         # description of data members
@@ -196,6 +213,8 @@ class FindStates:
         outToIn = myutils.invert(self.__sp.dag.flopsIn, True)
         self.__outToIn = outToIn
         self.__cnt = dict()
+
+        #pdb.set_trace()
         for group in self.__post:
             self.__inputs[group] = map(outToIn.get, self.__flopGroups[group])
             while None in self.__inputs[group]:
@@ -229,6 +248,54 @@ class FindStates:
             self.__flopStatesIn_p[group] = sg
 
 
+    def __combineGroupsByStr__(self, search):
+        """Merge ALL fanin nodes that match search"""
+        testGroups = []
+        for grp in self.__gr.nodes():
+            if re.search(search, self.__flopGroups[grp][0]):
+                testGroups.append(grp)
+
+        print "Found special groups: " + str(testGroups)
+
+        combineGroups = set()
+        for grp in testGroups:
+            combineGroups = combineGroups.union(set(self.__gr.node_incidence[grp]))
+            if grp in combineGroups:
+                combineGroups.remove(grp)
+
+        self.__combineGroups__(combineGroups)
+
+
+
+    def __combineGroups__(self, combineGroups):
+        newGroup = len(self.__gr.nodes())
+
+        # add new group to graph, create proper edges
+        self.__gr.add_node(newGroup)
+        newGroupInputs = set()
+        newGroupFlops = list()
+        for grp in combineGroups:
+            for node in self.__gr.node_incidence[grp]:
+                edge = (newGroup,node)
+                if not self.__gr.has_edge(edge):
+                    self.__gr.add_edge(edge)
+            for node in self.__gr.node_neighbors[grp]:
+                edge = (node,newGroup)
+                if not self.__gr.has_edge(edge):
+                    self.__gr.add_edge(edge)
+
+            newGroupInputs = newGroupInputs.union(self.__gr.node_attr[grp][0])
+            newGroupFlops.extend(self.__flopGroups[grp])
+        for grp in combineGroups:
+            self.__gr.del_node(grp)
+
+        self.__gr.add_node_attribute(newGroup, newGroupInputs)
+        self.__flopGroups.append(tuple(newGroupFlops))
+
+        return combineGroups
+
+
+
     def run(self):
         "Main loop"
         updated = True
@@ -240,6 +307,12 @@ class FindStates:
     def runAllGroups(self):
         "Run one iteration of the algorithm over all groups"
         ret = False
+
+        # create a copy of all output states before running
+        # this will be used for per-cycle comparisons (protocol mode)
+        # NOTE: protocol DIFFERENCE
+        #self.__flopStatesOut_p = copy.deepcopy(self.__flopStatesOut)
+
         for group in self.__post:
             if not self.__flopStatesOut.get(group).full():
                 #if not self.__skip[group]:
@@ -284,6 +357,8 @@ class FindStates:
         # calculate the current input state for this group
         flopsOut = map(self.__sp.dag.flopsIn.get, flopsIn)
 
+        # NOTE: protocol DIFFERENCE
+        #inStates = self.__flopStatesOut_p.subset(flopsOut).rename(self.__outToIn)
         inStates = self.__flopStatesOut.subset(flopsOut).rename(self.__outToIn)
 
         updated = True
@@ -295,26 +370,12 @@ class FindStates:
             inStates_p = StateGroup.StateGroup()
             inStates_p.initGroups(inStates)
 
-        # calculate state diff
-        #diffStates = State.State(list(inStates.nodes()))
-        #for st in set.difference(inStates.states, inStates_p.states):
-        #    diffStates.addState(st)
-        #if group == 10:
-        #   pdb.set_trace()
-
-        #if group == 5:
-        #   pdb.set_trace()
-
         diffStates = inStates.diff(inStates_p)
 
         print str(str(group) + ": There were " + 
                   str(len(self.__flopStatesIn_p[group].nodes())-
                       len(inStates.nodes())) + 
                   " input constraints dropped")      
-
-        #print str(str(group) + ": Considering " + str(len(diffStates.states))  
-        # " new input states")
-
 
         # set previous state
         self.__flopStatesIn_p[group] = inStates
@@ -369,6 +430,9 @@ class FindStates:
             
             outputStates = list(set.difference(set(range(2**len(outputSet))), 
                                                statesOut.states))
+            # NOTE: protocol DIFFERNCE
+            ## MUST sweep ALL possible states in protocol-mode
+            #outputStates = range(2**len(outputSet))
 
             states = runSingleSAT(self.__sp, outputSet, st=outputStates).states
 
