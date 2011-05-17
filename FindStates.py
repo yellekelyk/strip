@@ -196,10 +196,6 @@ class FindStates:
         # find iteration order (reverse postorder)
         st, pre, self.__post = depth_first_search(self.__gr, root=-1)
         self.__post.reverse()     
-        # in protocol-mode, we don't care about ordering
-        # DIFFERENCE
-        #self.__post = self.__gr.nodes()
-
         self.__post.remove(-1)
 
 
@@ -245,25 +241,6 @@ class FindStates:
 
         # create empty flopStatesIn_p for each group
         for group in self.__post:
-            # old code
-            #inGrps = dict()
-            #for flop in self.__flopsIn[group]:
-            #    # get output node
-            #    flopOut = self.__sp.dag.flopsIn[flop]
-            #    
-            #    # lookup group associated with this node
-            #    key = self.__flopStatesOut.lookup(flopOut)
-            #    if not key in inGrps:
-            #        inGrps[key] = []
-            #    inGrps[key].append(flop)
-            #sg = StateGroup.StateGroup()            
-            #for key in inGrps:
-            #    inGrps[key].sort()
-            #    inGrps[key].reverse()
-            #    sg.insert(key, State.State(inGrps[key]))
-            #self.__flopStatesIn_p[group] = sg
-
-            # new code
             # these are ALL flop inputs for the current group
             flopsIn = self.__flopsIn[group]
             flopsOut = map(self.__sp.dag.flopsIn.get, flopsIn)
@@ -282,11 +259,9 @@ class FindStates:
 
         print "Found special groups: " + str(testGroups)
 
-        # todo: need to separate this out
-        #combineGroups = set()
+        # build a list of sets, each set are the groups being combined
         allGroups = []
         for grp in testGroups:
-            #combineGroups = combineGroups.union(set(self.__gr.node_incidence[grp]))
             combineGroups = set(self.__gr.node_incidence[grp])
             if grp in combineGroups:
                 combineGroups.remove(grp)
@@ -303,7 +278,6 @@ class FindStates:
         # add new group to graph, create proper edges
         self.__gr.add_node(newGroup)
         newGroupInputs = set()
-        #newGroupFlops = list()
         states = []
         for combine in allGroups:
             comboNodes = list()
@@ -317,7 +291,6 @@ class FindStates:
                     if not self.__gr.has_edge(edge):
                         self.__gr.add_edge(edge)
                 newGroupInputs = newGroupInputs.union(self.__gr.node_attr[grp][0]['inputs'])
-                #newGroupFlops.extend(self.__flopGroups[grp])
                 comboNodes.extend(self.__flopGroups[grp])
 
             states.append(State.State(comboNodes))
@@ -329,8 +302,6 @@ class FindStates:
 
         ss = StateSuperset.StateSuperset(states)
 
-        #        pdb.set_trace()
-
         self.__gr.add_node_attribute(newGroup, 
                                      {'inputs': newGroupInputs,
                                       'combo': True})
@@ -338,7 +309,6 @@ class FindStates:
 
         # return an empty state superset object
         return {newGroup: ss}
-
 
 
     def run(self):
@@ -353,32 +323,16 @@ class FindStates:
         "Run one iteration of the algorithm over all groups"
         ret = False
 
-        # create a copy of all output states before running
-        # this will be used for per-cycle comparisons (protocol mode)
-        # NOTE: protocol DIFFERENCE
-        #self.__flopStatesOut_p = copy.deepcopy(self.__flopStatesOut)
-
         for group in self.__post:
             if not self.__flopStatesOut.get(group).full():
                 #if not self.__skip[group]:
                 start = time.time()
-                #asdf = {'self':self, 'group':group, 
-                #        'updated':None, 'inputs':None}
-                #cProfile.runctx('(updated, inputs) = self.checkInputs(group)', globals(), asdf)
-                #updated = asdf['updated']
-                #inputs  = asdf['inputs']
 
                 (updated, inputs) = self.checkInputs(group)
                 
-                #pdb.set_trace()
-
                 dur = time.time() - start
                 print "checkInputs() took " + str(dur) + " seconds"
               
-                #if dur > 1:
-                #    exit(1)
-
-
                 if updated or self.__cnt[group] == 0:
                     # mark a global update
                     ret = True
@@ -402,8 +356,6 @@ class FindStates:
         # calculate the current input state for this group
         flopsOut = map(self.__sp.dag.flopsIn.get, flopsIn)
 
-        # NOTE: protocol DIFFERENCE
-        #inStates = self.__flopStatesOut_p.subset(flopsOut).rename(self.__outToIn)
         inStates = self.__flopStatesOut.subset(flopsOut).rename(self.__outToIn)
 
         updated = True
@@ -457,7 +409,6 @@ class FindStates:
                 raise Exception("Need to do something smarter here!")
 
             outputSet = stateOut.nodes()
-            #outputSet = self.__flopGroups[group]
 
             print "Considering outputs: " + str(outputSet)
             
@@ -478,9 +429,6 @@ class FindStates:
                 print "Running SAT..."
             
                 outputStates = list(set.difference(set(range(2**len(outputSet))), stateOut.states))
-                # NOTE: protocol DIFFERNCE
-                # MUST sweep ALL possible states in protocol-mode
-                # outputStates = range(2**len(outputSet))
                 states = runSingleSAT(self.__sp, 
                                       outputSet, 
                                       st=outputStates).states
