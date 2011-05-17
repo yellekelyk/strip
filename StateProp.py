@@ -133,7 +133,7 @@ class StateProp:
             for node in flopDict[state]:
                 inputs = set.union(inputs, self.__deps[node])
 
-            gr.add_node_attribute(state, inputs)
+            gr.add_node_attribute(state, {'inputs': inputs})
 
             # check if any of these inputs corresponds to an output from a
             # different state 

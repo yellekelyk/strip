@@ -13,7 +13,8 @@ class StateGroup:
         """ Initialize using the same node groupings, but assume no states """
         tmpStates = sg.states()
         for key in tmpStates:
-            self.insert(key, State.State(tmpStates[key].nodes()))
+            st = tmpStates[key]
+            self.insert(key, tmpStates[key].init())
 
     def __eq__(self, sg):
         return self.states() == sg.states()
@@ -56,7 +57,7 @@ class StateGroup:
     def numStates(self):
         numStates = 1
         for grp in self.states():
-            numStates *= len(self.states()[grp].states)
+            numStates *= self.states()[grp].numStates()
         return numStates
 
 
@@ -64,7 +65,7 @@ class StateGroup:
         """ Uses conversion to rename all nodes """
         sg = StateGroup()
         for key in self.__key2state:
-            st = State.rename(self.__key2state[key], conversion)
+            st = self.__key2state[key].rename(conversion)
             sg.insert(key, st)
         return sg
 
@@ -84,7 +85,7 @@ class StateGroup:
             
         sg = StateGroup()
         for key in keys:
-            sg.insert(key, State.subset(self.__key2state[key], keys[key]))
+            sg.insert(key, self.__key2state[key].subset(keys[key]))
 
         return sg
 
@@ -96,15 +97,7 @@ class StateGroup:
 
         diff = StateGroup()
         for grp in self.states():
-            state  = State.State(self.states()[grp].nodes())
-            st1 = self.states()[grp].states
-            st2 = sg.states()[grp].states
-            diffSt = set.difference(st1, st2)
-            if len(diffSt) == 0:
-                diffSt = st1
-            for st in diffSt:
-                state.addState(st)
-
+            state = self.states()[grp].diff(sg.states()[grp])
             diff.insert(grp, state)
         return diff
 

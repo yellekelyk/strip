@@ -22,10 +22,19 @@ class State:
 
     def full(self):
         #return len(self.__states) > 2**(len(self.__nodes)-1) or self.__skip
-        return len(self.__states) == 2**(len(self.__nodes)) or self.__skip
+        return len(self.__states) == self.numAllStates() or self.__skip
+
+    def numAllStates(self):
+        return 2**len(self.__nodes)
+
+    def numStates(self):
+        return len(self.__states)
 
     def setSkip(self):
         self.__skip = True
+        
+    def subgroups(self):
+        return [self]
 
     def addState(self, state):
         if type(state) == type(0) or type(state) == type(0l):
@@ -88,6 +97,19 @@ class State:
         self.__addNumState__(num)
 
 
+    def subset(self, nodes):
+        return subset(self, nodes)
+
+    def rename(self, conversion):
+        return rename(self, conversion)
+
+    def diff(self, state):
+        return diff(self, state)
+
+    def init(self):
+        return init(self)
+
+
 
 def subset(state, nodes):
     "extract a subset of node states"
@@ -110,6 +132,25 @@ def rename(state, conversion):
         new.addState(st)
     return new
 
+
+def diff(state1, state2):
+    """ Do a diff, return a new state object """
+    if state1.nodes() != state2.nodes():
+        raise Exception("Cant diff states with different nodes")
+
+    state  = State(state1.nodes())
+    st1 = state1.states
+    st2 = state2.states
+    diffSt = set.difference(st1, st2)
+    if len(diffSt) == 0:
+        diffSt = st1
+    for st in diffSt:
+        state.addState(st)
+    return state
+
+
+def init(state):
+    return State(state.nodes())
 
 def merge(state1, state2):
     "merge 2 state instances"

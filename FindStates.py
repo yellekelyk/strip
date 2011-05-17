@@ -6,6 +6,7 @@ import Netlist
 import SAT
 import SATInc
 import State
+import StateSuperset
 import StateGroup
 import StateProp
 import TruthTable
@@ -155,11 +156,16 @@ class FindStates:
 
         print "Finding Flops"
         (self.__gr, self.__flopGroups) = self.__sp.flopReport()
+        # todo consider phasing out private data member 
+        # self.__flopGroups, since it becomes redundant once
+        # we have created self.__flopStatesOut below
+        # self.__flopGroups[grp] == self.__flopStatesOut.lookup(grp).nodes()
 
 
         # DIFFERENCE for protocol
-        self.__combineGroupsByStr__("_capacity_")
+        supersets = self.__combineGroupsByStr__("_capacity_")
 
+        print self.__gr
 
         # set user-specified input constraints here!
         self.__userStates = StateGroup.StateGroup()
@@ -178,7 +184,7 @@ class FindStates:
         nodes = self.__gr.nodes()
         self.__gr.add_node(-1)
         for node in nodes:
-            for inp in self.__gr.node_attr[node][0]:
+            for inp in self.__gr.node_attr[node][0]['inputs']:
                 if inp in nl.mods[design].ports:
                     if nl.mods[design].ports[inp].direction == "in":
                         edge = (-1, node)
@@ -214,37 +220,56 @@ class FindStates:
         self.__outToIn = outToIn
         self.__cnt = dict()
 
-        #pdb.set_trace()
         for group in self.__post:
             self.__inputs[group] = map(outToIn.get, self.__flopGroups[group])
             while None in self.__inputs[group]:
                 self.__inputs[group].remove(None)
-            reset_in  = State.subset(self.__sp.state, self.__inputs[group])
-            reset_out = State.rename(reset_in, self.__sp.dag.flopsIn)
-            self.__flopStatesOut.insert(group, reset_out)
+            reset_in  = State.subset(self.__sp.state, 
+                                     self.__inputs[group])
+            reset_out = State.rename(reset_in, 
+                                     self.__sp.dag.flopsIn)
+            if group in supersets:
+                # if this is a combo group, we should update
+                # the superset and then store it
+                supersets[group].update(reset_out)
+                self.__flopStatesOut.insert(group, 
+                                            supersets[group])
+            else:
+                # otherwise, store the regular State object
+                self.__flopStatesOut.insert(group, reset_out)
 
-            flopsIn = set.intersection(set(self.__gr.node_attr[group][0]), 
+            flopsIn = set.intersection(set(self.__gr.node_attr[group][0]['inputs']), 
                                        set(self.__sp.dag.flopsIn.keys()))
             self.__flopsIn[group] = flopsIn
             self.__cnt[group] = 0
 
         # create empty flopStatesIn_p for each group
         for group in self.__post:
-            inGrps = dict()
-            for flop in self.__flopsIn[group]:
-                # get output node
-                flopOut = self.__sp.dag.flopsIn[flop]
-                
-                # lookup group associated with this node
-                key = self.__flopStatesOut.lookup(flopOut)
-                if not key in inGrps:
-                    inGrps[key] = []
-                inGrps[key].append(flop)
-            sg = StateGroup.StateGroup()            
-            for key in inGrps:
-                inGrps[key].sort()
-                inGrps[key].reverse()
-                sg.insert(key, State.State(inGrps[key]))
+            # old code
+            #inGrps = dict()
+            #for flop in self.__flopsIn[group]:
+            #    # get output node
+            #    flopOut = self.__sp.dag.flopsIn[flop]
+            #    
+            #    # lookup group associated with this node
+            #    key = self.__flopStatesOut.lookup(flopOut)
+            #    if not key in inGrps:
+            #        inGrps[key] = []
+            #    inGrps[key].append(flop)
+            #sg = StateGroup.StateGroup()            
+            #for key in inGrps:
+            #    inGrps[key].sort()
+            #    inGrps[key].reverse()
+            #    sg.insert(key, State.State(inGrps[key]))
+            #self.__flopStatesIn_p[group] = sg
+
+            # new code
+            # these are ALL flop inputs for the current group
+            flopsIn = self.__flopsIn[group]
+            flopsOut = map(self.__sp.dag.flopsIn.get, flopsIn)
+            inStates = self.__flopStatesOut.subset(flopsOut).rename(self.__outToIn)
+            sg = StateGroup.StateGroup()
+            sg.initGroups(inStates)
             self.__flopStatesIn_p[group] = sg
 
 
@@ -257,42 +282,62 @@ class FindStates:
 
         print "Found special groups: " + str(testGroups)
 
-        combineGroups = set()
+        # todo: need to separate this out
+        #combineGroups = set()
+        allGroups = []
         for grp in testGroups:
-            combineGroups = combineGroups.union(set(self.__gr.node_incidence[grp]))
+            #combineGroups = combineGroups.union(set(self.__gr.node_incidence[grp]))
+            combineGroups = set(self.__gr.node_incidence[grp])
             if grp in combineGroups:
                 combineGroups.remove(grp)
+            allGroups.append(combineGroups)
 
-        self.__combineGroups__(combineGroups)
+        return self.__combineGroups__(allGroups)
 
 
 
-    def __combineGroups__(self, combineGroups):
+    def __combineGroups__(self, allGroups):
+        # only add 1 node to graph
         newGroup = len(self.__gr.nodes())
 
         # add new group to graph, create proper edges
         self.__gr.add_node(newGroup)
         newGroupInputs = set()
-        newGroupFlops = list()
-        for grp in combineGroups:
-            for node in self.__gr.node_incidence[grp]:
-                edge = (newGroup,node)
-                if not self.__gr.has_edge(edge):
-                    self.__gr.add_edge(edge)
-            for node in self.__gr.node_neighbors[grp]:
-                edge = (node,newGroup)
-                if not self.__gr.has_edge(edge):
-                    self.__gr.add_edge(edge)
+        #newGroupFlops = list()
+        states = []
+        for combine in allGroups:
+            comboNodes = list()
+            for grp in combine:
+                for node in self.__gr.node_incidence[grp]:
+                    edge = (newGroup,node)
+                    if not self.__gr.has_edge(edge):
+                        self.__gr.add_edge(edge)
+                for node in self.__gr.node_neighbors[grp]:
+                    edge = (node,newGroup)
+                    if not self.__gr.has_edge(edge):
+                        self.__gr.add_edge(edge)
+                newGroupInputs = newGroupInputs.union(self.__gr.node_attr[grp][0]['inputs'])
+                #newGroupFlops.extend(self.__flopGroups[grp])
+                comboNodes.extend(self.__flopGroups[grp])
 
-            newGroupInputs = newGroupInputs.union(self.__gr.node_attr[grp][0])
-            newGroupFlops.extend(self.__flopGroups[grp])
-        for grp in combineGroups:
-            self.__gr.del_node(grp)
+            states.append(State.State(comboNodes))
 
-        self.__gr.add_node_attribute(newGroup, newGroupInputs)
-        self.__flopGroups.append(tuple(newGroupFlops))
+        for combine in allGroups:
+            for grp in combine:
+                if self.__gr.has_node(grp):
+                    self.__gr.del_node(grp)
 
-        return combineGroups
+        ss = StateSuperset.StateSuperset(states)
+
+        #        pdb.set_trace()
+
+        self.__gr.add_node_attribute(newGroup, 
+                                     {'inputs': newGroupInputs,
+                                      'combo': True})
+        self.__flopGroups.append(tuple(ss.nodes()))
+
+        # return an empty state superset object
+        return {newGroup: ss}
 
 
 
@@ -390,18 +435,10 @@ class FindStates:
         if statesOut.full():
             raise Exception("Shouldn't call if skip is true!")
 
-        inputSet  = self.__gr.node_attr[group][0]
-        outputSet = self.__flopGroups[group]
-
-        print "Considering outputs: " + str(outputSet)
+        inputSet  = self.__gr.node_attr[group][0]['inputs']
         constIn = list(set.intersection(inputSet, set(inputs.nodes())))
-
-        # find number of inputs that we effectively have to sweep
-        #inputCombos = 2**(len(inputSet)-len(constIn)) + len(inputs.states)
+        # find number of inputs that we have to sweep
         inputCombos = 2**(len(inputSet)-len(constIn)) + inputs.numStates()
-
-        # find number of outputs that haven't been SATISFIED
-        outputCombos = 2**(len(outputSet))-len(statesOut.states)
 
         # add user-specified input constraints before running
         userConstraints = self.__userStates.states()
@@ -414,43 +451,52 @@ class FindStates:
         # todo remove this  ... it's only a test!!!
         # *********************************
         inputCombos = 2**16
+        
+        for stateOut in statesOut.subgroups():
+            if stateOut.full():
+                raise Exception("Need to do something smarter here!")
 
-        # TODO: stop simulation/SAT sweep early if > half states seen
-        # TODO: avoid TT simulation if logic cone is large 
-        if inputCombos < 2**16:
-            # do simulation to get output states
-            print "Running simulation sweep..."
-            tt = TruthTable.TruthTable(self.__sp, outputSet)
-            states = tt.sweepStates()
+            outputSet = stateOut.nodes()
+            #outputSet = self.__flopGroups[group]
+
+            print "Considering outputs: " + str(outputSet)
             
-        elif outputCombos < 2**13:
+            # find number of outputs that haven't been SATISFIED
+            outputCombos = stateOut.numAllStates()-stateOut.numStates()
 
-            # do SAT
-            print "Running SAT..."
+            # TODO: stop simulation/SAT sweep early if > half states seen
+            # TODO: avoid TT simulation if logic cone is large 
+            if inputCombos < 2**16:
+                # do simulation to get output states
+                print "Running simulation sweep..."
+                tt = TruthTable.TruthTable(self.__sp, outputSet)
+                states = tt.sweepStates()
             
-            outputStates = list(set.difference(set(range(2**len(outputSet))), 
-                                               statesOut.states))
-            # NOTE: protocol DIFFERNCE
-            ## MUST sweep ALL possible states in protocol-mode
-            #outputStates = range(2**len(outputSet))
+            elif outputCombos < 2**13:
 
-            states = runSingleSAT(self.__sp, outputSet, st=outputStates).states
+                # do SAT
+                print "Running SAT..."
+            
+                outputStates = list(set.difference(set(range(2**len(outputSet))), stateOut.states))
+                # NOTE: protocol DIFFERNCE
+                # MUST sweep ALL possible states in protocol-mode
+                # outputStates = range(2**len(outputSet))
+                states = runSingleSAT(self.__sp, 
+                                      outputSet, 
+                                      st=outputStates).states
 
 
-        else:
-            # FrEaK OuTTT!
-            print (str("Skipping b/c input combos are " + str(inputCombos) +
-                       " and Output size is " + str(len(outputSet))))
-            states = set()
-            #self.__skip[group] = True
-            statesOut.setSkip()
+            else:
+                # FrEaK OuTTT!
+                print (str("Skipping b/c input combos are " + str(inputCombos) +
+                           " and Output size is " + str(len(outputSet))))
+                states = set()
+                stateOut.setSkip()
 
-        print "reached states: " + str(states)
+            print "reached states: " + str(states)
 
-        #pdb.set_trace()
-
-        for st in states:
-            statesOut.addState(st)
+            for st in states:
+                stateOut.addState(st)
 
 
     def printGroups(self):

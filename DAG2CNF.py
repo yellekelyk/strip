@@ -174,9 +174,12 @@ class DAG2CNF:
         for grp in states.states():
             state = states.states()[grp]
             if not state.full():
-                fname = froot + "." + str(grp)
-                self.__writeGrpAssumptions__(fname, state)
-                fnames.append(fname)
+                idx = 0
+                for sub in state.subgroups():
+                    fname = froot+ "." +str(grp)+ "." +str(idx)
+                    self.__writeGrpAssumptions__(fname, sub)
+                    idx += 1
+                    fnames.append(fname)
 
         #f = open(fname, 'w')
         #outStr = ''
