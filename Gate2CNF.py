@@ -111,6 +111,7 @@ class Gate2CNF(ast.NodeVisitor):
     comment= property(lambda self: self.__comment)
     tmpvars= property(lambda self: self.__cntNew - self.__tmpStart)
 
+
 #x = Py2CNF('not(A1 and A2 or not A3))')
 #x = Py2CNF('not(A1 and ((A2)))')
 #x.getCNF({"A1": 1, "A2": 2, "A3": 3, "out": 3}, 4)

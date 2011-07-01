@@ -80,7 +80,7 @@ class DAG2CNF:
             for prev in dag.node_incidence[node]:
                 for pin in dag.pins((prev,node))[1]:
                     inps[pin] = self.__nodemap[prev]
-            name = nl.mods[nl.topMod].cells[node].submodname
+            name = dag.node2module(node)
             if len(inps) != len(lib.inputs[name]):
                 raise Exception("Not enough inputs on " + node)
             inps['out'] = self.__nodemap[node]

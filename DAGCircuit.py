@@ -5,6 +5,8 @@ from pygraph.algorithms.cycles import find_cycle
 #from pygraph.readwrite.dot import write
 import copy
 
+import pdb
+
 class DAGCircuit(digraph):
     "define a DAG circuit"
     def __init__(self):
@@ -14,6 +16,7 @@ class DAGCircuit(digraph):
         self.__outputs = set()
         self.__cells   = set()
         self.__flops   = set()
+        self.__virtual = dict() # maps name --> gate
         self.__pins    = dict()
         self.__flopsIn = dict()
 
@@ -85,9 +88,9 @@ class DAGCircuit(digraph):
                         port = mod.ports[pin.net.name]
                         if port.direction == "out":
                             self.connect(cell.name, 
-                                             port.name, 
-                                             pin.net.name,
-                                             pin.name)
+                                         port.name, 
+                                         pin.net.name,
+                                         pin.name)
                             
                     elif len(pin.net.fanout) == 0:
                         raise Exception(str("Pin " + pin.name + " on " + 
@@ -97,6 +100,87 @@ class DAGCircuit(digraph):
                     raise Exception("Bad port direction " + pin.port.direction)
 
 
+    def addInputProtocol(self, protocol):
+        """ Connect a virtual FSM to graph inputs """
+        
+        # first make sure ALL FSM outputs are real module inputs
+        # (this should already have been verified but just a sanity check)
+        for inp in protocol.outputs().keys():
+            if not self.isInput(inp):
+                raise Exception("Sanity check failed!")
+
+        
+        # Add node for each virtual gate
+        for state in protocol.states().keys():
+            self.addCell(state, protocol.states()[state])
+            self.__virtual[state] = protocol.states()[state]
+
+        # Each nextstate bit is a large virtual gate
+        for state in protocol.nextStates().keys():
+            gate = protocol.nextStates()[state]
+            self.addCell(gate, gate)
+            self.__virtual[gate] = gate
+
+            # connect output to state element
+            self.connect(gate, state, gate+"_to_"+state, "out", "D")
+
+            # connect all virtual gate inputs
+            self.__connectVirtInputs__(gate, protocol.library())
+
+        # Each output bit is a large virtual gate
+        for output in protocol.outputs().keys():
+            gate = protocol.outputs()[output]
+
+            # copy all connections
+            conns = dict()
+            for node in self.node_neighbors[gate]:
+                edge = (gate,node)
+                conns[edge] = self.__pins[edge]
+
+            # delete existing node
+            self.del_node(gate)
+
+            # gate should already be a node, but the problem is that it's
+            # a port and it needs to be a cell
+            self.addCell(gate, gate)
+            self.__virtual[gate] = gate
+
+            # redo all connections on output pin
+            for conn in conns.keys():
+                cellFrom = conn[0]
+                if cellFrom != gate:
+                    raise Exception("Something bad happened!")
+                cellTo   = conn[1]
+                pinFrom  = conns[conn][0]
+                for pinTo in conns[conn][1]:
+                    self.connect(cellFrom, cellTo, cellFrom, "out", pinTo)
+            
+            # connect all virtual gate inputs
+            self.__connectVirtInputs__(gate, protocol.library())
+            
+    def __connectVirtInputs__(self, gate, library):
+        # connect inputs
+        for inp in library[gate]['inputs'].keys():
+            # this input is fed back from a design output
+            if self.isOutput(inp) or self.isInput(inp) or inp in self.__virtual:
+                # todo: connecting an output to an input here *MIGHT*
+                # cause a bug ... double-check
+                pass
+            # name conflict?!?
+            elif inp in self.node_neighbors:
+                raise Exception("Name conflict with virtual input " + inp)
+            # create a new virtual input
+            else:
+                print "Creating VIRTUAL input " + inp + " for " + gate
+                self.addPortIn(inp)
+
+            self.connect(inp, gate, inp, None, inp)
+                
+
+    def node2module(self, node):
+        mod = self.__nl.mods[self.__nl.topMod]
+        return self.__virtual[node] if node in self.__virtual else mod.cells[node].submodname
+
     def breakFlops(self):
         "Traverse the entire graph, break at flop boundaries"
 
@@ -104,7 +188,7 @@ class DAGCircuit(digraph):
         yaml = self.__nl.yaml
 
         for node in self.__cells:
-            submod = mod.cells[node].submodname
+            submod = self.node2module(node)
             if "clocks" in yaml[submod]:
                 # make output port Q a circuit OUTPUT
                 # the rationale for this (as opposed to D port) is that
@@ -142,28 +226,25 @@ class DAGCircuit(digraph):
             raise Exception("Cycle found!: " + str(cycle))
    
 
-    def addCell(self, cell):
+    def addCell(self, cell, gateName=None):
         mod = self.__nl.mods[self.__nl.topMod]
         yaml = self.__nl.yaml
         self.__cells.add(cell)
-        if "clocks" in yaml[mod.cells[cell].submodname]:
+        name = gateName if gateName else mod.cells[cell].submodname
+        if "clocks" in yaml[name]:
             self.__flops.add(cell)
 
         digraph.add_node(self,cell)
 
     def addPortIn(self, port):
         self.__inputs.add(port)
-        self.__addPort__(port)
+        digraph.add_node(self,port)
         self.connect("__INPUTS__", port, "__dummy__")
 
     def addPortOut(self, port):
         self.__outputs.add(port)
-        self.__addPort__(port)
-        self.connect(port, "__OUTPUTS__", "__dummy__")
-
-    def __addPort__(self, port):
-        #self.__ports.add(port)
         digraph.add_node(self,port)
+        self.connect(port, "__OUTPUTS__", "__dummy__")
 
 
     def add_node(self, node):
@@ -210,6 +291,8 @@ class DAGCircuit(digraph):
             self.__flops.remove(node)
         if node in self.__flopsIn:
             self.__flopsIn.pop(node)
+        if node in self.__virtual:
+            self.__virtual.pop(node)
         digraph.del_node(self, node)
 
 

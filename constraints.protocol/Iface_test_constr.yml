@@ -1,0 +1,21 @@
+# FSM description in YAML format
+
+# name of FSM (should be unique)
+constr1:
+  # inputs specified here can be design outputs OR new inputs
+  inputs:
+    valid_in_constr1: 1
+
+  # outputs should be design inputs!
+  outputs: 
+    valid_in: S2
+
+  # describe logic for each nextstate (function of states and inputs)
+  nextstate:
+    S0: (S0 and not valid_in_constr1) or S2
+    S1: S0 and valid_in_constr1
+    S2: S1
+
+  # reset should be a state specified in nextstate!
+  reset: S0
+

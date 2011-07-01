@@ -1,6 +1,7 @@
 import DC
 import Logic2CNF
 import DAG2CNF
+import InputFSMs
 import myutils
 import Netlist
 import SAT
@@ -151,8 +152,12 @@ class FindStates:
             reset = 'Reset'
         else:
             raise Exception("Couldn't find reset signal")
+        
+        fsms = InputFSMs.InputFSMs(nl)
+        for i in range(2, len(sys.argv)):
+            fsms.readYAML(sys.argv[i])
 
-        self.__sp = StateProp.StateProp(nl, reset)
+        self.__sp = StateProp.StateProp(nl, reset, fsms.protocols())
 
         print "Finding Flops"
         (self.__gr, self.__flopGroups) = self.__sp.flopReport()
@@ -169,15 +174,17 @@ class FindStates:
 
         # set user-specified input constraints here!
         self.__userStates = StateGroup.StateGroup()
-        if len(sys.argv) > 2:
-            self.__userStates.readYAML(sys.argv[2])
-            # do a check on the node names specified in user constraints file
-            for node in self.__userStates.nodes():
-                if node in nl.mods[design].ports:
-                    if nl.mods[design].ports[node].direction != "in":
-                        raise Exception("User-specified node " + node + " is not an input port in design " + design)
-                else:
-                    raise Exception("User-specified node " + node + " is not in module port list for design " + design)
+        # DIFFERENCE for protocol (commented out old code ... the new scheme
+        # should handle this anyway
+        #if len(sys.argv) > 2:
+        #    self.__userStates.readYAML(sys.argv[2])
+        #    # do a check on the node names specified in user constraints file
+        #    for node in self.__userStates.nodes():
+        #        if node in nl.mods[design].ports:
+        #            if nl.mods[design].ports[node].direction != "in":
+        #                raise Exception("User-specified node " + node + " is not an input port in design " + design)
+        #        else:
+        #            raise Exception("User-specified node " + node + " is not in module port list for design " + design)
 
 
         # set root node for reverse post-ordering
@@ -228,8 +235,7 @@ class FindStates:
                 # if this is a combo group, we should update
                 # the superset and then store it
                 supersets[group].update(reset_out)
-                self.__flopStatesOut.insert(group, 
-                                            supersets[group])
+                self.__flopStatesOut.insert(group, supersets[group])
             else:
                 # otherwise, store the regular State object
                 self.__flopStatesOut.insert(group, reset_out)

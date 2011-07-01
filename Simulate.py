@@ -50,7 +50,7 @@ class Simulate:
                 for prev in dag.node_incidence[node]:
                     for pin in dag.pins((prev,node))[1]:
                         inps[pin] = self.__eval__(prev)
-                name = nl.mods[nl.topMod].cells[node].submodname
+                name = dag.node2module(node)
                 if len(inps) != len(lib.inputs[name]):
                     raise Exception("Not enough inputs on " + node)
 

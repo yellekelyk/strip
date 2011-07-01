@@ -65,7 +65,7 @@ class SymbolicLogic:
         for prev in dag.node_incidence[node]:
             for pin in dag.pins((prev,node))[1]:
                 inps[pin] = self.__getLogicFromGenNode__(stateProp, prev)
-        name = nl.mods[nl.topMod].cells[node].submodname
+        name = dag.node2module(node)
         if len(inps) != len(lib.inputs[name]):
             raise Exception("Not enough inputs on " + node)
 
@@ -104,7 +104,7 @@ class SymbolicLogic:
             for prev in dag.node_incidence[node]:
                 for pin in dag.pins((prev,node))[1]:
                     inps[pin] = self.__getLogicNode__(stateProp, prev, cache)
-            name = nl.mods[nl.topMod].cells[node].submodname
+            name = dag.node2module(node)
             if len(inps) != len(lib.inputs[name]):
                 raise Exception("Not enough inputs on " + node)
 

@@ -15,16 +15,28 @@ import pdb
 
 class StateProp:
     "Processes a Gate-level netlist, propagating states through flops"
-    def __init__(self, nl, reset=None):
+    def __init__(self, nl, reset=None, protocols=[]):
 
         self.__nl  = nl
-        self.__lib = SimLib.SimLib(nl.yaml)
 
         # create DAG from netlist
         self.__dag = DAGCircuit.DAGCircuit()
 
         print "Building DAG from netlist"
         self.__dag.fromNetlist(nl, remove=['clk', 'Clk'])
+
+
+        for protocol in protocols:
+            # add virtual gates to library
+            nl.yaml.update(protocol.library())
+
+            # connect virtual gates to DAG
+            self.__dag.addInputProtocol(protocol)
+
+
+        self.__lib = SimLib.SimLib(nl.yaml)    
+
+
         print "Breaking Flop Boundaries"
         self.__dag.breakFlops()
 
@@ -253,7 +265,7 @@ class StateProp:
                 for prev in self.__dag.node_incidence[node]:
                     for pin in self.__dag.pins((prev,node))[1]:
                         inps[pin] = results[prev]
-                name = nl.mods[nl.topMod].cells[node].submodname
+                name = self.__dag.node2module(node)
                 if len(inps) != len(lib.inputs[name]):
                     raise Exception("Not enough inputs on " + node)
 
