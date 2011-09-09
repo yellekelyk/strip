@@ -79,7 +79,24 @@ class State:
         output = str("set_fsm_state_vector {" + 
                      string.join(self.nodes()) + "}\n")
         output += str("set_fsm_encoding {" + stateStr + "}\n")
+        output += str("# " + str(len(self.nodes())) + " flops total\n")
         return output
+
+
+    def annotation(self, num, pad=""):
+        stateList = list(self.states)
+        stateList.sort()
+        stateList = map(lambda x: hex(x), stateList)
+        stateList = map(lambda x: x[2:len(x)], stateList)
+        #idx = range(len(stateList))
+        #stateStr = map(lambda x,y:"S"+str(x)+"=16#"+str(y), idx, stateList)
+        #stateStr = reduce(lambda x,y: x + " " + y, stateStr)
+
+        output = pad + str(num) + ":\n"
+        output += pad + str("  regs: " + string.join(self.nodes()) + "\n")
+        output += pad + str("  vals: " + string.join(stateList) + "\n\n")
+        return output
+
 
     states = property(lambda self: self.__states)
 

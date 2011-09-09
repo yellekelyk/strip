@@ -21,7 +21,7 @@ class InputFSMs:
         for fsm in fsms.keys():
             if fsm in self.__fsms:
                 raise Exception("Attempt to multiply define " + fsm)
-            inputFSM = FSM.FSM(fsms.get(fsm))
+            inputFSM = FSM.FSM(fsm, fsms.get(fsm))
 
             # make sure the outputs make sense
             for out in inputFSM.outputs().keys():

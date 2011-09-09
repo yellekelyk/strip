@@ -23,8 +23,7 @@ class StateProp:
         self.__dag = DAGCircuit.DAGCircuit()
 
         print "Building DAG from netlist"
-        self.__dag.fromNetlist(nl, remove=['clk', 'Clk'])
-
+        self.__dag.fromNetlist(nl, remove=['clk', 'Clk', 'CLK'])
 
         for protocol in protocols:
             # add virtual gates to library
@@ -44,6 +43,9 @@ class StateProp:
         #(self.__deps, self.__deltas) = self.__findDeps__()
         print "Finding Node Dependencies"
         self.__calcDeps__()
+
+
+        print self.__dag
 
 
         # initialize all states to nodes themselves
@@ -113,8 +115,23 @@ class StateProp:
         #self.propGenerators()
 
 
-    def flopReport(self):
+    def flopReport(self, maxSetSize=None):
         flopSet = self.flopSets()
+
+        #try breaking large sets into smaller ones
+        # this is conservative!!
+        if maxSetSize:
+            print "Note: Arbitrarily breaking large flopsets to be no larger than " + str(maxSetSize)
+            # find sets that should be broken
+            largeSets = set()
+            for s in flopSet:
+                if len(s) > maxSetSize:
+                    largeSets.add(s)
+            for s in largeSets:
+                flopSet.remove(s)
+                for newSet in myutils.chunker(s, maxSetSize):
+                    flopSet.add(newSet)
+                
 
         flopDict = dict()
         flopSetLookup = dict()
@@ -168,6 +185,22 @@ class StateProp:
     def __findFlopSets__(self, flopsIn):
         flops = copy.copy(flopsIn)
         flopGroup = set()
+
+        # first lets try to group flops by name
+        # WARNING: this is currently NOT very general!
+        # start of hack attempt
+        #constr_flops = []
+        #for flop in flops:
+        #    m = re.match("constr", flop)
+        #    if m:
+        #        constr_flops.append(flop)
+        #for flop in constr_flops:
+        #    flops.remove(flop)
+        #if len(constr_flops) > 0:
+        #    flopGroup.add(tuple(constr_flops))
+        # end of hack attempt
+        
+
         while len(flops) > 0:
             flop = flops.pop()
             m = re.match("(\S+_)\d", flop)

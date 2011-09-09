@@ -159,8 +159,11 @@ class FindStates:
 
         self.__sp = StateProp.StateProp(nl, reset, fsms.protocols())
 
+        self.__MAX_SIZE=13
+
+
         print "Finding Flops"
-        (self.__gr, self.__flopGroups) = self.__sp.flopReport()
+        (self.__gr, self.__flopGroups) = self.__sp.flopReport(self.__MAX_SIZE)
         # todo consider phasing out private data member 
         # self.__flopGroups, since it becomes redundant once
         # we have created self.__flopStatesOut below
@@ -168,7 +171,10 @@ class FindStates:
 
 
         # DIFFERENCE for protocol
-        supersets = self.__combineGroupsByStr__("_capacity_")
+        #supersets = self.__combineGroupsByStr__("_capacity_")
+        #supersets = self.__combineGroupsByStr__("valid_")
+        #supersets = self.__combineGroupsByStr__("_state_")
+        supersets = set()
 
         print self.__gr
 
@@ -411,13 +417,16 @@ class FindStates:
         inputCombos = 2**16
         
         for stateOut in statesOut.subgroups():
-            if stateOut.full():
-                raise Exception("Need to do something smarter here!")
-
             outputSet = stateOut.nodes()
 
-            print "Considering outputs: " + str(outputSet)
-            
+            # with superset groups some smaller groups may be full
+            if stateOut.full():
+                continue
+                #pdb.set_trace()
+                #raise Exception("Need to do something smarter here!")
+
+            print "Considering outputs: " + str(outputSet)        
+
             # find number of outputs that haven't been SATISFIED
             outputCombos = stateOut.numAllStates()-stateOut.numStates()
 
@@ -429,7 +438,7 @@ class FindStates:
                 tt = TruthTable.TruthTable(self.__sp, outputSet)
                 states = tt.sweepStates()
             
-            elif outputCombos < 2**13:
+            elif outputCombos < 2**self.__MAX_SIZE:
 
                 # do SAT
                 print "Running SAT..."
@@ -459,7 +468,7 @@ class FindStates:
         for grp in self.__post:
             stOut = self.__flopStatesOut.get(grp)
             if not stOut.full():
-                print stOut.dcPrint()
+                print stOut.annotation(grp)
                 cnt += 1
 
 
@@ -473,8 +482,8 @@ fs = FindStates()
 gc.disable()
 fs.run()
 gc.enable()
-#fs.printGroups()
-DC.DC(fs.states)
+fs.printGroups()
+#DC.DC(fs.states)
 
 
 

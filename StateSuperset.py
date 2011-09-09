@@ -40,8 +40,24 @@ class StateSuperset:
     def dcPrint(self):
         ret = ''
         for state in self.__states:
-            ret += state.dcPrint()
+            if not state.full():
+                ret += state.dcPrint()
         return ret
+
+    def annotation(self, num):
+        #ret = str(num) + ":\n"
+        
+        merge = State.State([])
+        #idx = 0
+        for state in self.__states:
+            if not state.full():
+                #ret += state.annotatation(idx, "  ")
+                merge = State.merge(merge, state)
+            #idx += 1
+        return merge.annotation(num)
+
+        return ret
+
 
     def nodes(self):
         return self.__nodes

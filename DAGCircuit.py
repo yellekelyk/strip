@@ -109,7 +109,7 @@ class DAGCircuit(digraph):
             if not self.isInput(inp):
                 raise Exception("Sanity check failed!")
 
-        
+
         # Add node for each virtual gate
         for state in protocol.states().keys():
             self.addCell(state, protocol.states()[state])
@@ -153,6 +153,7 @@ class DAGCircuit(digraph):
                 cellTo   = conn[1]
                 pinFrom  = conns[conn][0]
                 for pinTo in conns[conn][1]:
+                    print "Connecting " + str(cellFrom) + " to " + str(cellTo)
                     self.connect(cellFrom, cellTo, cellFrom, "out", pinTo)
             
             # connect all virtual gate inputs
@@ -161,11 +162,32 @@ class DAGCircuit(digraph):
     def __connectVirtInputs__(self, gate, library):
         # connect inputs
         for inp in library[gate]['inputs'].keys():
+            pinFrom = None
+            pinTo   = inp
+
             # this input is fed back from a design output
             if self.isOutput(inp) or self.isInput(inp) or inp in self.__virtual:
                 # todo: connecting an output to an input here *MIGHT*
                 # cause a bug ... double-check
-                pass
+                # UPDATE: yep, we need to either create a pass-through 
+                # virtual gate for this node, or just remove it completely
+                # (1) to remove it, we connect its driving gate (should only
+                # be one of these?) to its fanout gate(s), remove it, and
+                # ensure we connect it the original pin name to the new gate
+                # (2) we can just add a brand new gate to the library
+                if self.isOutput(inp):
+                    print str(inp) + " is a feedback output PORT, so it will be removed!"
+                    prev = self.node_incidence[inp]
+                    if len(prev) != 1:
+                        raise Exception("Expected only 1 driver on output")
+                    prev = prev[0]
+                    pins = self.__pins[(prev, inp)]
+                    pinFrom = pins[0]
+                    self.del_node(inp)
+                    pinTo = inp
+                    inp = prev
+
+
             # name conflict?!?
             elif inp in self.node_neighbors:
                 raise Exception("Name conflict with virtual input " + inp)
@@ -174,10 +196,14 @@ class DAGCircuit(digraph):
                 print "Creating VIRTUAL input " + inp + " for " + gate
                 self.addPortIn(inp)
 
-            self.connect(inp, gate, inp, None, inp)
+            print "Connecting " + str(inp) + " to " + str(gate)
+
+            self.connect(inp, gate, inp, pinFrom, pinTo)
                 
 
     def node2module(self, node):
+        if node == "IN_WRITE_CONSUMED":
+            pdb.set_trace()
         mod = self.__nl.mods[self.__nl.topMod]
         return self.__virtual[node] if node in self.__virtual else mod.cells[node].submodname
 
@@ -246,6 +272,11 @@ class DAGCircuit(digraph):
         digraph.add_node(self,port)
         self.connect(port, "__OUTPUTS__", "__dummy__")
 
+    def removePortOut(self, port):
+        if not port in self.__outputs:
+            raise exception(port + " is not an output!")
+        self.__outputs.remove(port)
+        self.del_edge((port, "__OUTPUTS__"))
 
     def add_node(self, node):
         raise Exception("Cannot call DAGCircuit::add_node directly")

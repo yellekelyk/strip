@@ -37,7 +37,7 @@ class FSM:
 
 
     """Parses one FSM structure, creates virtual logic that describes it"""
-    def __init__(self, desc):
+    def __init__(self, name, desc):
         # verify that the FSM description is complete
         for key in ["inputs", "outputs", "nextstate", "reset"]:
             if not key in desc:
@@ -50,6 +50,7 @@ class FSM:
         
         
         # save description
+        self.__name = name
         self.__desc = desc
         
         self.__library = dict()
@@ -63,7 +64,7 @@ class FSM:
                            list(bin(stNum)[2:].rjust(nBits, '0')))
             bitNames = range(nBits)
             bitNames.reverse()
-            bitNames = map(lambda x: "state_"+str(x), bitNames)
+            bitNames = map(lambda x: self.__name+"_state_"+str(x), bitNames)
             expr = map(lambda x,y: "("+x+")" if y else "(not "+x+")", 
                        bitNames, bitVals)
             expr = reduce(lambda x,y: x + " and " + y, expr)
@@ -90,7 +91,7 @@ class FSM:
         
         nBits = self.nBits(len(self.__desc["nextstate"].keys()))
         for bit in range(nBits):
-            self.__states["state_"+str(bit)] = "VirtualFF"
+            self.__states[self.__name+"_state_"+str(bit)] = "VirtualFF"
         #for st in self.__desc["nextstate"].keys():
         #    self.__states[self.__stateMap[st]] = "VirtualFF"
 
@@ -128,7 +129,7 @@ class FSM:
                 if bin(stNum)[2:].rjust(nBits, '0')[nBits-bit-1] == '1':
                     tmp.append("("+ns[ns.keys()[stNum]]+")")
 
-            name = "state" + "_" + str(bit)
+            name = self.__name + "_state_" + str(bit)
 
             # now expr is the full expression for this bit
             #exprs.append(reduce(lambda x,y: x + " or " + y, tmp))

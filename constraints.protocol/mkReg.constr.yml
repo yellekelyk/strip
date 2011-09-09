@@ -1,0 +1,59 @@
+# FSM description in YAML format
+
+# name of FSM (should be unique)
+constr1:
+  # inputs specified here can be design outputs OR new inputs
+  inputs:
+    ready_constr1: 1
+    IN_WRITE_CONSUMED: 1
+    
+  # outputs should be design inputs!
+  outputs: 
+    IN_WRITE_VALID: S1
+
+  # describe logic for each nextstate (function of states and inputs)
+  nextstate:
+    S0: (S0 and (not ready_constr1)) or (S1 and IN_WRITE_CONSUMED)
+    S1: (S0 and ready_constr1) or (S1 and (not IN_WRITE_CONSUMED))
+
+  # reset should be a state specified in nextstate!
+  reset: S1
+
+# name of FSM (should be unique)
+constr2:
+  # inputs specified here can be design outputs OR new inputs
+  inputs:
+    ready_constr1: 1
+    IN_EN_WRITE_CONSUMED: 1
+    
+  # outputs should be design inputs!
+  outputs: 
+    IN_EN_WRITE_VALID: S1
+
+  # describe logic for each nextstate (function of states and inputs)
+  nextstate:
+    S0: (S0 and (not ready_constr1)) or (S1 and IN_EN_WRITE_CONSUMED)
+    S1: (S0 and ready_constr1) or (S1 and (not IN_EN_WRITE_CONSUMED))
+
+  # reset should be a state specified in nextstate!
+  reset: S1
+
+
+
+constr3:
+  # inputs specified here can be design outputs OR new inputs
+  inputs:
+    OUT_READ_VALID: 1
+    ready_constr1: 1
+    
+  # outputs should be design inputs!
+  outputs: 
+    OUT_READ_CONSUMED: S0
+
+  # describe logic for each nextstate (function of states and inputs)
+  nextstate:
+    S0: (S0 and (not OUT_READ_VALID)) or (S1 and ready_constr1)
+    S1: (S0 and OUT_READ_VALID) or (S1 and not ready_constr1)
+
+  # reset should be a state specified in nextstate!
+  reset: S0
