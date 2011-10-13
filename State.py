@@ -99,6 +99,7 @@ class State:
 
 
     states = property(lambda self: self.__states)
+    not_states = property(lambda self: set.difference(set(range(2**len(self.nodes()))), self.__states))
 
     def nodes(self):
         return self.__nodes
@@ -227,5 +228,28 @@ def merge(state1, state2):
             for oldState in state1.states:
                 for newState in state2.states:
                     stateObj.addState(oldState* 2**(len(state2.nodes()))+newState)
+
+    return stateObj
+
+
+def mergeKeep(state1, state2):
+    """ Accepts 2 states, merges them all into a superset state;
+    this method differs from merge() in how it handles emtpy states... 
+    merge() simply drops empty states, this method keeps them (so any empty
+    state will necessarily cause the output to be empty) """
+    nodes1 = set(state1.nodes())
+    nodes2 = set(state2.nodes())
+    nodesCommon = list(set.intersection(nodes1, nodes2))
+    nodesCommon.sort()
+    nodesCommon.reverse()
+    if len(nodesCommon) > 0:
+        raise Exception("overlapping states not yet implemented")
+
+    nodes = list(state1.nodes())
+    nodes.extend(state2.nodes())
+    stateObj = State(nodes)
+    for oldState in state1.states:
+        for newState in state2.states:
+            stateObj.addState(oldState* 2**(len(state2.nodes()))+newState)
 
     return stateObj

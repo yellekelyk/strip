@@ -73,6 +73,79 @@ def runHierSAT(sp, outputs):
            states = SAT.runAll(l2cnf, states=stateList)
            return states
 
+def runSAT(sp, stateOut):
+    """ Run SAT on all states; if there are too many states then 
+    we attempt to prune some of the possibilties first and only run on the 
+    remainder 
+
+    stateOut is a State object; 
+    we want to run on 2**len(stateOut.nodes())-stateOut.states() possibilities
+
+    """
+
+    newStates = []
+    numNewStates = 0
+
+    allStates = copy.copy(stateOut)
+
+    for newNodes in myutils.chunker(stateOut.nodes(), 12):
+        newState        = State.subset(allStates, newNodes)
+        existingStates  = State.subset(allStates, list(set(allStates.nodes())-set(newNodes)))
+
+        statesToSweep = list(newState.not_states)
+        if len(statesToSweep) > 0:
+            newlyReached = runSingleSAT(sp, newState.nodes(), st=statesToSweep)
+        else:
+            newlyReached = State.State(newState.nodes())
+        
+        #pdb.set_trace()
+
+        numNewStates += len(existingStates.states) * len(newlyReached.states)
+
+        if numNewStates > 2**12:
+            print "We just reached " + str(numNewStates) + " to test, I quit"
+            return None
+        else:
+            for st in newlyReached.states:
+                newState.addState(st)
+            allStates = State.merge(existingStates, newState)
+
+
+    newStates = allStates.states - stateOut.states
+
+    if len(newStates) == 0:
+        return State.State(stateOut.nodes())
+    elif len(newStates) > 2**12:
+        raise Exception("This should have already been caught!")
+    else:
+        return runSingleSAT(sp, allStates.nodes(), st=list(newStates))
+    #    newStates.append(newlyReached)
+
+    #origStates = map(lambda x: State.subset(stateOut, 
+    #                                        list(set(stateOut.nodes())-
+    #                                             set(x.nodes()))), newStates)
+
+    #reducedPossibilities = reduce(lambda x,y: x*y, 
+    #                              map(lambda x: len(x.states), newStates))
+
+    #reducedPossibilities = map(lambda x,y: len(x.states)*len(y.states), newStates, origStates)
+
+    
+
+
+    #if reducedPossibilities > 2**12:
+    #    print "There are " + str(reducedPossibilities) + " left to check ... I quit!"
+    #    return None
+    #
+    #else:
+    #    # combine them back into one large state, and then sweep possibilities
+    #    # to prune even more
+    #    newState = reduce(State.mergeKeep, newStates)
+    #    if len(newState.states) > 0:
+    #        return runSingleSAT(sp, newState.nodes(), st=list(newState.states))
+    #    else:
+    #        return newState
+
 
 def runSingleSAT(sp, outputs, st=None):
     global dag2cnf
@@ -84,7 +157,6 @@ def runSingleSAT(sp, outputs, st=None):
 
     dag2cnf.setOutputs(outputs)
     dag2cnf.setState(sp.state)
-
 
     states = SATInc.runAll(dag2cnf, states=st)
     result = State.State(outputs)
@@ -171,10 +243,10 @@ class FindStates:
 
 
         # DIFFERENCE for protocol
-        #supersets = self.__combineGroupsByStr__("_capacity_")
+        supersets = self.__combineGroupsByStr__("_capacity_")
         #supersets = self.__combineGroupsByStr__("_valid_")
         #supersets = self.__combineGroupsByStr__("_state_")
-        supersets = set()
+        #supersets = set()
 
         print self.__gr
 
@@ -438,23 +510,34 @@ class FindStates:
                 tt = TruthTable.TruthTable(self.__sp, outputSet)
                 states = tt.sweepStates()
             
-            elif outputCombos < 2**self.__MAX_SIZE:
-
-                # do SAT
-                print "Running SAT..."
-            
-                outputStates = list(set.difference(set(range(2**len(outputSet))), stateOut.states))
-                states = runSingleSAT(self.__sp, 
-                                      outputSet, 
-                                      st=outputStates).states
-
-
             else:
-                # FrEaK OuTTT!
-                print (str("Skipping b/c input combos are " + str(inputCombos) +
-                           " and Output size is " + str(len(outputSet))))
-                states = set()
-                stateOut.setSkip()
+                states = runSAT(self.__sp, stateOut)
+
+                if states:
+                    states = states.states
+
+                else:
+                    print "Skipping this group from now on!"
+                    states = set()
+                    stateOut.setSkip()
+
+            #elif outputCombos < 2**self.__MAX_SIZE:
+            #
+            #    # do SAT
+            #    print "Running SAT..."
+            #
+            #    outputStates = list(set.difference(set(range(2**len(outputSet))), stateOut.states))
+            #    states = runSingleSAT(self.__sp, 
+            #                          outputSet, 
+            #                          st=outputStates).states
+            #
+            #
+            #else:
+            #    # FrEaK OuTTT!
+            #    print (str("Skipping b/c input combos are " + str(inputCombos) +
+            #               " and Output size is " + str(len(outputSet))))
+            #    states = set()
+            #    stateOut.setSkip()
 
             print "reached states: " + str(states)
 
