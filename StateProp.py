@@ -203,10 +203,14 @@ class StateProp:
 
         while len(flops) > 0:
             flop = flops.pop()
-            m = re.match("(\S+_)\d", flop)
+            m = re.match("(\S+_)(\d+)__(\d+)_$", flop)
             flopRoot = False
             if m:
                 flopRoot = m.group(1)
+            else:
+                m = re.match("(\S+_)(\d+)_$", flop)
+                if m:
+                    flopRoot = m.group(1)
 
             if flopRoot:
                 newflops = []

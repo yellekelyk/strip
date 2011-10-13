@@ -172,7 +172,7 @@ class FindStates:
 
         # DIFFERENCE for protocol
         #supersets = self.__combineGroupsByStr__("_capacity_")
-        #supersets = self.__combineGroupsByStr__("valid_")
+        #supersets = self.__combineGroupsByStr__("_valid_")
         #supersets = self.__combineGroupsByStr__("_state_")
         supersets = set()
 

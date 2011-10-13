@@ -254,6 +254,12 @@ CKBXD1:
     Z: 1
   primitive: I
 
+CKBD1:
+  inputs:
+    CLK: 1
+  outputs:
+    C: 1
+  primitive: CLK
 
 CKMUX2D1:
   inputs:
@@ -925,6 +931,18 @@ DFKSND1:
   outputs:
     Q: 1
   primitive: D or not(SN)
+
+
+#DFXQD1:
+#  clocks:
+#    CP: 1
+#  inputs:
+#    DA: 1
+#    DB: 1
+#    SA: 1
+#  outputs:
+#    Q: 1
+#  primitive: (DA and SA) or (DB and (not SA))
 
 
 EDFQD1:
