@@ -89,8 +89,19 @@ def runSAT(sp, stateOut):
     allStates = copy.copy(stateOut)
 
     for newNodes in myutils.chunker(stateOut.nodes(), 12):
-        newState        = State.subset(allStates, newNodes)
-        existingStates  = State.subset(allStates, list(set(allStates.nodes())-set(newNodes)))
+
+        #if len(stateOut.nodes()) > 2000:
+        #    pdb.set_trace()
+
+        start = time.time()
+
+        #newState        = State.subset(allStates, newNodes)
+        #existingStates  = State.subset(allStates, list(set(allStates.nodes())-set(newNodes)))
+        newState, existingStates = State.subset_c(allStates, newNodes)
+
+        dur = time.time() - start
+        print "state separation took " + str(dur) + " seconds"
+
 
         statesToSweep = list(newState.not_states)
         if len(statesToSweep) > 0:
@@ -106,10 +117,12 @@ def runSAT(sp, stateOut):
             print "We just reached " + str(numNewStates) + " to test, I quit"
             return None
         else:
+            start = time.time()
             for st in newlyReached.states:
                 newState.addState(st)
             allStates = State.merge(existingStates, newState)
-
+            dur = time.time() - start
+            print "state merging took " + str(dur) + " seconds"
 
     newStates = allStates.states - stateOut.states
 
@@ -231,7 +244,7 @@ class FindStates:
 
         self.__sp = StateProp.StateProp(nl, reset, fsms.protocols())
 
-        self.__MAX_SIZE=13
+        self.__MAX_SIZE=None
 
 
         print "Finding Flops"
@@ -497,7 +510,7 @@ class FindStates:
                 #pdb.set_trace()
                 #raise Exception("Need to do something smarter here!")
 
-            print "Considering outputs: " + str(outputSet)        
+            print "Considering outputs (" + str(len(outputSet)) + "): " + str(outputSet)        
 
             # find number of outputs that haven't been SATISFIED
             outputCombos = stateOut.numAllStates()-stateOut.numStates()

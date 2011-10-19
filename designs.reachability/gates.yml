@@ -1,3 +1,12 @@
+HACK:
+  inputs:
+    A1: 1
+    B1: 1
+    B2: 1
+  outputs:
+    ZN: 1
+  primitive: not((A1) or (B1 and B2))  
+
 AN2D1:
   inputs:
     A1: 1

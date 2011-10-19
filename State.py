@@ -143,6 +143,43 @@ def subset(state, nodes):
     return stateObj
     
 
+def subset_c(state, nodes):
+    """ extract two subsets from a contiguous block of nodes; returns the
+    subset and anti-subset """
+    # ensure nodes is contiguous in state
+    index = None
+    allnodes = state.nodes()
+    for node in nodes:
+        #if not not in state.nodes():
+        #    raise Exception("Node not in state: " + node)
+        tmp = allnodes.index(node)
+        if index != None:
+            if tmp != index+1:
+                raise Exception("node isn't contiguous: " + node)
+        index = tmp
+    index_l = allnodes.index(nodes[0])
+    index_r = allnodes.index(nodes[len(nodes)-1])
+
+    lnodes = allnodes[0:index_l]
+    rnodes = allnodes[index_r+1:]
+    lnodes.extend(rnodes)
+
+    r = len(allnodes)-1-index_r
+    m = len(nodes)
+
+    state1 = State(nodes)
+    state2 = State(lnodes)
+
+    for st in state.states:
+        st1 = (st >> r) & (2**m - 1)
+        st2 = ((st >> (r+m)) << r) + (st & (2**r - 1))
+        state1.addState(st1)
+        state2.addState(st2)
+
+    return (state1, state2)
+
+
+
 def rename(state, conversion):
     "rename nodes in state"
     new = State(map(conversion.get, state.nodes()))

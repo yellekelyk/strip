@@ -174,7 +174,7 @@ class StateProp:
                         if not gr.has_edge(edge):
                             gr.add_edge(edge)
 
-        print "The dependency graph for states is"
+        #print "The dependency graph for states is"
         #print gr
         return (gr, list(flopSet))
 
