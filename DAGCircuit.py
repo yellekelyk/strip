@@ -9,9 +9,10 @@ import pdb
 
 class DAGCircuit(digraph):
     "define a DAG circuit"
-    def __init__(self):
+    def __init__(self, debug=0):
         digraph.__init__(self)
 
+        self.__debug = debug
         self.__inputs  = set()
         self.__outputs = set()
         self.__cells   = set()
@@ -153,7 +154,8 @@ class DAGCircuit(digraph):
                 cellTo   = conn[1]
                 pinFrom  = conns[conn][0]
                 for pinTo in conns[conn][1]:
-                    print "Connecting " + str(cellFrom) + " to " + str(cellTo)
+                    if self.__debug > 0:
+                        print "Connecting " + str(cellFrom) + " to " + str(cellTo)
                     self.connect(cellFrom, cellTo, cellFrom, "out", pinTo)
             
             # connect all virtual gate inputs
@@ -176,7 +178,8 @@ class DAGCircuit(digraph):
                 # ensure we connect it the original pin name to the new gate
                 # (2) we can just add a brand new gate to the library
                 if self.isOutput(inp):
-                    print str(inp) + " is a feedback output PORT, so it will be removed!"
+                    if self.__debug > 0:
+                        print str(inp) + " is a feedback output PORT, so it will be removed!"
                     prev = self.node_incidence[inp]
                     if len(prev) != 1:
                         raise Exception("Expected only 1 driver on output")
@@ -193,10 +196,12 @@ class DAGCircuit(digraph):
                 raise Exception("Name conflict with virtual input " + inp)
             # create a new virtual input
             else:
-                print "Creating VIRTUAL input " + inp + " for " + gate
+                if self.__debug > 0:
+                    print "Creating VIRTUAL input " + inp + " for " + gate
                 self.addPortIn(inp)
 
-            print "Connecting " + str(inp) + " to " + str(gate)
+            if self.__debug > 0:
+                print "Connecting " + str(inp) + " to " + str(gate)
 
             self.connect(inp, gate, inp, pinFrom, pinTo)
                 
@@ -305,13 +310,15 @@ class DAGCircuit(digraph):
             
 
     def del_edge(self, edge):
-        print "Removing edge: " + str(edge)
+        if self.__debug > 0:
+            print "Removing edge: " + str(edge)
         self.__pins.pop(edge)
         digraph.del_edge(self, edge)
 
 
     def del_node(self, node):
-        print "Removing node: " + str(node)
+        if self.__debug > 0:
+            print "Removing node: " + str(node)
         if node in self.__inputs:
             self.__inputs.remove(node)
         if node in self.__outputs:

@@ -73,7 +73,7 @@ def runHierSAT(sp, outputs):
            states = SAT.runAll(l2cnf, states=stateList)
            return states
 
-def runSAT(sp, stateOut):
+def runSAT(sp, stateOut, maxSize=12):
     """ Run SAT on all states; if there are too many states then 
     we attempt to prune some of the possibilties first and only run on the 
     remainder 
@@ -86,9 +86,16 @@ def runSAT(sp, stateOut):
     newStates = []
     numNewStates = 0
 
-    allStates = copy.copy(stateOut)
+    #maxFinal = 2**maxSize
+    maxFinal = 2**18
 
-    for newNodes in myutils.chunker(stateOut.nodes(), 12):
+    allStates = copy.deepcopy(stateOut)
+
+    if len(stateOut.nodes()) == 4:
+        #pdb.set_trace()
+        pass
+
+    for newNodes in myutils.chunker(stateOut.nodes(), maxSize):
 
         #if len(stateOut.nodes()) > 2000:
         #    pdb.set_trace()
@@ -109,18 +116,29 @@ def runSAT(sp, stateOut):
         else:
             newlyReached = State.State(newState.nodes())
         
+        print "reached interim states: " + str(newlyReached.states)
+
         #pdb.set_trace()
 
         numNewStates += len(existingStates.states) * len(newlyReached.states)
 
-        if numNewStates > 2**12:
+        if numNewStates > maxFinal:
             print "We just reached " + str(numNewStates) + " to test, I quit"
             return None
         else:
             start = time.time()
             for st in newlyReached.states:
                 newState.addState(st)
-            allStates = State.merge(existingStates, newState)
+            #allStates = State.merge_c(existingStates, newState, stateOut.nodes())
+            tmpStates = State.State(stateOut.nodes())
+            if len(newlyReached.states) > 0:
+                tmpStates = State.merge_c(existingStates, newlyReached, stateOut.nodes())
+            if tmpStates.nodes() != allStates.nodes():
+                raise Exception("Didn't expect this to happen")
+
+            for st in tmpStates.states:
+                allStates.addState(st)
+
             dur = time.time() - start
             print "state merging took " + str(dur) + " seconds"
 
@@ -128,7 +146,8 @@ def runSAT(sp, stateOut):
 
     if len(newStates) == 0:
         return State.State(stateOut.nodes())
-    elif len(newStates) > 2**12:
+    elif len(newStates) > maxFinal:
+        pdb.set_trace()
         raise Exception("This should have already been caught!")
     else:
         return runSingleSAT(sp, allStates.nodes(), st=list(newStates))
@@ -215,6 +234,9 @@ def runIterSAT(sp, outputs, group=6, step=1):
 class FindStates:
     def __init__(self, debug=0):
 
+        self.__debug = debug
+        self.start = time.time()
+
         if len(sys.argv) < 2:
             self.print_usage()
             exit(1)
@@ -244,11 +266,12 @@ class FindStates:
 
         self.__sp = StateProp.StateProp(nl, reset, fsms.protocols())
 
-        self.__MAX_SIZE=None
+        self.__MAX_SIZE=14
 
 
         print "Finding Flops"
-        (self.__gr, self.__flopGroups) = self.__sp.flopReport(self.__MAX_SIZE)
+        (self.__gr, self.__flopGroups) = self.__sp.flopReport()
+        #(self.__gr, self.__flopGroups) = self.__sp.flopReport(self.__MAX_SIZE)
         # todo consider phasing out private data member 
         # self.__flopGroups, since it becomes redundant once
         # we have created self.__flopStatesOut below
@@ -256,12 +279,14 @@ class FindStates:
 
 
         # DIFFERENCE for protocol
-        supersets = self.__combineGroupsByStr__("_capacity_")
+        #supersets = self.__combineGroupsByStr__("_capacity_")
+        supersets = self.__combineGroupsByStr__("fifo_capacity_")
         #supersets = self.__combineGroupsByStr__("_valid_")
         #supersets = self.__combineGroupsByStr__("_state_")
         #supersets = set()
 
-        print self.__gr
+        if self.__debug > 0:
+            print self.__gr
 
         # set user-specified input constraints here!
         self.__userStates = StateGroup.StateGroup()
@@ -391,6 +416,7 @@ class FindStates:
                 comboNodes.extend(self.__flopGroups[grp])
 
             states.append(State.State(comboNodes))
+            print "Adding special state: " + str(comboNodes)
 
         for combine in allGroups:
             for grp in combine:
@@ -524,7 +550,7 @@ class FindStates:
                 states = tt.sweepStates()
             
             else:
-                states = runSAT(self.__sp, stateOut)
+                states = runSAT(self.__sp, stateOut, self.__MAX_SIZE)
 
                 if states:
                     states = states.states
@@ -567,6 +593,10 @@ class FindStates:
                 print stOut.annotation(grp)
                 cnt += 1
 
+    def printTime(self):
+        dur = time.time() - self.start
+        print "Run took " + str(dur) + " seconds"
+
 
     def print_usage(self):
         print "Usage: python FindStates.py <moduleName> [inputConstraintFile]"
@@ -577,9 +607,6 @@ class FindStates:
 fs = FindStates()
 gc.disable()
 fs.run()
-gc.enable()
+fs.printTime()
 fs.printGroups()
-#DC.DC(fs.states)
-
-
-
+gc.enable()

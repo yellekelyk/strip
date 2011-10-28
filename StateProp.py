@@ -15,7 +15,9 @@ import pdb
 
 class StateProp:
     "Processes a Gate-level netlist, propagating states through flops"
-    def __init__(self, nl, reset=None, protocols=[]):
+    def __init__(self, nl, reset=None, protocols=[], debug=0):
+
+        self.__debug = debug
 
         self.__nl  = nl
 
@@ -45,7 +47,8 @@ class StateProp:
         self.__calcDeps__()
 
 
-        print self.__dag
+        if self.__debug > 1:
+            print self.__dag
 
 
         # initialize all states to nodes themselves
@@ -95,9 +98,10 @@ class StateProp:
 
             #state = states.pop()
 
-            print str("Found reset state for flops: " + 
-                      str(flopsOut) + " " +
-                      bin(state)[2:].rjust(len(st.nodes()), '0'))
+            if self.__debug > 0:
+                print str("Found reset state for flops: " + 
+                          str(flopsOut) + " " +
+                          bin(state)[2:].rjust(len(st.nodes()), '0'))
 
             self.__reset = state
             st.addState(int(state))
@@ -205,12 +209,16 @@ class StateProp:
             flop = flops.pop()
             m = re.match("(\S+_)(\d+)__(\d+)_$", flop)
             flopRoot = False
+            #if m:
+            #    flopRoot = m.group(1)
+            #else:
+            #    m = re.match("(\S+_)(\d+)_$", flop)
+            #    if m:
+            #        flopRoot = m.group(1)
+
+            m = re.match("(\S+_)(\d+)_$", flop)
             if m:
                 flopRoot = m.group(1)
-            else:
-                m = re.match("(\S+_)(\d+)_$", flop)
-                if m:
-                    flopRoot = m.group(1)
 
             if flopRoot:
                 newflops = []

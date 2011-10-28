@@ -143,20 +143,38 @@ def subset(state, nodes):
     return stateObj
     
 
-def subset_c(state, nodes):
-    """ extract two subsets from a contiguous block of nodes; returns the
-    subset and anti-subset """
+def check_c(allNodes, subsetNodes):
     # ensure nodes is contiguous in state
     index = None
-    allnodes = state.nodes()
-    for node in nodes:
-        #if not not in state.nodes():
-        #    raise Exception("Node not in state: " + node)
-        tmp = allnodes.index(node)
+    for node in subsetNodes:
+        tmp = allNodes.index(node)
         if index != None:
             if tmp != index+1:
                 raise Exception("node isn't contiguous: " + node)
         index = tmp
+
+
+def subset_c(state, nodes):
+    """ extract two subsets from a contiguous block of nodes; returns the
+    subset and anti-subset """
+
+    if len(nodes) == 0:
+        return (State([]), state)
+
+    # ensure nodes is contiguous in state
+    allnodes = state.nodes()
+    check_c(allnodes, nodes)
+
+    #index = None
+    #allnodes = state.nodes()
+    #for node in nodes:
+    #    #if not not in state.nodes():
+    #    #    raise Exception("Node not in state: " + node)
+    #    tmp = allnodes.index(node)
+    #    if index != None:
+    #        if tmp != index+1:
+    #            raise Exception("node isn't contiguous: " + node)
+    #    index = tmp
     index_l = allnodes.index(nodes[0])
     index_r = allnodes.index(nodes[len(nodes)-1])
 
@@ -178,6 +196,41 @@ def subset_c(state, nodes):
 
     return (state1, state2)
 
+
+def merge_c(state1, state2, allNodes):
+    """ merges state1 and state2 using ordering specified by nodes; state2 nodes should be contiguous in nodes """
+
+    # ensure state2 nodes is contiguous in nodes
+    nodes_m = state2.nodes()
+    check_c(allNodes, nodes_m)
+
+    index_l = allNodes.index(nodes_m[0])
+    index_r = allNodes.index(nodes_m[len(nodes_m)-1])
+    
+    nodes_l = allNodes[0:index_l]
+    nodes_r = allNodes[index_r+1:len(allNodes)]
+
+    # ensure split state1 nodes are contiguous in nodes
+    check_c(state1.nodes(), nodes_l)
+    check_c(state1.nodes(), nodes_r)
+
+    # ensure number of nodes makes sense
+    if len(state1.nodes()) + len(state2.nodes()) != len(allNodes):
+        raise Exception("The number of nodes is wrong")
+
+    # ensure nodes are mutually exclusive
+    if len(set.intersection(set(state1.nodes()), set(state2.nodes()))) > 0:
+        raise Exception("Nodes aren't mutually exclusive")
+
+    # now subset, then re-merge
+    #pdb.set_trace()
+    state_l, state_r = subset_c(state1, nodes_l)
+    state_m = state2
+
+    state = merge(state_l, state_m)
+    state = merge(state, state_r)
+
+    return state
 
 
 def rename(state, conversion):
