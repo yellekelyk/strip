@@ -69,20 +69,11 @@ class StateSuperset:
 
 
     def update(self, newState):
-        #idxs = set()
-        #for node in state.nodes():
-        #    if node not in self.__nodes:
-        #        raise Exception("missing node " + node)
-        #    idxs.add(self.__nodes.index(node))
-        #
-        ## for each underlying state object, update with subset
-        #for idx in idxs:
         for state in self.__states:
             newSt = State.subset(newState, state.nodes())
             for st in newSt.states:
                 state.addState(st)
             
-
     def subset(self, nodes):
         return subset(self, nodes)
 

@@ -1,3 +1,5 @@
+import pdb
+
 def bool2int(boolvec):
     num = 0
     for i in range(len(boolvec)):
@@ -56,3 +58,18 @@ def applyInvChar(state, char="!"):
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
 
+def chunker_ol(seq, size, ol):
+    if ol >= size:
+        raise Exception("Overlap must be smaller than size")
+    groups = []
+    ind = 0
+    while True:
+        start = ind * (size-ol)
+        end   = min(start + size, len(seq))
+        groups.append(seq[start:end])
+        if end == len(seq):
+            break
+        ind += 1
+       
+    return groups
+                     

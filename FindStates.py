@@ -73,7 +73,116 @@ def runHierSAT(sp, outputs):
            states = SAT.runAll(l2cnf, states=stateList)
            return states
 
-def runSAT(sp, stateOut, maxSize=12):
+#def runSAT_no_overlap(sp, stateOut, maxSize=12):
+#    """ Run SAT on all states; if there are too many states then 
+#    we attempt to prune some of the possibilties first and only run on the 
+#    remainder 
+#
+#    stateOut is a State object; 
+#    we want to run on 2**len(stateOut.nodes())-stateOut.states() possibilities
+#
+#    """
+#
+#    newStates = []
+#    numNewStates = 0
+#
+#    #maxFinal = 2**maxSize
+#    maxFinal = 2**18
+#
+#    allStates = copy.deepcopy(stateOut)
+#
+#    if len(stateOut.nodes()) == 4:
+#        #pdb.set_trace()
+#        pass
+#
+#    for newNodes in myutils.chunker(stateOut.nodes(), maxSize):
+#
+#        #if len(stateOut.nodes()) > 2000:
+#        #    pdb.set_trace()
+#
+#        start = time.time()
+#
+#        #newState        = State.subset(allStates, newNodes)
+#        #existingStates  = State.subset(allStates, list(set(allStates.nodes())-set(newNodes)))
+#        newState, existingStates = State.subset_c(allStates, newNodes)
+#
+#        dur = time.time() - start
+#        print "state separation took " + str(dur) + " seconds"
+#
+#
+#        statesToSweep = list(newState.not_states)
+#        if len(statesToSweep) > 0:
+#            newlyReached = runSingleSAT(sp, newState.nodes(), st=statesToSweep)
+#        else:
+#            newlyReached = State.State(newState.nodes())
+#        
+#        if newlyReached < 2**10:
+#            print "reached interim states: " + str(newlyReached.states)
+#        else:
+#            print "reached interim states: (hidden)"
+#
+#        #pdb.set_trace()
+#
+#        numNewStates += len(existingStates.states) * len(newlyReached.states)
+#
+#        if numNewStates > maxFinal:
+#            print "We just reached " + str(numNewStates) + " to test, I quit"
+#            return None
+#        else:
+#            start = time.time()
+#            for st in newlyReached.states:
+#                newState.addState(st)
+#            #allStates = State.merge_c(existingStates, newState, stateOut.nodes())
+#            tmpStates = State.State(stateOut.nodes())
+#            if len(newlyReached.states) > 0:
+#                tmpStates = State.merge_c(existingStates, newlyReached, stateOut.nodes())
+#            if tmpStates.nodes() != allStates.nodes():
+#                raise Exception("Didn't expect this to happen")
+#
+#            for st in tmpStates.states:
+#                allStates.addState(st)
+#
+#            dur = time.time() - start
+#            print "state merging took " + str(dur) + " seconds"
+#
+#    newStates = allStates.states - stateOut.states
+#
+#    if len(newStates) == 0:
+#        return State.State(stateOut.nodes())
+#    elif len(newStates) > maxFinal:
+#        pdb.set_trace()
+#        raise Exception("This should have already been caught!")
+#    else:
+#        return runSingleSAT(sp, allStates.nodes(), st=list(newStates))
+#    #    newStates.append(newlyReached)
+#
+#    #origStates = map(lambda x: State.subset(stateOut, 
+#    #                                        list(set(stateOut.nodes())-
+#    #                                             set(x.nodes()))), newStates)
+#
+#    #reducedPossibilities = reduce(lambda x,y: x*y, 
+#    #                              map(lambda x: len(x.states), newStates))
+#
+#    #reducedPossibilities = map(lambda x,y: len(x.states)*len(y.states), newStates, origStates)
+#
+#    
+#
+#
+#    #if reducedPossibilities > 2**12:
+#    #    print "There are " + str(reducedPossibilities) + " left to check ... I quit!"
+#    #    return None
+#    #
+#    #else:
+#    #    # combine them back into one large state, and then sweep possibilities
+#    #    # to prune even more
+#    #    newState = reduce(State.mergeKeep, newStates)
+#    #    if len(newState.states) > 0:
+#    #        return runSingleSAT(sp, newState.nodes(), st=list(newState.states))
+#    #    else:
+#    #        return newState
+
+
+def runSAT(sp, stateOut, maxSize=12, overlap=0):
     """ Run SAT on all states; if there are too many states then 
     we attempt to prune some of the possibilties first and only run on the 
     remainder 
@@ -91,19 +200,10 @@ def runSAT(sp, stateOut, maxSize=12):
 
     allStates = copy.deepcopy(stateOut)
 
-    if len(stateOut.nodes()) == 4:
-        #pdb.set_trace()
-        pass
-
-    for newNodes in myutils.chunker(stateOut.nodes(), maxSize):
-
-        #if len(stateOut.nodes()) > 2000:
-        #    pdb.set_trace()
+    for newNodes in myutils.chunker_ol(stateOut.nodes(), maxSize, overlap):
 
         start = time.time()
 
-        #newState        = State.subset(allStates, newNodes)
-        #existingStates  = State.subset(allStates, list(set(allStates.nodes())-set(newNodes)))
         newState, existingStates = State.subset_c(allStates, newNodes)
 
         dur = time.time() - start
@@ -116,31 +216,38 @@ def runSAT(sp, stateOut, maxSize=12):
         else:
             newlyReached = State.State(newState.nodes())
         
-        print "reached interim states: " + str(newlyReached.states)
-
-        #pdb.set_trace()
+        if len(newlyReached.states) < 2**9:
+            print "reached interim states: " + str(newlyReached.states)
+        else:
+            print "reached interim states: (hidden for length)"
 
         numNewStates += len(existingStates.states) * len(newlyReached.states)
 
         if numNewStates > maxFinal:
             print "We just reached " + str(numNewStates) + " to test, I quit"
             return None
-        else:
-            start = time.time()
-            for st in newlyReached.states:
-                newState.addState(st)
-            #allStates = State.merge_c(existingStates, newState, stateOut.nodes())
-            tmpStates = State.State(stateOut.nodes())
-            if len(newlyReached.states) > 0:
-                tmpStates = State.merge_c(existingStates, newlyReached, stateOut.nodes())
-            if tmpStates.nodes() != allStates.nodes():
-                raise Exception("Didn't expect this to happen")
 
-            for st in tmpStates.states:
-                allStates.addState(st)
+        start = time.time()
+        for st in newlyReached.states:
+            newState.addState(st)
 
-            dur = time.time() - start
-            print "state merging took " + str(dur) + " seconds"
+        tmpStates = State.State(stateOut.nodes())
+        if len(newlyReached.states) > 0:
+            tmpStates = State.merge_c(existingStates, newlyReached, stateOut.nodes())
+        if tmpStates.nodes() != allStates.nodes():
+            raise Exception("Didn't expect this to happen")
+
+        for st in tmpStates.states:
+            allStates.addState(st)
+
+        #numNewStates = len(allStates.states-stateOut.states)
+        #if numNewStates > maxFinal:
+        #    print "We just reached " + str(numNewStates) + " to test, I quit"
+        #    return None
+
+        dur = time.time() - start
+        print "state merging took " + str(dur) + " seconds"
+
 
     newStates = allStates.states - stateOut.states
 
@@ -151,32 +258,7 @@ def runSAT(sp, stateOut, maxSize=12):
         raise Exception("This should have already been caught!")
     else:
         return runSingleSAT(sp, allStates.nodes(), st=list(newStates))
-    #    newStates.append(newlyReached)
 
-    #origStates = map(lambda x: State.subset(stateOut, 
-    #                                        list(set(stateOut.nodes())-
-    #                                             set(x.nodes()))), newStates)
-
-    #reducedPossibilities = reduce(lambda x,y: x*y, 
-    #                              map(lambda x: len(x.states), newStates))
-
-    #reducedPossibilities = map(lambda x,y: len(x.states)*len(y.states), newStates, origStates)
-
-    
-
-
-    #if reducedPossibilities > 2**12:
-    #    print "There are " + str(reducedPossibilities) + " left to check ... I quit!"
-    #    return None
-    #
-    #else:
-    #    # combine them back into one large state, and then sweep possibilities
-    #    # to prune even more
-    #    newState = reduce(State.mergeKeep, newStates)
-    #    if len(newState.states) > 0:
-    #        return runSingleSAT(sp, newState.nodes(), st=list(newState.states))
-    #    else:
-    #        return newState
 
 
 def runSingleSAT(sp, outputs, st=None):
@@ -550,7 +632,8 @@ class FindStates:
                 states = tt.sweepStates()
             
             else:
-                states = runSAT(self.__sp, stateOut, self.__MAX_SIZE)
+                states = runSAT(self.__sp, stateOut, self.__MAX_SIZE, overlap=8)
+                #states = runSAT_no_overlap(self.__sp, stateOut, self.__MAX_SIZE)
 
                 if states:
                     states = states.states
@@ -578,7 +661,10 @@ class FindStates:
             #    states = set()
             #    stateOut.setSkip()
 
-            print "reached states: " + str(states)
+            if len(states) < 2**9:
+                print "reached states: " + str(states)
+            else:
+                print "reached states: (hidden for length)"
 
             for st in states:
                 stateOut.addState(st)
