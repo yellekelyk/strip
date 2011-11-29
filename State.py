@@ -118,6 +118,9 @@ class State:
     def subset(self, nodes):
         return subset(self, nodes)
 
+    def subset_c(self, nodes):
+        return subset_c(self, nodes)
+
     def rename(self, conversion):
         return rename(self, conversion)
 
@@ -129,7 +132,7 @@ class State:
 
 
 
-def subset(state, nodes):
+def subsetOLD(state, nodes):
     "extract a subset of node states"
     for node in nodes:
         if node not in state.nodes():
@@ -140,6 +143,66 @@ def subset(state, nodes):
         vec = state.getStateVec(st, nodes)
         newst = myutils.bool2int(vec)
         stateObj.addState(newst)
+    return stateObj
+
+
+def subset(state, nodes):
+    "extract a subset of node states"
+    stNodes = state.nodes()
+
+    # this block determines all contiguous groups of nodes
+    # that we'll be keeping
+    last = -2
+    contigs = dict()
+    current = None
+    for i in range(0,len(nodes)):
+        node = nodes[i]
+        try:
+            index = stNodes.index(node)
+            if index == last+1:
+                current.append(index)
+            else:
+                contigs[i] = [index]
+                current = contigs[i]
+            last = index
+        except ValueError:
+            raise Exception("node not in state: " + node)
+
+    #print "Found " + str(len(contigs)) + " contiguous states"
+
+
+    # this block determines the mask/shift for each contiguous block
+    maskShift = dict()
+    for i in contigs.keys():
+        indices = contigs[i]
+        start   = indices[0]
+        end     = indices[len(indices)-1]
+
+        lInd = len(stNodes)-start
+        rInd = lInd - len(indices)
+
+        lOnes   = 2**(lInd)-1
+        rOnes   = 2**(rInd)-1
+        mask    = lOnes - rOnes
+
+        #shift   = i-start
+        rShift = (len(stNodes)-1) - end
+        lShift = (len(nodes)  -1) - i - (len(indices)-1)
+        shift  = rShift - lShift
+        maskShift[i] = (mask, shift)
+
+    stateObj = State(nodes)
+    for st in state.states:
+        val = 0
+        for i in contigs.keys():
+            mask,shift = maskShift[i]
+            result = st & mask
+            if shift >= 0:
+                result = result >> shift
+            else:
+                result = result << (-1*shift)
+            val += result
+        stateObj.addState(val)
     return stateObj
     
 
