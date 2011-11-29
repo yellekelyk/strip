@@ -203,11 +203,13 @@ class DAG2CNF:
         f = open(fname, 'w')
         outStr = ''
         for state in states.states:
-            for i in range(len(nodes)):
-                if not states.getState(state, nodes[i]):
-                    outStr += '-'
-                outStr += str(nodeNums[i]) + ' '
-            outStr += " 0\n"
+            #for i in range(len(nodes)):
+            #    if not states.getState(state, nodes[i]):
+            #        outStr += '-'
+            #    outStr += str(nodeNums[i]) + ' '
+            line = map(lambda x:'-'+str(nodeNums[x]) if not state & (1 << (len(nodes)-1-x)) else str(nodeNums[x]), range(len(nodes)))
+            lineStr = reduce(lambda x,y: x + ' ' + y, line)
+            outStr += lineStr + " 0\n"
         f.write(outStr)
         f.close()
 
