@@ -5,10 +5,13 @@ import string
 
 class State:
     "Generic state information for a group of nodes"
-    def __init__(self, nodes):
+    def __init__(self, nodes, states=None):
         self.__states = set()
         self.__nodes = nodes
         self.__skip = False
+        if states:
+            for state in states:
+                self.addState(state)
 
     def __eq__(self, state):
         ret = False

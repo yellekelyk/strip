@@ -196,7 +196,8 @@ def runSAT(sp, stateOut, maxSize=12, overlap=0):
     numNewStates = 0
 
     #maxFinal = 2**maxSize
-    maxFinal = 2**18
+    #maxFinal = 2**19
+    maxFinal = 2**21
 
     allStates = copy.deepcopy(stateOut)
 
@@ -216,10 +217,11 @@ def runSAT(sp, stateOut, maxSize=12, overlap=0):
         else:
             newlyReached = State.State(newState.nodes())
         
+        nInterim = str(len(newlyReached.states))
         if len(newlyReached.states) < 2**9:
-            print "reached interim states: " + str(newlyReached.states)
+            print "reached " + nInterim + " interim states: " + str(newlyReached.states)
         else:
-            print "reached interim states: (hidden for length)"
+            print "reached " + nInterim + " interim states: (hidden for length)"
 
         numNewStates += len(existingStates.states) * len(newlyReached.states)
 
@@ -256,6 +258,8 @@ def runSAT(sp, stateOut, maxSize=12, overlap=0):
     elif len(newStates) > maxFinal:
         pdb.set_trace()
         raise Exception("This should have already been caught!")
+    elif len(stateOut.nodes()) <= maxSize:
+        return State.State(stateOut.nodes(), newStates)
     else:
         return runSingleSAT(sp, allStates.nodes(), st=list(newStates))
 
@@ -317,7 +321,8 @@ class FindStates:
     def __init__(self, debug=0):
 
         self.__debug = debug
-        self.start = time.time()
+
+        self.initTime = time.time()
 
         if len(sys.argv) < 2:
             self.print_usage()
@@ -334,6 +339,8 @@ class FindStates:
         print "Linking " + design
         nl.link(design)
 
+        self.start = time.time()
+
         print "Building DAG"
         if 'reset' in nl.mods[design].ports:
             reset = 'reset'
@@ -342,6 +349,8 @@ class FindStates:
         else:
             raise Exception("Couldn't find reset signal")
         
+        print "Design has " + str(len(nl.mods[design].cells)) + " gates"
+
         fsms = InputFSMs.InputFSMs(nl)
         for i in range(2, len(sys.argv)):
             fsms.readYAML(sys.argv[i])
@@ -432,6 +441,7 @@ class FindStates:
             if group in supersets:
                 # if this is a combo group, we should update
                 # the superset and then store it
+                #pdb.set_trace()
                 supersets[group].update(reset_out)
                 self.__flopStatesOut.insert(group, supersets[group])
             else:
@@ -609,6 +619,7 @@ class FindStates:
         # *********************************
         inputCombos = 2**16
         
+        idx = 0
         for stateOut in statesOut.subgroups():
             outputSet = stateOut.nodes()
 
@@ -662,12 +673,19 @@ class FindStates:
             #    stateOut.setSkip()
 
             if len(states) < 2**9:
-                print "reached states: " + str(states)
+                print "reached " + str(len(states)) + " states: " + str(states)
             else:
-                print "reached states: (hidden for length)"
+                print "reached " + str(len(states)) + " states: (hidden for length)"
 
             for st in states:
                 stateOut.addState(st)
+
+            #if len(states) > 0:
+            #    assumpFile = dag2cnf.assumpFileIn(group, idx)
+            #    print "Removing existing assumption file " + assumpFile
+            #    os.remove(assumpFile)
+
+            idx += 1
 
 
     def printGroups(self):
@@ -680,8 +698,9 @@ class FindStates:
                 cnt += 1
 
     def printTime(self):
-        dur = time.time() - self.start
-        print "Run took " + str(dur) + " seconds"
+        total = time.time() - self.initTime
+        dur   = time.time() - self.start
+        print "Run took " + str(dur) + " / " + str(total) + " seconds"
 
 
     def print_usage(self):
