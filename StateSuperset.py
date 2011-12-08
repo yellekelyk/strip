@@ -9,13 +9,36 @@ import pdb
 class StateSuperset:
     """ This class mimics a State class, but in reality has many (possibly overlapping) State classes under the hood """
     def __init__(self, states):
-        self.__states = states
+        #self.__states = states
+        self.__states = []
+        
+        # order the states with most states first
+        states.sort(key=lambda x:len(x.nodes()), reverse=True)
         
         # find superset of nodes
         nodeSet = set()
         for state in states:
-            for node in state.nodes():
-                nodeSet.add(node)
+            # only add state to list if it contains NEW nodes
+            # we skip it if it is a subset of an existing group
+            thisSet = set(state.nodes())
+            
+            # check all existing states
+            skipState = False
+            for tmpSt in self.__states:
+                intersect = set.intersection(set(tmpSt.nodes()), thisSet)
+                if len(intersect) == len(thisSet):
+                    print "Skipping subset nodes: " + str(thisSet)
+                    skipState = True
+                    break
+                #else:
+                #    self.__states.append(state)
+                #    for node in state.nodes():
+                #        nodeSet.add(node)
+            if not skipState:
+                self.__states.append(state)
+                for node in state.nodes():
+                    nodeSet.add(node)
+
         nodeList = list(nodeSet)
         nodeList.sort()
         nodeList.reverse()

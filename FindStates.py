@@ -219,9 +219,9 @@ def runSAT(sp, stateOut, maxSize=12, overlap=0):
         
         nInterim = str(len(newlyReached.states))
         if len(newlyReached.states) < 2**9:
-            print "reached " + nInterim + " interim states: " + str(newlyReached.states)
+            print "reached " + nInterim + " (" + str(len(existingStates.states)) + ") interim states: " + str(newlyReached.states)
         else:
-            print "reached " + nInterim + " interim states: (hidden for length)"
+            print "reached " + nInterim + "(" + str(len(existingStates.states)) + ") interim states: (hidden for length)"
 
         numNewStates += len(existingStates.states) * len(newlyReached.states)
 
