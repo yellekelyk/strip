@@ -3,7 +3,7 @@ import Logic2CNF
 import DAG2CNF
 import InputFSMs
 import myutils
-import Netlist
+from Verilog import Netlist
 import SAT
 import SATInc
 import State

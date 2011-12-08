@@ -5,10 +5,8 @@ import State
 import copy
 import re
 import Simulate
-#import TruthTable
 import myutils
 from pygraph.classes.digraph import digraph
-import CNF
 import subprocess
 
 import pdb
