@@ -236,6 +236,17 @@ AOI32D1:
     ZN: 1
   primitive: not((A1 and A2 and A3) or (B1 and B2))
 
+AOI32XD1:
+  inputs:
+    A1: 1
+    A2: 1
+    A3: 1
+    B1: 1
+    B2: 1
+  outputs: 
+    ZN: 1
+  primitive: not((A1 and A2 and A3) or (B1 and B2))
+
 
 AOI33D1:
   inputs:
@@ -529,6 +540,18 @@ MUX3D1:
   primitive: (I0 and (not S0) and (not S1)) or (I1 and S0 and (not S1)) or (I2 and S1)
 
 
+MUX3ND1:
+  inputs:
+    I0: 1
+    I1: 1
+    I2: 1
+    S0: 1
+    S1: 1
+  outputs:
+    ZN: 1
+  primitive: not((I0 and (not S0) and (not S1)) or (I1 and S0 and (not S1)) or (I2 and S1))
+
+
 MUX4D1:
   inputs:
     I0: 1
@@ -721,6 +744,17 @@ OAI22D1:
 
 
 OAI221D1:
+  inputs:
+    A1: 1
+    A2: 1
+    B1: 1
+    B2: 1
+    C: 1
+  outputs:
+    ZN: 1
+  primitive: not((A1 or A2) and (B1 or B2) and C)
+
+OAI221XD1:
   inputs:
     A1: 1
     A2: 1
