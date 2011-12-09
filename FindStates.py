@@ -25,160 +25,7 @@ import cProfile
 import pdb
 
 
-#l2cnf_all = dict()
 dag2cnf = None
-
-
-#def runHierSAT(sp, outputs):
-#    "Run a SAT sweep in a recursive hierarchical fashion"
-#
-#    print "runHierSAT called with outputs= " + str(outputs)
-#
-#    if len(outputs) <= 4:
-#        l2cnf = Logic2CNF.Logic2CNF(sp, outputs)
-#        states = SAT.runAll(l2cnf)
-#        return states
-#    else:
-#        outputs1 = outputs[0:(len(outputs)/2)]
-#        outputs2 = outputs[(len(outputs)/2):len(outputs)]
-#
-#        run1 = runHierSAT(sp, outputs1)
-#        run2 = runHierSAT(sp, outputs2)
-#        
-#        # do reduction step of combining states
-#        if len(run1)*len(run2) >= 2**12:
-#            #this is too large to sweep, throw our hands up in the air
-#            # maybe return None to indicate this ???
-#            raise Exception("tooo many states to sweep !!")
-#        else:
-#           state1 = State.State(outputs1) 
-#           state2 = State.State(outputs2) 
-#           for st in run1:
-#               state1.addState(st)
-#           for st in run2:
-#               state2.addState(st)
-#           state = State.merge(state1, state2)
-#           stateList = list(state.states)
-#           stateList.sort()
-#
-#           print str("Running reduction sweep on " + str(len(stateList)) + 
-#                     " states: " + str(stateList))
-#
-#           #pdb.set_trace()
-#           if state.nodes() != list(outputs):
-#               raise Exception("I expect these to be the same!!")
-#
-#           l2cnf = Logic2CNF.Logic2CNF(sp, outputs)
-#           states = SAT.runAll(l2cnf, states=stateList)
-#           return states
-
-#def runSAT_no_overlap(sp, stateOut, maxSize=12):
-#    """ Run SAT on all states; if there are too many states then 
-#    we attempt to prune some of the possibilties first and only run on the 
-#    remainder 
-#
-#    stateOut is a State object; 
-#    we want to run on 2**len(stateOut.nodes())-stateOut.states() possibilities
-#
-#    """
-#
-#    newStates = []
-#    numNewStates = 0
-#
-#    #maxFinal = 2**maxSize
-#    maxFinal = 2**18
-#
-#    allStates = copy.deepcopy(stateOut)
-#
-#    if len(stateOut.nodes()) == 4:
-#        #pdb.set_trace()
-#        pass
-#
-#    for newNodes in myutils.chunker(stateOut.nodes(), maxSize):
-#
-#        #if len(stateOut.nodes()) > 2000:
-#        #    pdb.set_trace()
-#
-#        start = time.time()
-#
-#        #newState        = State.subset(allStates, newNodes)
-#        #existingStates  = State.subset(allStates, list(set(allStates.nodes())-set(newNodes)))
-#        newState, existingStates = State.subset_c(allStates, newNodes)
-#
-#        dur = time.time() - start
-#        print "state separation took " + str(dur) + " seconds"
-#
-#
-#        statesToSweep = list(newState.not_states)
-#        if len(statesToSweep) > 0:
-#            newlyReached = runSingleSAT(sp, newState.nodes(), st=statesToSweep)
-#        else:
-#            newlyReached = State.State(newState.nodes())
-#        
-#        if newlyReached < 2**10:
-#            print "reached interim states: " + str(newlyReached.states)
-#        else:
-#            print "reached interim states: (hidden)"
-#
-#        #pdb.set_trace()
-#
-#        numNewStates += len(existingStates.states) * len(newlyReached.states)
-#
-#        if numNewStates > maxFinal:
-#            print "We just reached " + str(numNewStates) + " to test, I quit"
-#            return None
-#        else:
-#            start = time.time()
-#            for st in newlyReached.states:
-#                newState.addState(st)
-#            #allStates = State.merge_c(existingStates, newState, stateOut.nodes())
-#            tmpStates = State.State(stateOut.nodes())
-#            if len(newlyReached.states) > 0:
-#                tmpStates = State.merge_c(existingStates, newlyReached, stateOut.nodes())
-#            if tmpStates.nodes() != allStates.nodes():
-#                raise Exception("Didn't expect this to happen")
-#
-#            for st in tmpStates.states:
-#                allStates.addState(st)
-#
-#            dur = time.time() - start
-#            print "state merging took " + str(dur) + " seconds"
-#
-#    newStates = allStates.states - stateOut.states
-#
-#    if len(newStates) == 0:
-#        return State.State(stateOut.nodes())
-#    elif len(newStates) > maxFinal:
-#        pdb.set_trace()
-#        raise Exception("This should have already been caught!")
-#    else:
-#        return runSingleSAT(sp, allStates.nodes(), st=list(newStates))
-#    #    newStates.append(newlyReached)
-#
-#    #origStates = map(lambda x: State.subset(stateOut, 
-#    #                                        list(set(stateOut.nodes())-
-#    #                                             set(x.nodes()))), newStates)
-#
-#    #reducedPossibilities = reduce(lambda x,y: x*y, 
-#    #                              map(lambda x: len(x.states), newStates))
-#
-#    #reducedPossibilities = map(lambda x,y: len(x.states)*len(y.states), newStates, origStates)
-#
-#    
-#
-#
-#    #if reducedPossibilities > 2**12:
-#    #    print "There are " + str(reducedPossibilities) + " left to check ... I quit!"
-#    #    return None
-#    #
-#    #else:
-#    #    # combine them back into one large state, and then sweep possibilities
-#    #    # to prune even more
-#    #    newState = reduce(State.mergeKeep, newStates)
-#    #    if len(newState.states) > 0:
-#    #        return runSingleSAT(sp, newState.nodes(), st=list(newState.states))
-#    #    else:
-#    #        return newState
 
 
 def runSAT(sp, stateOut, maxSize=12, overlap=0):
@@ -241,11 +88,6 @@ def runSAT(sp, stateOut, maxSize=12, overlap=0):
         for st in tmpStates.states:
             allStates.addState(st)
 
-        #numNewStates = len(allStates.states-stateOut.states)
-        #if numNewStates > maxFinal:
-        #    print "We just reached " + str(numNewStates) + " to test, I quit"
-        #    return None
-
         dur = time.time() - start
         print "state merging took " + str(dur) + " seconds"
 
@@ -281,39 +123,6 @@ def runSingleSAT(sp, outputs, st=None):
         result.addState(state)
     return result
 
-
-def runIterSAT(sp, outputs, group=6, step=1):
-    "Run a SAT sweep; preprocess by running smaller subset sweeps first"
-
-    print "runIterSAT called with outputs= " + str(outputs)
-
-    if len(outputs) < group:
-        group = len(outputs)
-    nRuns = 1 + (len(outputs)-group)/step
-
-    # produce a list of output subsets
-    subsets = map(lambda x:list(outputs[(x*step):(x*step+group)]), range(nRuns))
-    states = map(runSingleSAT,[sp]*len(subsets),subsets)
-    allStates = reduce(State.merge, states)
-
-    stateList = list(allStates.states)
-    stateList.sort()
-
-    if len(stateList) >= 2**12:
-        #this is too large to sweep, throw our hands up in the air
-        # maybe return None to indicate this ???
-        raise Exception("tooo many states to sweep !!")
-    else:
-        print str("Running reduction sweep on " + str(len(stateList)) + 
-                  " states: " + str(stateList))
-
-        if allStates.nodes() != list(outputs):
-            raise Exception("I expect these to be the same!!")
-        #pdb.set_trace()
-        #l2cnf = Logic2CNF.Logic2CNF(sp, outputs)
-        #states = SAT.runAll(l2cnf, states=stateList)
-        states = runSingleSAT(sp, outputs, states=stateList)
-        return states
 
 
 class FindStates:
