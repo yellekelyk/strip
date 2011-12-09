@@ -6,7 +6,6 @@ import time
 import hashlib
 import os
 import re
-import SGE
 
 import pdb
 
@@ -106,8 +105,3 @@ def run(cnf):
     return result     
 
 
-def runSGE(cnfs):
-    jobs = map(makeSATArgs, cnfs)
-    sge = SGE.SGE()
-    outputs = sge.run(jobs)
-    return map(getResults, outputs)

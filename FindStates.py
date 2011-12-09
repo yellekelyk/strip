@@ -1,16 +1,15 @@
-import DC
-import Logic2CNF
-import DAG2CNF
-import InputFSMs
-import myutils
+from Logic import DAG2CNF
+from Logic import InputFSMs
+from Logic import SATInc
+from Logic import StateProp
+from Logic import TruthTable
+
+from Utils import myutils
 from Verilog import Netlist
-import SAT
-import SATInc
-import State
-import StateSuperset
-import StateGroup
-import StateProp
-import TruthTable
+
+from Utils import State
+from Utils import StateSuperset
+from Utils import StateGroup
 
 import copy
 import glob
@@ -30,48 +29,48 @@ import pdb
 dag2cnf = None
 
 
-def runHierSAT(sp, outputs):
-    "Run a SAT sweep in a recursive hierarchical fashion"
-
-    print "runHierSAT called with outputs= " + str(outputs)
-
-    if len(outputs) <= 4:
-        l2cnf = Logic2CNF.Logic2CNF(sp, outputs)
-        states = SAT.runAll(l2cnf)
-        return states
-    else:
-        outputs1 = outputs[0:(len(outputs)/2)]
-        outputs2 = outputs[(len(outputs)/2):len(outputs)]
-
-        run1 = runHierSAT(sp, outputs1)
-        run2 = runHierSAT(sp, outputs2)
-        
-        # do reduction step of combining states
-        if len(run1)*len(run2) >= 2**12:
-            #this is too large to sweep, throw our hands up in the air
-            # maybe return None to indicate this ???
-            raise Exception("tooo many states to sweep !!")
-        else:
-           state1 = State.State(outputs1) 
-           state2 = State.State(outputs2) 
-           for st in run1:
-               state1.addState(st)
-           for st in run2:
-               state2.addState(st)
-           state = State.merge(state1, state2)
-           stateList = list(state.states)
-           stateList.sort()
-
-           print str("Running reduction sweep on " + str(len(stateList)) + 
-                     " states: " + str(stateList))
-
-           #pdb.set_trace()
-           if state.nodes() != list(outputs):
-               raise Exception("I expect these to be the same!!")
-
-           l2cnf = Logic2CNF.Logic2CNF(sp, outputs)
-           states = SAT.runAll(l2cnf, states=stateList)
-           return states
+#def runHierSAT(sp, outputs):
+#    "Run a SAT sweep in a recursive hierarchical fashion"
+#
+#    print "runHierSAT called with outputs= " + str(outputs)
+#
+#    if len(outputs) <= 4:
+#        l2cnf = Logic2CNF.Logic2CNF(sp, outputs)
+#        states = SAT.runAll(l2cnf)
+#        return states
+#    else:
+#        outputs1 = outputs[0:(len(outputs)/2)]
+#        outputs2 = outputs[(len(outputs)/2):len(outputs)]
+#
+#        run1 = runHierSAT(sp, outputs1)
+#        run2 = runHierSAT(sp, outputs2)
+#        
+#        # do reduction step of combining states
+#        if len(run1)*len(run2) >= 2**12:
+#            #this is too large to sweep, throw our hands up in the air
+#            # maybe return None to indicate this ???
+#            raise Exception("tooo many states to sweep !!")
+#        else:
+#           state1 = State.State(outputs1) 
+#           state2 = State.State(outputs2) 
+#           for st in run1:
+#               state1.addState(st)
+#           for st in run2:
+#               state2.addState(st)
+#           state = State.merge(state1, state2)
+#           stateList = list(state.states)
+#           stateList.sort()
+#
+#           print str("Running reduction sweep on " + str(len(stateList)) + 
+#                     " states: " + str(stateList))
+#
+#           #pdb.set_trace()
+#           if state.nodes() != list(outputs):
+#               raise Exception("I expect these to be the same!!")
+#
+#           l2cnf = Logic2CNF.Logic2CNF(sp, outputs)
+#           states = SAT.runAll(l2cnf, states=stateList)
+#           return states
 
 #def runSAT_no_overlap(sp, stateOut, maxSize=12):
 #    """ Run SAT on all states; if there are too many states then 
