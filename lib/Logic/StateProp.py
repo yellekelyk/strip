@@ -8,6 +8,7 @@ from Logic import Simulate
 from Utils import myutils
 from pygraph.classes.digraph import digraph
 import subprocess
+import yaml
 
 import pdb
 
@@ -81,21 +82,6 @@ class StateProp:
 
             state = myutils.bool2int(state)
 
-            #self.__state = tmp
-
-            # propagate simulation equations in->out!
-            #self.propSims()
-
-            #pdb.set_trace()
-            #tt = TruthTable.TruthTable(self, flopsOut)
-            #self.__dag.flopsIn.values())
-
-            #states = tt.sweepStates()
-            #if len(states) > 1:
-            #    raise Exception("More than 1 reset state found")
-
-            #state = states.pop()
-
             if self.__debug > 0:
                 print str("Found reset state for flops: " + 
                           str(flopsOut) + " " +
@@ -109,15 +95,8 @@ class StateProp:
 
         self.__state = st
 
-        #pdb.set_trace()
 
-        # propagate node info
-        #self.propEquations()
-        #self.propSims()
-        #self.propGenerators()
-
-
-    def flopReport(self, maxSetSize=None):
+    def buildGroups(self, maxSetSize=None):
         flopSet = self.flopSets()
 
         #try breaking large sets into smaller ones
@@ -151,7 +130,29 @@ class StateProp:
                 print flop
             cnt += 1
 
+        gr = self.__buildGroupGraph__(flopDict, flopSetLookup)
+        return (gr, flopDict)
 
+
+    def readGroups(self, gFile):
+        # read flopDict from file
+        gFileH = open(gFile)
+        tmp = yaml.safe_load(gFileH)
+        gFileH.close()
+
+        # build a reverse lookup flop --> group
+        flopSetLookup = dict()
+        flopDict = dict()
+        for grp in tmp:
+            flops = tmp[grp].split()
+            flopDict[grp] = tuple(flops)
+            for flop in flops:
+                flopSetLookup[flop] = grp
+
+        gr = self.__buildGroupGraph__(flopDict, flopSetLookup)
+        return (gr, flopDict)
+
+    def __buildGroupGraph__(self, flopDict, flopSetLookup):
         # use graph package to keep track of any deps
         gr = digraph()
         for state in flopDict:
@@ -163,7 +164,6 @@ class StateProp:
             inputs = set()
             for node in flopDict[state]:
                 inputs = set.union(inputs, self.__deps[node])
-
             gr.add_node_attribute(state, {'inputs': inputs})
 
             # check if any of these inputs corresponds to an output from a
@@ -175,10 +175,8 @@ class StateProp:
                         edge = (flopSetLookup[flop], state)
                         if not gr.has_edge(edge):
                             gr.add_edge(edge)
+        return gr
 
-        #print "The dependency graph for states is"
-        #print gr
-        return (gr, list(flopSet))
 
 
     def flopSets(self):

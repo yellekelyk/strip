@@ -57,27 +57,47 @@ class FindStates:
         for fileName in options['inputs']:
             fsms.readYAML(fileName)
 
-        self.__sp = StateProp.StateProp(nl, reset, fsms.protocols())
-
         self.__MAX_SIZE=options['window_size']
         self.__OVERLAP=options['window_step']
-        self.__MAX_STATES=options['max_states']
+        self.__MAX_STATES=2**options['max_states']
+
+
+        self.__sp = StateProp.StateProp(nl, reset, fsms.protocols())
+
+
+        if options['read_groups']:
+            gFile = options['read_groups']
+            print "Using user-specified groupings in: " + gFile
+            (self.__gr, self.__flopGroups) = self.__sp.readGroups(gFile)
+            supersets = set()
+        else:
+            print "Building groups according to programmed rules"
+            (self.__gr, self.__flopGroups) = self.__sp.buildGroups()
+
+            # todo consider phasing out private data member 
+            # self.__flopGroups, since it becomes redundant once
+            # we have created self.__flopStatesOut below
+            # self.__flopGroups[grp] == self.__flopStatesOut.lookup(grp).nodes()
+
+            # DIFFERENCE for protocol
+            supersets = self.__combineGroupsByStr__(options['protocol_fifo'])
+        
+            #supersets = self.__combineGroupsByStr__("_capacity_")
+            #supersets = self.__combineGroupsByStr__("_valid_")
+            #supersets = self.__combineGroupsByStr__("_state_")
+            #supersets = set()
+
 
         print "Finding Flops"
-        (self.__gr, self.__flopGroups) = self.__sp.flopReport()
-        #(self.__gr, self.__flopGroups) = self.__sp.flopReport(self.__MAX_SIZE)
-        # todo consider phasing out private data member 
-        # self.__flopGroups, since it becomes redundant once
-        # we have created self.__flopStatesOut below
-        # self.__flopGroups[grp] == self.__flopStatesOut.lookup(grp).nodes()
+        if options['dump_groups']:
+            print "Found " + str(len(self.__gr.nodes())) + " groups"
+            for grp in self.__gr.nodes():
+                print str(grp) + ":"
+                for flop in self.__flopGroups[grp]:
+                    print '  ' + flop
+            exit(0)
 
 
-        # DIFFERENCE for protocol
-        supersets = self.__combineGroupsByStr__(options['protocol_fifo'])
-        #supersets = self.__combineGroupsByStr__("_capacity_")
-        #supersets = self.__combineGroupsByStr__("_valid_")
-        #supersets = self.__combineGroupsByStr__("_state_")
-        #supersets = set()
 
         if self.__verbose > 1:
             print self.__gr
@@ -223,7 +243,7 @@ class FindStates:
         self.__gr.add_node_attribute(newGroup, 
                                      {'inputs': newGroupInputs,
                                       'combo': True})
-        self.__flopGroups.append(tuple(ss.nodes()))
+        self.__flopGroups[newGroup] = tuple(ss.nodes())
 
         # return an empty state superset object
         return {newGroup: ss}
@@ -424,7 +444,7 @@ class FindStates:
 
             statesToSweep = list(newState.not_states)
             if len(statesToSweep) > 0:
-                newlyReached = runSingleSAT(newState.nodes(), st=statesToSweep)
+                newlyReached = self.runSingleSAT(newState.nodes(), st=statesToSweep)
             else:
                 newlyReached = State.State(newState.nodes())
         

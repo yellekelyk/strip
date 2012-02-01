@@ -12,7 +12,7 @@ import pdb
 if "MINISAT" in os.environ:
     MINISAT = os.environ["MINISAT"]
 else:
-    MINISAT = "/home/kkelley/Downloads/minisat.mine/simp/minisat_static"
+    MINISAT = "/mnt/raid/research/stanford/chipgen/code/pyNet/bin/minisat_static"
 
 if "TMPDIR" in os.environ:
     TMPDIR = os.environ["TMPDIR"]
