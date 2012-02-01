@@ -90,11 +90,14 @@ class FindStates:
 
         print "Finding Flops"
         if options['dump_groups']:
-            print "Found " + str(len(self.__gr.nodes())) + " groups"
+            dump = open(options['dump_groups'], 'w')
+
+            #print "Found " + str(len(self.__gr.nodes())) + " groups"
             for grp in self.__gr.nodes():
-                print str(grp) + ":"
+                dump.write(str(grp) + ":" + '\n')
                 for flop in self.__flopGroups[grp]:
-                    print '  ' + flop
+                    dump.write('  ' + flop + '\n')
+            dump.close()
             exit(0)
 
 
