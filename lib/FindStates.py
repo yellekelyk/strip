@@ -25,123 +25,17 @@ import cProfile
 import pdb
 
 
-dag2cnf = None
-
-
-def runSAT(sp, stateOut, maxSize=12, overlap=0):
-    """ Run SAT on all states; if there are too many states then 
-    we attempt to prune some of the possibilties first and only run on the 
-    remainder 
-
-    stateOut is a State object; 
-    we want to run on 2**len(stateOut.nodes())-stateOut.states() possibilities
-
-    """
-
-    newStates = []
-    numNewStates = 0
-
-    #maxFinal = 2**maxSize
-    #maxFinal = 2**19
-    maxFinal = 2**21
-
-    allStates = copy.deepcopy(stateOut)
-
-    for newNodes in myutils.chunker_ol(stateOut.nodes(), maxSize, overlap):
-
-        start = time.time()
-
-        newState, existingStates = State.subset_c(allStates, newNodes)
-
-        dur = time.time() - start
-        print "state separation took " + str(dur) + " seconds"
-
-
-        statesToSweep = list(newState.not_states)
-        if len(statesToSweep) > 0:
-            newlyReached = runSingleSAT(sp, newState.nodes(), st=statesToSweep)
-        else:
-            newlyReached = State.State(newState.nodes())
-        
-        nInterim = str(len(newlyReached.states))
-        if len(newlyReached.states) < 2**9:
-            print "reached " + nInterim + " (" + str(len(existingStates.states)) + ") interim states: " + str(newlyReached.states)
-        else:
-            print "reached " + nInterim + "(" + str(len(existingStates.states)) + ") interim states: (hidden for length)"
-
-        numNewStates += len(existingStates.states) * len(newlyReached.states)
-
-        if numNewStates > maxFinal:
-            print "We just reached " + str(numNewStates) + " to test, I quit"
-            return None
-
-        start = time.time()
-        for st in newlyReached.states:
-            newState.addState(st)
-
-        tmpStates = State.State(stateOut.nodes())
-        if len(newlyReached.states) > 0:
-            tmpStates = State.merge_c(existingStates, newlyReached, stateOut.nodes())
-        if tmpStates.nodes() != allStates.nodes():
-            raise Exception("Didn't expect this to happen")
-
-        for st in tmpStates.states:
-            allStates.addState(st)
-
-        dur = time.time() - start
-        print "state merging took " + str(dur) + " seconds"
-
-
-    newStates = allStates.states - stateOut.states
-
-    if len(newStates) == 0:
-        return State.State(stateOut.nodes())
-    elif len(newStates) > maxFinal:
-        pdb.set_trace()
-        raise Exception("This should have already been caught!")
-    elif len(stateOut.nodes()) <= maxSize:
-        return State.State(stateOut.nodes(), newStates)
-    else:
-        return runSingleSAT(sp, allStates.nodes(), st=list(newStates))
-
-
-
-def runSingleSAT(sp, outputs, st=None):
-    global dag2cnf
-
-    if not dag2cnf:
-        print "Precomputing dag2cnf for whole circuit"
-        dag2cnf = DAG2CNF.DAG2CNF(sp)
-        dag2cnf.cnffile(force=True)
-
-    dag2cnf.setOutputs(outputs)
-    dag2cnf.setState(sp.state)
-
-    states = SATInc.runAll(dag2cnf, states=st)
-    result = State.State(outputs)
-    for state in states:
-        result.addState(state)
-    return result
-
-
-
 class FindStates:
-    def __init__(self, debug=0):
+    def __init__(self, options):
 
-        self.__debug = debug
+        self.__verbose = options['verbose']
 
         self.initTime = time.time()
+        self.__dag2cnf = None
 
-        if len(sys.argv) < 2:
-            self.print_usage()
-            exit(1)
-
-        # set design here!!
-        design = sys.argv[1]
-        path = 'designs.protocol/'
-
+        design = options['design']
         nl = Netlist.Netlist()
-        for infile in glob.glob(os.path.join(path, '*.yml')):
+        for infile in glob.glob(os.path.join(options['design_dir'], '*.yml')):
             print "Reading " + infile
             nl.readYAML(infile)
         print "Linking " + design
@@ -160,13 +54,14 @@ class FindStates:
         print "Design has " + str(len(nl.mods[design].cells)) + " gates"
 
         fsms = InputFSMs.InputFSMs(nl)
-        for i in range(2, len(sys.argv)):
-            fsms.readYAML(sys.argv[i])
+        for fileName in options['inputs']:
+            fsms.readYAML(fileName)
 
         self.__sp = StateProp.StateProp(nl, reset, fsms.protocols())
 
-        self.__MAX_SIZE=14
-
+        self.__MAX_SIZE=options['window_size']
+        self.__OVERLAP=options['window_step']
+        self.__MAX_STATES=options['max_states']
 
         print "Finding Flops"
         (self.__gr, self.__flopGroups) = self.__sp.flopReport()
@@ -178,13 +73,13 @@ class FindStates:
 
 
         # DIFFERENCE for protocol
+        supersets = self.__combineGroupsByStr__(options['protocol_fifo'])
         #supersets = self.__combineGroupsByStr__("_capacity_")
-        supersets = self.__combineGroupsByStr__("fifo_capacity_")
         #supersets = self.__combineGroupsByStr__("_valid_")
         #supersets = self.__combineGroupsByStr__("_state_")
         #supersets = set()
 
-        if self.__debug > 0:
+        if self.__verbose > 1:
             print self.__gr
 
         # set user-specified input constraints here!
@@ -451,8 +346,7 @@ class FindStates:
                 states = tt.sweepStates()
             
             else:
-                states = runSAT(self.__sp, stateOut, self.__MAX_SIZE, overlap=8)
-                #states = runSAT_no_overlap(self.__sp, stateOut, self.__MAX_SIZE)
+                states = self.runSAT(stateOut)
 
                 if states:
                     states = states.states
@@ -496,6 +390,104 @@ class FindStates:
             idx += 1
 
 
+    def runSAT(self, stateOut):
+        """ Run SAT on all states; if there are too many states then 
+        we attempt to prune some of the possibilties first and only run on the 
+        remainder 
+
+        stateOut is a State object; 
+        we want to run on 2**len(stateOut.nodes())-stateOut.states() possibilities
+        
+        """
+        
+        newStates = []
+        numNewStates = 0
+
+        #maxFinal = 2**maxSize
+        #maxFinal = 2**19
+        #maxFinal = 2**21
+        maxFinal = self.__MAX_STATES
+
+        allStates = copy.deepcopy(stateOut)
+
+        for newNodes in myutils.chunker_ol(stateOut.nodes(), 
+                                           self.__MAX_SIZE, 
+                                           self.__OVERLAP):
+
+            start = time.time()
+
+            newState, existingStates = State.subset_c(allStates, newNodes)
+
+            dur = time.time() - start
+            print "state separation took " + str(dur) + " seconds"
+
+
+            statesToSweep = list(newState.not_states)
+            if len(statesToSweep) > 0:
+                newlyReached = runSingleSAT(newState.nodes(), st=statesToSweep)
+            else:
+                newlyReached = State.State(newState.nodes())
+        
+            nInterim = str(len(newlyReached.states))
+            if len(newlyReached.states) < 2**9:
+                print "reached " + nInterim + " (" + str(len(existingStates.states)) + ") interim states: " + str(newlyReached.states)
+            else:
+                print "reached " + nInterim + "(" + str(len(existingStates.states)) + ") interim states: (hidden for length)"
+
+            numNewStates += len(existingStates.states) * len(newlyReached.states)
+
+            if numNewStates > maxFinal:
+                print "We just reached " + str(numNewStates) + " to test, I quit"
+                return None
+
+            start = time.time()
+            for st in newlyReached.states:
+                newState.addState(st)
+
+            tmpStates = State.State(stateOut.nodes())
+            if len(newlyReached.states) > 0:
+                tmpStates = State.merge_c(existingStates, newlyReached, stateOut.nodes())
+            if tmpStates.nodes() != allStates.nodes():
+                raise Exception("Didn't expect this to happen")
+
+            for st in tmpStates.states:
+                allStates.addState(st)
+
+            dur = time.time() - start
+            print "state merging took " + str(dur) + " seconds"
+
+        newStates = allStates.states - stateOut.states
+
+        if len(newStates) == 0:
+            return State.State(stateOut.nodes())
+        elif len(newStates) > maxFinal:
+            pdb.set_trace()
+            raise Exception("This should have already been caught!")
+        elif len(stateOut.nodes()) <= self.__MAX_SIZE:
+            return State.State(stateOut.nodes(), newStates)
+        else:
+            return self.runSingleSAT(allStates.nodes(), st=list(newStates))
+
+
+
+    def runSingleSAT(self, outputs, st=None):
+        if not self.__dag2cnf:
+            print "Precomputing dag2cnf for whole circuit"
+            self.__dag2cnf = DAG2CNF.DAG2CNF(self.__sp)
+            self.__dag2cnf.cnffile(force=True)
+
+        self.__dag2cnf.setOutputs(outputs)
+        self.__dag2cnf.setState(self.__sp.state)
+
+        states = SATInc.runAll(self.__dag2cnf, states=st)
+        result = State.State(outputs)
+        for state in states:
+            result.addState(state)
+        return result
+
+
+
+
     def printGroups(self):
         print "Final output groups:"
         cnt = 0
@@ -511,15 +503,7 @@ class FindStates:
         print "Run took " + str(dur) + " / " + str(total) + " seconds"
 
 
-    def print_usage(self):
-        print "Usage: python FindStates.py <moduleName> [inputConstraintFile]"
-
     groups  = property(lambda self: self.__flopGroups)
     states  = property(lambda self: self.__flopStatesOut)
 
-fs = FindStates()
-gc.disable()
-fs.run()
-fs.printTime()
-fs.printGroups()
-gc.enable()
+
