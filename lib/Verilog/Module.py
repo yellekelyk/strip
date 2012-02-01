@@ -1,5 +1,5 @@
 from Generic import *
-from odict import OrderedDict
+from ordereddict import OrderedDict
 import Cell
 import Net
 import Port

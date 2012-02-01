@@ -3,7 +3,7 @@ import PortIn
 import PortOut
 import PortClk
 import ConfigParser
-from odict import OrderedDict
+from ordereddict import OrderedDict
 import os
 import yaml
 from Utils.myutils import *
