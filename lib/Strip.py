@@ -25,7 +25,7 @@ import cProfile
 import pdb
 
 
-class FindStates:
+class Strip:
     def __init__(self, options):
 
         self.__verbose = options['verbose']

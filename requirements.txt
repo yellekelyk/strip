@@ -1,4 +1,6 @@
-generator_tools
-python-graph-core
-pyyaml
-ordereddict
+PyYAML==3.10
+argparse==1.2.1
+generator-tools==0.3.6
+ordereddict==1.1
+python-graph-core==1.8.1
+wsgiref==0.1.2

@@ -1,11 +1,11 @@
-from Logic import DAGCircuit
-from Logic import SimLib
+from lib.Logic import DAGCircuit
+from lib.Logic import SimLib
 import string
-from Utils import State
+from lib.Utils import State
 import copy
 import re
-from Logic import Simulate
-from Utils import myutils
+from lib.Logic import Simulate
+from lib.Utils import myutils
 from pygraph.classes.digraph import digraph
 import subprocess
 import yaml

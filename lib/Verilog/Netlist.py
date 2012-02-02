@@ -6,7 +6,7 @@ import ConfigParser
 from ordereddict import OrderedDict
 import os
 import yaml
-from Utils.myutils import *
+from lib.Utils.myutils import *
 import re
 class Netlist:
     "A Verilog Netlist"

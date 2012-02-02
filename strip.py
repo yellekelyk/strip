@@ -1,11 +1,8 @@
-#!/usr/bin/python
-
 import argparse
 import gc
-import FindStates
 import pdb
 import sys
-
+from lib import Strip
 
 parser = argparse.ArgumentParser(description='Analyze the reachable states in a Verilog netlist')
 parser.add_argument('--design', help='Top-level module', required=True)
@@ -23,7 +20,7 @@ args = parser.parse_args()
 
 
 print vars(args)
-fs = FindStates.FindStates(vars(args))
+fs = Strip.Strip(vars(args))
 gc.disable()
 fs.run()
 fs.printTime()

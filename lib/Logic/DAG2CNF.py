@@ -1,5 +1,4 @@
-#from SymbolicLogic import *
-from Utils.myutils import *
+from lib.Utils.myutils import *
 import string
 import subprocess
 import hashlib
