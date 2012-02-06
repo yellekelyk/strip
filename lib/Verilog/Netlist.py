@@ -8,6 +8,8 @@ import os
 import yaml
 from lib.Utils.myutils import *
 import re
+import verilogParse
+
 class Netlist:
     "A Verilog Netlist"
 
@@ -121,6 +123,18 @@ class Netlist:
 #        dfsArgs['df'][cell] = c
 #        dfsArgs['c'] = c-1
 #        return dfsArgs
+
+    def addModule(self, mod):
+        modname = mod.name
+        if modname in self.__mods:
+            print "Warning: " + modname + " has been multiply defined"
+        self.__mods[modname] = mod
+
+    def readVerilog(self, verilogFile):
+        """ Parse a Gate-level Verilog file using Python"""
+        mod = verilogParse.parseFile(verilogFile)
+        self.__mods[mod.name] = mod
+
 
     def readYAML(self, yamlFile):
         " Read a YAML config file, build a netlist"
