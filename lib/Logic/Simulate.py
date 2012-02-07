@@ -47,7 +47,7 @@ class Simulate:
 
             else:
                 inps = dict()
-                for prev in dag.node_incidence[node]:
+                for prev in dag.predecessors(node):
                     for pin in dag.pins((prev,node))[1]:
                         inps[pin] = self.__eval__(prev)
                 name = dag.node2module(node)

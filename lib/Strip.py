@@ -14,7 +14,7 @@ from Utils import StateGroup
 import copy
 import glob
 import os
-from pygraph.algorithms.searching import depth_first_search
+from networkx.algorithms.traversal import dfs_postorder_nodes
 import re
 import sys
 import string
@@ -127,17 +127,21 @@ class Strip:
         nodes = self.__gr.nodes()
         self.__gr.add_node(-1)
         for node in nodes:
-            for inp in self.__gr.node_attr[node][0]['inputs']:
+            #for inp in self.__gr.node_attr[node][0]['inputs']:
+            for inp in self.__gr.node[node]['inputs']:
                 if inp in nl.mods[design].ports:
                     if nl.mods[design].ports[inp].direction == "in":
                         edge = (-1, node)
-                        if not self.__gr.has_edge(edge):
-                            self.__gr.add_edge(edge)
+                        if not self.__gr.has_edge(*edge):
+                            self.__gr.add_edge(*edge)
             
                 
 
         # find iteration order (reverse postorder)
-        st, pre, self.__post = depth_first_search(self.__gr, root=-1)
+        #st, pre, self.__post = depth_first_search(self.__gr, root=-1)
+        self.__post = []
+        for node in dfs_postorder_nodes(self.__gr, -1):
+            self.__post.append(node)
         self.__post.reverse()     
         self.__post.remove(-1)
 
@@ -177,8 +181,10 @@ class Strip:
                 # otherwise, store the regular State object
                 self.__flopStatesOut.insert(group, reset_out)
 
-            flopsIn = set.intersection(set(self.__gr.node_attr[group][0]['inputs']), 
+            flopsIn = set.intersection(set(self.__gr.node[group]['inputs']), 
                                        set(self.__sp.dag.flopsIn.keys()))
+            #flopsIn = set.intersection(set(self.__gr.node_attr[group][0]['inputs']), 
+            #                           set(self.__sp.dag.flopsIn.keys()))
             self.__flopsIn[group] = flopsIn
             self.__cnt[group] = 0
 
@@ -205,7 +211,7 @@ class Strip:
         # build a list of sets, each set are the groups being combined
         allGroups = []
         for grp in testGroups:
-            combineGroups = set(self.__gr.node_incidence[grp])
+            combineGroups = set(self.__gr.predecessors(grp))
             if grp in combineGroups:
                 combineGroups.remove(grp)
             allGroups.append(combineGroups)
@@ -225,15 +231,16 @@ class Strip:
         for combine in allGroups:
             comboNodes = list()
             for grp in combine:
-                for node in self.__gr.node_incidence[grp]:
+                for node in self.__gr.predecessors(grp):
                     edge = (newGroup,node)
-                    if not self.__gr.has_edge(edge):
-                        self.__gr.add_edge(edge)
-                for node in self.__gr.node_neighbors[grp]:
+                    if not self.__gr.has_edge(*edge):
+                        self.__gr.add_edge(*edge)
+                for node in self.__gr.neighbors(grp):
                     edge = (node,newGroup)
-                    if not self.__gr.has_edge(edge):
-                        self.__gr.add_edge(edge)
-                newGroupInputs = newGroupInputs.union(self.__gr.node_attr[grp][0]['inputs'])
+                    if not self.__gr.has_edge(*edge):
+                        self.__gr.add_edge(*edge)
+                #newGroupInputs = newGroupInputs.union(self.__gr.node_attr[grp][0]['inputs'])
+                newGroupInputs = newGroupInputs.union(self.__gr.node[grp]['inputs'])
                 comboNodes.extend(self.__flopGroups[grp])
 
             states.append(State.State(comboNodes))
@@ -242,13 +249,15 @@ class Strip:
         for combine in allGroups:
             for grp in combine:
                 if self.__gr.has_node(grp):
-                    self.__gr.del_node(grp)
+                    self.__gr.remove_node(grp)
 
         ss = StateSuperset.StateSuperset(states)
 
-        self.__gr.add_node_attribute(newGroup, 
-                                     {'inputs': newGroupInputs,
-                                      'combo': True})
+        #self.__gr.add_node_attribute(newGroup, 
+        #                             {'inputs': newGroupInputs,
+        #                              'combo': True})
+        self.__gr.node[newGroup]['inputs'] = newGroupInputs
+        self.__gr.node[newGroup]['combo']  = True
         self.__flopGroups[newGroup] = tuple(ss.nodes())
 
         # return an empty state superset object
@@ -331,7 +340,8 @@ class Strip:
         if statesOut.full():
             raise Exception("Shouldn't call if skip is true!")
 
-        inputSet  = self.__gr.node_attr[group][0]['inputs']
+        #inputSet  = self.__gr.node_attr[group][0]['inputs']
+        inputSet  = self.__gr.node[group]['inputs']
         constIn = list(set.intersection(inputSet, set(inputs.nodes())))
         # find number of inputs that we have to sweep
         inputCombos = 2**(len(inputSet)-len(constIn)) + inputs.numStates()

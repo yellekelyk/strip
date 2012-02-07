@@ -60,7 +60,7 @@ class DAG2CNF:
             self.__nodemap[node] = len(self.__nodemap)+1
             if dag.isInput(node):
                 return
-            for prev in dag.node_incidence[node]:
+            for prev in dag.predecessors(node):
                 self.__touchNode__(stateProp, prev)
 
     def __getCNFNode__(self, stateProp, node):
@@ -76,7 +76,7 @@ class DAG2CNF:
             # otherwise find name mappings for this node's inputs and
             # find CNF logic
             inps = dict()
-            for prev in dag.node_incidence[node]:
+            for prev in dag.predecessors(node):
                 for pin in dag.pins((prev,node))[1]:
                     inps[pin] = self.__nodemap[prev]
             name = dag.node2module(node)
@@ -91,7 +91,7 @@ class DAG2CNF:
             self.__touched[node] = True
 
             # call recursively on predecessors
-            for prev in dag.node_incidence[node]:
+            for prev in dag.predecessors(node):
                 self.__getCNFNode__(stateProp, prev)
 
 

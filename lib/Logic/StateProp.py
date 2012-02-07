@@ -6,7 +6,8 @@ import copy
 import re
 from lib.Logic import Simulate
 from lib.Utils import myutils
-from pygraph.classes.digraph import digraph
+import networkx
+
 import subprocess
 import yaml
 
@@ -154,7 +155,7 @@ class StateProp:
 
     def __buildGroupGraph__(self, flopDict, flopSetLookup):
         # use graph package to keep track of any deps
-        gr = digraph()
+        gr = networkx.DiGraph()
         for state in flopDict:
             gr.add_node(state)
 
@@ -164,7 +165,7 @@ class StateProp:
             inputs = set()
             for node in flopDict[state]:
                 inputs = set.union(inputs, self.__deps[node])
-            gr.add_node_attribute(state, {'inputs': inputs})
+            gr.node[state]['inputs'] = inputs
 
             # check if any of these inputs corresponds to an output from a
             # different state 
@@ -173,8 +174,8 @@ class StateProp:
                     flop = self.__dag.flopsIn[node]
                     if flop in flopSetLookup:
                         edge = (flopSetLookup[flop], state)
-                        if not gr.has_edge(edge):
-                            gr.add_edge(edge)
+                        if not gr.has_edge(*edge):
+                            gr.add_edge(*edge) # unpack edge tuple
         return gr
 
 
@@ -259,7 +260,7 @@ class StateProp:
             else:
                 # build up arguments from predecessors
                 maxin = 0
-                for prev in self.__dag.node_incidence[node]:
+                for prev in self.__dag.predecessors(node):
                     if len(deps[prev]) > maxin:
                         maxin = len(deps[prev])
                     for dep in deps[prev]:
@@ -303,7 +304,7 @@ class StateProp:
             elif self.__dag.isCell(node):
                 # go through all predecessors, construct dict of inputs
                 inps = dict()
-                for prev in self.__dag.node_incidence[node]:
+                for prev in self.__dag.predecessors(node):
                     for pin in self.__dag.pins((prev,node))[1]:
                         inps[pin] = results[prev]
                 name = self.__dag.node2module(node)
@@ -317,10 +318,10 @@ class StateProp:
                 results[node] = libfuncs[name](*argList)
 
                 if garbage:
-                    for prev in self.__dag.node_incidence[node]:
+                    for prev in self.__dag.predecessors(node):
                         # check if all successors have been processed
                         done = True
-                        for succ in self.__dag.node_neighbors[prev]:
+                        for succ in self.__dag.neighbors(prev):
                             if not succ in results:
                                 done = False
                                 break
@@ -346,16 +347,16 @@ class StateProp:
                 self.__sim[portIn]   = portIn
 
                 # connect all children
-                for child in self.__dag.node_neighbors[remove]:
+                for child in self.__dag.neighbors(remove):
                     if self.__dag.isCell(child):
                         edge = (remove, child)
-                        wire = self.__dag.edge_label(edge)
+                        wire = self.__dag[remove][child]['label']
                         pins = self.__dag.pins(edge)
                         for pin in pins[1]:
                             self.__dag.connect(portIn, child, wire, pins[0], pin)
 
                 # remove the original node
-                self.__dag.del_node(remove)
+                self.__dag.remove_node(remove)
 
                 # clean graph to remove dangling nodes
                 self.__dag.clean()

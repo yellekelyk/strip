@@ -1,10 +1,9 @@
-from pygraph.classes.digraph import digraph
-from pygraph.algorithms.searching import depth_first_search
-from pygraph.algorithms.cycles import find_cycle
-#import gv
-#from pygraph.readwrite.dot import write
-import copy
+from networkx import DiGraph as digraph
+from networkx.algorithms.traversal import dfs_postorder_nodes
+from networkx.algorithms.dag import is_directed_acyclic_graph
 
+
+import copy
 import pdb
 
 class DAGCircuit(digraph):
@@ -134,12 +133,12 @@ class DAGCircuit(digraph):
 
             # copy all connections
             conns = dict()
-            for node in self.node_neighbors[gate]:
+            for node in self.neighbors(gate):
                 edge = (gate,node)
                 conns[edge] = self.__pins[edge]
 
             # delete existing node
-            self.del_node(gate)
+            self.remove_node(gate)
 
             # gate should already be a node, but the problem is that it's
             # a port and it needs to be a cell
@@ -180,19 +179,19 @@ class DAGCircuit(digraph):
                 if self.isOutput(inp):
                     if self.__debug > 0:
                         print str(inp) + " is a feedback output PORT, so it will be removed!"
-                    prev = self.node_incidence[inp]
+                    prev = self.predecessors(inp)
                     if len(prev) != 1:
                         raise Exception("Expected only 1 driver on output")
                     prev = prev[0]
                     pins = self.__pins[(prev, inp)]
                     pinFrom = pins[0]
-                    self.del_node(inp)
+                    self.remove_node(inp)
                     pinTo = inp
                     inp = prev
 
 
             # name conflict?!?
-            elif inp in self.node_neighbors:
+            elif self.has_node(inp):
                 raise Exception("Name conflict with virtual input " + inp)
             # create a new virtual input
             else:
@@ -225,35 +224,35 @@ class DAGCircuit(digraph):
                 # the rationale for this (as opposed to D port) is that
                 # some flops have things like Q=D&CIN
                 port = yaml[submod]['outputs'].keys()[0]
-                wire = self.edge_label((node, self.node_neighbors[node][0]))
+                #wire = self.edge_label((node, self.node_neighbors[node][0]))
+                wire = self[node][self.neighbors(node)[0]]['label']
                 # make a copy of the original children here before modifying
                 # the graph
                 # be careful! otherwise children is simply a reference!
-                children = copy.copy(self.node_neighbors[node])
+                children = copy.copy(self.neighbors(node))
                 self.connect(node, "__OUTPUTS__", wire, port)
 
                 # now create extra dummy input port
                 portIn = str(node+"."+port)
                 self.__flopsIn[portIn] = node
                 self.addPortIn(portIn)
-                self.add_node_attribute(portIn, ('flop',True))
+                self.node[portIn]['flop'] = True
                 for child in children:
                     if self.isCell(child):
-                        wire = self.edge_label((node, child))
+                        wire = self[node][child]['label']
                         pins = self.pins((node,child))
                         for pin in pins[1]:
                             self.connect(portIn, child, wire, pins[0], pin)
 
                     # remove the connection between node and child
-                    self.del_edge((node,child))
+                    self.remove_edge(node,child)
 
         # remove any dangling nodes!
         self.clean()
 
 
         # ensure no cycles (sanity check!)
-        cycle = find_cycle(self)
-        if len(cycle) > 0:
+        if not is_directed_acyclic_graph(self):
             raise Exception("Cycle found!: " + str(cycle))
    
 
@@ -281,19 +280,20 @@ class DAGCircuit(digraph):
         if not port in self.__outputs:
             raise exception(port + " is not an output!")
         self.__outputs.remove(port)
-        self.del_edge((port, "__OUTPUTS__"))
+        self.remove_edge(port, "__OUTPUTS__")
 
     def add_node(self, node):
         raise Exception("Cannot call DAGCircuit::add_node directly")
 
-    def add_edge(self, node):
+    def add_edge(self, node1, node2):
         raise Exception("Cannot call DAGCircuit::add_edge directly")
 
 
     def clean(self):
         "Clean the graph; ensure no dangling nodes IN->OUT"
         nodes = dict()
-        for node in self.node_neighbors:
+        #for node in self.node_neighbors:
+        for node in self.nodes():
             nodes[node] = 0
 
         for node in self.order():
@@ -304,19 +304,20 @@ class DAGCircuit(digraph):
 
         for node in nodes:
             if nodes[node] < 2:
-                self.del_node(node)
+                self.remove_node(node)
             elif nodes[node] > 2:
                 raise Exception("Touched node " + node + " too many times!")
             
 
-    def del_edge(self, edge):
+    def remove_edge(self, node1, node2):
+        edge=(node1,node2)
         if self.__debug > 0:
             print "Removing edge: " + str(edge)
         self.__pins.pop(edge)
-        digraph.del_edge(self, edge)
+        digraph.remove_edge(self, node1, node2)
 
 
-    def del_node(self, node):
+    def remove_node(self, node):
         if self.__debug > 0:
             print "Removing node: " + str(node)
         if node in self.__inputs:
@@ -331,37 +332,40 @@ class DAGCircuit(digraph):
             self.__flopsIn.pop(node)
         if node in self.__virtual:
             self.__virtual.pop(node)
-        digraph.del_node(self, node)
+        digraph.remove_node(self, node)
 
 
     def connect(self, cellFrom, cellTo, wireName, pinFrom=None, pinTo=None):
         edge = ((cellFrom, cellTo))
         
         #if edge not in self.edges():
-        if not self.has_edge(edge):
-            digraph.add_edge(self, edge)
-            self.set_edge_label(edge, wireName)
+        if not self.has_edge(*edge):
+            digraph.add_edge(self, *edge)
+            self[cellFrom][cellTo]['label'] = wireName
             self.__pins[edge] = (pinFrom, set())
         else:
-            if self.edge_label(edge) != wireName:
+            if self[cellFrom][cellTo]['label'] != wireName:
                 raise Exception(str("Existing edge label is " + 
-                                    self.edge_label(edge) + 
+                                    self[cellFrom][cellTo]['label'] +
                                     " but new label is " + wireName))
 
         self.__pins[edge][1].add(pinTo)
 
     def isCell(self, node):
         # note: use self._node_neighbors instead of self.nodes() b/c it's fast
-        return node in self.node_neighbors and node in self.__cells
+        #return node in self.node_neighbors and node in self.__cells
+        return self.has_node(node) and node in self.__cells
 
     def isInput(self, port):
-        return port in self.node_neighbors and port in self.__inputs
+        return self.has_node(port) and port in self.__inputs
 
     def isOutput(self, port):
-        return port in self.node_neighbors and port in self.__outputs
+        return self.has_node(port) and port in self.__outputs
 
     def order(self, root='__INPUTS__'):
-        st, pre, post = depth_first_search(self, root=root)
+        post = []
+        for node in dfs_postorder_nodes(self, root):
+            post.append(node)
         post.reverse()
         return post
 
@@ -371,7 +375,7 @@ class DAGCircuit(digraph):
         while (len(nodes) > 0):
             node = nodes[0]
             nodes = nodes[1:]
-            for prev in self.node_incidence[node]:
+            for prev in self.predecessors(node):
                 if prev not in touched:
                     nodes.append(prev)
                     touched.add(prev)
@@ -379,13 +383,6 @@ class DAGCircuit(digraph):
 
     def pins(self, edge):
         return self.__pins[edge]
-
-    def png(self, fileName):
-        raise Exception("deprecated!")
-        #dot = write(self)
-        #gvv = gv.readstring(dot)
-        #gv.layout(gvv,'dot')
-        #gv.render(gvv,'png',fileName)
 
 
     cells   = property(lambda self: self.__cells)
