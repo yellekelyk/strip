@@ -38,7 +38,7 @@ class Strip:
         for infile in glob.glob(os.path.join(options['design_dir'], '*.yml')):
             print "Reading " + infile
             nl.readYAML(infile)
-        for infile in glob.glob(os.path.join(options['design_dir'], '*.v')):
+        for infile in glob.glob(os.path.join(options['design_dir'], '*.gv')):
             print "Reading " + infile
             nl.readVerilog(infile)
         print "Linking " + design

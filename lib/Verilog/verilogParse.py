@@ -426,12 +426,14 @@ def Verilog_BNF():
         netDecl1Arg = ( nettype +
             Optional( expandRange ) +
             Optional( delay ) +
-            Group( delimitedList( ~inputOutput + identifier ) ) )
+            Group( delimitedList( identifier ) ) )
+        #Group( delimitedList( ~inputOutput + identifier ) ) )
         netDecl2Arg = ( "trireg" +
-            Optional( chargeStrength ) +
-            Optional( expandRange ) +
-            Optional( delay ) +
-            Group( delimitedList( ~inputOutput + identifier ) ) )
+                        Optional( chargeStrength ) +
+                        Optional( expandRange ) +
+                        Optional( delay ) +
+                        Group( delimitedList( identifier ) ) )
+        #    Group( delimitedList( ~inputOutput + identifier ) ) )
         netDecl3Arg = ( nettype +
             Optional( driveStrength ) +
             Optional( expandRange ) +
@@ -713,21 +715,30 @@ def test( strng ):
 
 
 def parseFile(fileName):
-    numlines = 0
-    totalTime = 0
-    infile = file(fileName)
-    filelines = infile.readlines()
-    infile.close()
-    print fileName, len(filelines),
-    numlines += len(filelines)
-    teststr = "".join(filelines)
-    time1 = time.clock()
-    tokens = test( teststr )
-    time2 = time.clock()
-    elapsed = time2-time1
-    totalTime += elapsed
-    if ( len( tokens ) ):
-        print "OK", elapsed
+    tokens = []
+    try:
+        tokens = Verilog_BNF().parseFile( fileName )
+    except ParseException, err:
+        print err.line
+        print " "*(err.column-1) + "^"
+        print err
+
+    #tokens = []
+    #numlines = 0
+    #totalTime = 0
+    #infile = file(fileName)
+    #filelines = infile.readlines()
+    #infile.close()
+    #print fileName, len(filelines),
+    #numlines += len(filelines)
+    #teststr = "".join(filelines)
+    #time1 = time.clock()
+    #tokens = test( teststr )
+    #time2 = time.clock()
+    #elapsed = time2-time1
+    #totalTime += elapsed
+    #if ( len( tokens ) ):
+    #    print "OK", elapsed
     return module
 
 #~ if __name__ == "__main__":
