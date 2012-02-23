@@ -1,0 +1,3 @@
+[submodule "lib/Verilog"]
+	path = lib/Verilog
+	url = git@github.com:yellekelyk/PyVerilog.git
